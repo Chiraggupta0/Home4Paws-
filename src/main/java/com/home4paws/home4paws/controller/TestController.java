@@ -13,7 +13,8 @@ public class TestController {
         return "Hello from Spring Boot!";
     }
     @GetMapping("/c")
-    public String err() {
-        return "Hello from wev !";
+    public int err() {
+//        return "Hello from wev !";
+        return 1/0;
     }
 }
