@@ -40,9 +40,9 @@ src/main/resources/
 ---
 
 ## Database Schema
-## Database Schema
 
-![Database Schema](assets/schema.png)
+
+![Database Schema](assets/Schema.jpg)
 ### users
 | Column | Type | Constraint |
 |---|---|---|
