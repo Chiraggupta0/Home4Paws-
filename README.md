@@ -25,18 +25,25 @@ A pet adoption platform backend built with **Spring Boot**, **PostgreSQL**, **JP
 
 ```
 src/main/java/com/home4paws/home4paws/
-├── controller/
-│   └── TestController.java        ← GET /api/hello
-├── model/
-│   ├── Role.java                  ← Enum: ADOPTER, SHELTER
-│   ├── RequestStatus.java         ← Enum: PENDING, APPROVED, REJECTED
-│   ├── User.java                  ← @Entity → users table
-│   ├── Pet.java                   ← @Entity → pets table
-│   └── AdoptionRequest.java       ← @Entity → adoption_requests table
-src/main/resources/
-└── application.properties         ← DB config + JPA settings
-```
 
+├── controller/
+│   └── TestController.java              ← Basic test API endpoint (GET /api/hello)
+
+├── model/
+│   ├── Role.java                        ← Enum for user roles (ADOPTER, SHELTER)
+│   ├── RequestStatus.java               ← Enum for request status (PENDING, APPROVED, REJECTED)
+│   ├── User.java                        ← @Entity mapped to users table
+│   ├── Pet.java                         ← @Entity mapped to pets table
+│   └── AdoptionRequest.java             ← @Entity mapped to adoption_requests table
+
+├── repository/
+│   ├── UserRepository.java              ← JPA repository for User entity (email lookup & validation)
+│   ├── PetRepository.java               ← JPA repository for Pet entity (species/status/shelter queries)
+│   └── AdoptionRequestRepository.java   ← JPA repository for adoption request management
+
+src/main/resources/
+└── application.properties               ← Database configuration + JPA settingss
+```
 -----
 
 ## Database Schema
@@ -150,12 +157,20 @@ curl http://localhost:8080/api/hello
 - How enums work and why `@Enumerated(EnumType.STRING)` matters
 - How Spring Security auto-enables and how to configure it
 - Using Postman to test REST APIs
+### Repository folder
 
+- How JpaRepository provides built-in CRUD operations
+- How Spring Data JPA generates queries from method names
+- How custom methods like findByEmail() and existsByEmail() work
+- How repositories connect application logic with database operations
+- How filtering and searching work using JPA query methods
+- How Optional helps handle null values safely
+- How JPA repositories reduce the need for manual SQL queries
 ---
 
 ## Next Steps
 
-- [ ] Create `UserRepository`, `PetRepository`, `AdoptionRequestRepository`
+- [ ] Create `UserRepository`, `PetRepository`, `AdoptionRequestRepository` -- Done.
 - [ ] Build service layer: `UserService`, `PetService`
 - [ ] Build `AuthController` with register and login
 - [ ] Build `PetController` with list and post endpoints
