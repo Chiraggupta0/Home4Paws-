@@ -28,7 +28,7 @@ public class AdoptionRequest {
     @Column(name = "requested_at")
     private LocalDateTime requestedAt;
 
-    // ── Getters & Setters ──────────────────────────────
+    // Getters & Setters
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
