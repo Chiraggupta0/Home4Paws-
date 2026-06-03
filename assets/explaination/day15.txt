@@ -1,0 +1,123 @@
+================================================================
+ HOME4PAWS — DAY 15: UNDERSTAND SPRING SECURITY (Concepts Only)
+================================================================
+
+----------------------------------------------------------------
+1. WHAT SPRING SECURITY DOES BY DEFAULT
+----------------------------------------------------------------
+The moment you add Spring Security to your pom.xml, it LOCKS
+DOWN your entire app automatically.
+
+- Every single endpoint is BLOCKED by default
+- It generates a random password in the console on startup
+- It shows a login page at localhost:8080/login
+
+You will override all of this on Day 17 with your own
+SecurityConfig.java.
+
+----------------------------------------------------------------
+2. WHAT A FILTER CHAIN IS
+----------------------------------------------------------------
+Think of it like security checkpoints at an airport before
+you reach the gate (your controller).
+
+  Incoming HTTP Request
+          ↓
+    [ Filter 1 ] — is this request even valid?
+          ↓
+    [ Filter 2 ] — does it have a token?
+          ↓
+    [ Filter 3 ] — is that token valid? (Your JwtFilter - Day 16)
+          ↓
+    [ Your Controller ] — finally reaches your code
+
+- Every request passes through the filter chain before hitting
+  your controller
+- If any filter rejects the request → it stops there,
+  controller never runs
+- You can add your own filters (like JwtFilter) into this chain
+- Filters run IN ORDER — sequence matters
+
+----------------------------------------------------------------
+3. HOW REQUESTS FLOW THROUGH SECURITY
+----------------------------------------------------------------
+
+--- VALID REQUEST FLOW ---
+
+POST /api/pets  (with Authorization: Bearer token123)
+        ↓
+Spring Security Filter Chain starts
+        ↓
+JwtFilter runs (your custom filter - Day 16)
+  → reads "Bearer token123" from header
+  → extracts email using JwtUtil.extractEmail()
+  → loads user from database
+  → validates token using JwtUtil.isTokenValid()
+  → if valid → sets authentication in SecurityContext
+        ↓
+SecurityConfig checks (Day 17)
+  → is /api/pets a protected route? YES
+  → is there an authentication in SecurityContext? YES
+  → allow through
+        ↓
+PetController runs
+  → your actual code executes
+
+--- INVALID / MISSING TOKEN FLOW ---
+
+JwtFilter finds no token
+        ↓
+SecurityContext stays empty
+        ↓
+SecurityConfig sees protected route + no authentication
+        ↓
+Returns 403 Forbidden
+Controller never runs
+
+----------------------------------------------------------------
+4. WHAT SECURITYCONTEXT HOLDS
+----------------------------------------------------------------
+SecurityContext is Spring Security's MEMORY for the current
+request.
+
+  SecurityContext
+      └── Authentication
+              ├── principal    → the logged-in user object (email)
+              ├── authorities  → roles like ADOPTER, SHELTER
+              └── isAuthenticated → true / false
+
+- It lives only for the DURATION OF ONE REQUEST — stateless
+- Your JwtFilter (Day 16) is responsible for FILLING IT
+- Your controllers can read from it using Principal — that's
+  how PetController on Day 22 knows which shelter is adding a pet
+
+----------------------------------------------------------------
+HOW DAYS 15, 16, 17 CONNECT
+----------------------------------------------------------------
+
+  Day 15 (today)
+    → Understand the concepts
+
+  Day 16
+    → Build JwtFilter.java
+    → The filter that validates tokens on every request
+
+  Day 17
+    → Build SecurityConfig.java
+    → Defines public vs protected routes
+    → Plugs JwtFilter into the filter chain
+
+----------------------------------------------------------------
+DAY 15 CHECKLIST — Answer These Out Loud
+----------------------------------------------------------------
+Before moving to Day 16, make sure you can answer:
+
+  1. Why does Spring Security block everything by default?
+  2. What is the filter chain and what does it do?
+  3. What does SecurityContext store and when is it set?
+  4. What happens to a request with a missing token?
+  5. What happens to a request with a valid token?
+
+================================================================
+END OF FILE
+================================================================

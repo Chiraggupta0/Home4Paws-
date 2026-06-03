@@ -1,0 +1,193 @@
+================================================================
+ HOME4PAWS — DAY 14: JwtUtil.java FULL EXPLANATION
+================================================================
+
+----------------------------------------------------------------
+PACKAGE LINE
+----------------------------------------------------------------
+package com.home4paws.home4paws.config;
+
+This tells Java WHERE this file lives in your project:
+  src/main/java/com/home4paws/home4paws/config/JwtUtil.java
+
+The config/ folder holds security and configuration classes —
+things that set up how your app behaves, not business logic.
+
+----------------------------------------------------------------
+IMPORTS
+----------------------------------------------------------------
+import io.jsonwebtoken.*;               // All JWT classes (Jwts, JwtException etc)
+import io.jsonwebtoken.security.Keys;   // For creating the signing key
+import org.springframework.beans.factory.annotation.Value;  // Read from application.properties
+import org.springframework.stereotype.Component;  // Register this as a Spring Bean
+import javax.crypto.SecretKey;          // The key type used to sign tokens
+import java.util.Date;                  // For expiry and issued-at timestamps
+
+----------------------------------------------------------------
+@Component
+----------------------------------------------------------------
+@Component
+public class JwtUtil {
+
+This tells Spring: "manage this class for me".
+Spring creates ONE instance of JwtUtil and keeps it ready.
+Whenever another class needs it (like JwtFilter on Day 16),
+Spring automatically injects it via @Autowired.
+You never write "new JwtUtil()" yourself.
+
+----------------------------------------------------------------
+READING FROM application.properties
+----------------------------------------------------------------
+@Value("${jwt.secret}")
+private String secret;
+
+@Value("${jwt.expiration}")
+private long expiration;
+
+These pull values from your application.properties file:
+  jwt.secret=home4paws_super_secret_key_...
+  jwt.expiration=86400000
+
+- secret     → the private key string used to sign tokens
+- expiration → 86400000 milliseconds = 24 hours
+
+Spring automatically injects these values when the app starts.
+You never hardcode secrets in Java files.
+
+----------------------------------------------------------------
+getSigningKey()
+----------------------------------------------------------------
+private SecretKey getSigningKey() {
+    return Keys.hmacShaKeyFor(secret.getBytes());
+}
+
+- Takes your plain secret string and converts it into a
+  cryptographic key object.
+- HMAC-SHA is the algorithm used to sign the token.
+- This key is used in every method — to SIGN tokens when
+  creating them, and to VERIFY them when reading them.
+- It is private because no other class needs to call this directly.
+
+----------------------------------------------------------------
+METHOD 1 — generateToken(email)
+----------------------------------------------------------------
+public String generateToken(String email) {
+    return Jwts.builder()
+            .subject(email)
+            .issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() + expiration))
+            .signWith(getSigningKey())
+            .compact();
+}
+
+This BUILDS and RETURNS a JWT token string.
+Called after a user logs in successfully.
+
+  .subject(email)       → Stores the user's email inside the token
+  .issuedAt(new Date()) → Stamps the current time (when was token created)
+  .expiration(...)      → Sets expiry to now + 24 hours
+  .signWith(...)        → Signs the token with your secret key
+  .compact()            → Builds and returns the final token string
+
+The token it returns looks like:
+  eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyQGdtYWlsLmNvbSJ9.xyz123
+
+----------------------------------------------------------------
+METHOD 2 — extractEmail(token)
+----------------------------------------------------------------
+public String extractEmail(String token) {
+    return Jwts.parser()
+            .verifyWith(getSigningKey())
+            .build()
+            .parseSignedClaims(token)
+            .getPayload()
+            .getSubject();
+}
+
+This READS a token and PULLS OUT the email stored inside it.
+
+  .verifyWith(getSigningKey())  → Uses your secret key to verify signature
+  .parseSignedClaims(token)     → Decodes and validates the token
+  .getPayload()                 → Gets the data section of the token
+  .getSubject()                 → Returns the email you stored with .subject()
+
+This is called on every protected API request — to know
+WHO is making the request.
+
+----------------------------------------------------------------
+METHOD 3 — isTokenValid(token, email)
+----------------------------------------------------------------
+public boolean isTokenValid(String token, String email) {
+    try {
+        String extractedEmail = extractEmail(token);
+        return extractedEmail.equals(email) && !isTokenExpired(token);
+    } catch (JwtException e) {
+        return false;
+    }
+}
+
+This answers the question: "Can I trust this token?"
+
+It checks TWO things:
+  1. The email inside the token MATCHES the user from the database
+  2. The token is NOT expired
+
+If anything goes wrong (tampered token, wrong signature),
+JwtException is caught and it returns false — safely rejecting
+the request.
+
+----------------------------------------------------------------
+METHOD 4 — isTokenExpired(token)  [private helper]
+----------------------------------------------------------------
+private boolean isTokenExpired(String token) {
+    Date expiry = Jwts.parser()
+            .verifyWith(getSigningKey())
+            .build()
+            .parseSignedClaims(token)
+            .getPayload()
+            .getExpiration();
+    return expiry.before(new Date());
+}
+
+- Extracts the expiry date stored inside the token
+- Compares it to RIGHT NOW
+- Returns true if the token has expired
+- Private because only isTokenValid() calls it
+
+----------------------------------------------------------------
+VERSION DIFFERENCES — jjwt 0.11.x vs 0.12.x
+----------------------------------------------------------------
+Old (0.11.x)              New (0.12.x)
+--------------------------  ----------------------------
+Jwts.parserBuilder()        Jwts.parser()
+.setSigningKey()            .verifyWith()
+.parseClaimsJws()           .parseSignedClaims()
+.getBody()                  .getPayload()
+Key return type             SecretKey return type
+.setSubject()               .subject()
+.setIssuedAt()              .issuedAt()
+.setExpiration()            .expiration()
+
+----------------------------------------------------------------
+HOW JwtUtil CONNECTS TO THE BIGGER PICTURE
+----------------------------------------------------------------
+
+User logs in (Day 18 - AuthService)
+    → calls generateToken(email)
+    → token sent back to frontend
+
+Every future request (Day 16 - JwtFilter)
+    → extracts token from Authorization header
+    → calls extractEmail(token)
+    → loads user from DB
+    → calls isTokenValid(token, email)
+    → if true  → request goes through
+    → if false → 403 Forbidden
+
+JwtUtil is a PURE UTILITY CLASS — it only deals with tokens.
+It does not know about users, databases, or HTTP requests.
+That separation is intentional and clean.
+
+================================================================
+END OF FILE
+================================================================

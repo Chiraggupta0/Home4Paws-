@@ -1,0 +1,340 @@
+================================================================
+ HOME4PAWS — DAY 16: JwtFilter.java COMPLETE EXPLANATION
+================================================================
+
+----------------------------------------------------------------
+PACKAGE & IMPORTS
+----------------------------------------------------------------
+
+package com.home4paws.home4paws.config;
+  → Tells Java this file lives in the config/ folder
+
+import jakarta.servlet.FilterChain;
+  → The chain of filters. You call filterChain.doFilter() to
+    pass the request to the next filter or controller.
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+  → HttpServletRequest  — the incoming HTTP request
+                          (has headers, body, URL)
+  → HttpServletResponse — the outgoing HTTP response
+                          (what gets sent back)
+  → ServletException    — checked exception required by
+                          the filter method signature
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+  → Spring Security's object that represents
+    "this user is authenticated".
+    You create this and put it in SecurityContext to mark
+    the user as logged in for this request.
+
+import org.springframework.security.core.context.SecurityContextHolder;
+  → The holder for the SecurityContext.
+    You call SecurityContextHolder.getContext().setAuthentication(...)
+    to store authentication for the current request.
+
+import org.springframework.security.core.userdetails.UserDetails;
+  → Interface representing a loaded user.
+    Has getUsername(), getPassword(), getAuthorities().
+    Your User.java entity will implement this on Day 18.
+
+import org.springframework.security.core.userdetails.UserDetailsService;
+  → Interface with one method: loadUserByUsername(email).
+    Your AuthService on Day 18 will implement this to fetch
+    users from the database.
+
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+  → Builds extra details about the request (IP address, session ID)
+    and attaches them to the authentication object.
+
+import org.springframework.stereotype.Component;
+  → Registers JwtFilter as a Spring Bean so Spring manages it
+    and can inject it into SecurityConfig on Day 17.
+
+import org.springframework.web.filter.OncePerRequestFilter;
+  → Parent class you extend. Guarantees this filter runs
+    EXACTLY ONCE per request — no duplicates.
+
+import java.io.IOException;
+  → Checked exception required by the filter method signature.
+
+----------------------------------------------------------------
+CLASS DECLARATION
+----------------------------------------------------------------
+
+@Component
+public class JwtFilter extends OncePerRequestFilter {
+
+  → @Component      — Spring manages this class, creates one
+                      instance, keeps it ready
+  → extends Once... — You inherit filter behavior and only need
+                      to fill in doFilterInternal()
+
+----------------------------------------------------------------
+FIELDS
+----------------------------------------------------------------
+
+private final JwtUtil jwtUtil;
+private final UserDetailsService userDetailsService;
+
+  → final              — these never change after constructor
+  → JwtUtil            — your Day 14 class, used to extract
+                         email and validate token
+  → UserDetailsService — used to load user from database by email
+
+----------------------------------------------------------------
+CONSTRUCTOR
+----------------------------------------------------------------
+
+public JwtFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+    this.jwtUtil = jwtUtil;
+    this.userDetailsService = userDetailsService;
+}
+
+  → Spring sees the constructor and automatically injects both
+  → this.jwtUtil = jwtUtil — assigns injected JwtUtil to field
+  → this.userDetailsService = ... — same for UserDetailsService
+  → You never call new JwtFilter() anywhere — Spring does it
+
+----------------------------------------------------------------
+doFilterInternal() — THE CORE METHOD
+----------------------------------------------------------------
+
+@Override
+protected void doFilterInternal(HttpServletRequest request,
+                                HttpServletResponse response,
+                                FilterChain filterChain)
+        throws ServletException, IOException {
+
+  → @Override    — replacing the empty method from parent class
+  → request      — incoming HTTP request, read Authorization header
+  → response     — outgoing response, passed along
+  → filterChain  — used at the end to pass request forward
+  → throws ...   — required checked exceptions
+
+----------------------------------------------------------------
+STEP 1 — READ THE HEADER
+----------------------------------------------------------------
+
+String authHeader = request.getHeader("Authorization");
+
+  → Reads the Authorization header from the incoming request
+  → If frontend sent a token it looks like:
+      Authorization: Bearer eyJhbGci...
+  → If no token was sent, authHeader is null
+
+----------------------------------------------------------------
+STEP 2 — CHECK HEADER EXISTS AND FORMAT
+----------------------------------------------------------------
+
+if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+    filterChain.doFilter(request, response);
+    return;
+}
+
+  → authHeader == null          — no Authorization header at all
+  → !authHeader.startsWith(...) — header exists but wrong format
+  → If either true → call filterChain.doFilter() to pass request
+    along WITHOUT setting any authentication
+  → return — stops execution of this filter, skips JWT logic below
+
+----------------------------------------------------------------
+STEP 3 — EXTRACT THE TOKEN
+----------------------------------------------------------------
+
+String token = authHeader.substring(7);
+
+  → "Bearer " is 7 characters
+  → substring(7) removes it, leaving just the raw token
+
+  Before: "Bearer eyJhbGci..."
+  After:  "eyJhbGci..."
+
+----------------------------------------------------------------
+STEP 4 — EXTRACT EMAIL FROM TOKEN
+----------------------------------------------------------------
+
+String email = jwtUtil.extractEmail(token);
+
+  → Calls your JwtUtil.extractEmail() from Day 14
+  → Decodes the token and pulls out the email stored in subject
+  → If token is invalid or tampered, throws JwtException
+
+----------------------------------------------------------------
+STEP 5 — CHECK EMAIL AND NO EXISTING AUTH
+----------------------------------------------------------------
+
+if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+  → email != null            — email was successfully extracted
+  → getAuthentication()==null — no authentication already set
+    for this request. Prevents overwriting if another filter
+    already authenticated the user.
+
+----------------------------------------------------------------
+STEP 6 — LOAD USER FROM DATABASE
+----------------------------------------------------------------
+
+UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+  → Uses the email to fetch the full user object from database
+  → Returns UserDetails with username, password, and roles
+  → Implemented in AuthService on Day 18
+
+----------------------------------------------------------------
+STEP 7 — VALIDATE THE TOKEN
+----------------------------------------------------------------
+
+if (jwtUtil.isTokenValid(token, userDetails.getUsername())) {
+
+  → Calls your JwtUtil.isTokenValid() from Day 14
+  → Checks:
+      1. Email in token matches the user loaded from DB
+      2. Token is not expired
+  → If both true → proceed to authenticate
+
+----------------------------------------------------------------
+STEP 8 — CREATE AUTHENTICATION OBJECT
+----------------------------------------------------------------
+
+UsernamePasswordAuthenticationToken authToken =
+        new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
+
+  → Creates Spring Security's authentication object
+  → Argument 1: userDetails      — the principal (who is logged in)
+  → Argument 2: null             — credentials (password). Null
+                                   because JWT already verified
+  → Argument 3: getAuthorities() — roles like ADOPTER, SHELTER
+
+----------------------------------------------------------------
+STEP 9 — ATTACH REQUEST DETAILS
+----------------------------------------------------------------
+
+authToken.setDetails(
+        new WebAuthenticationDetailsSource().buildDetails(request)
+);
+
+  → Attaches extra metadata — IP address, session ID
+  → Not strictly required but good practice for logging/auditing
+
+----------------------------------------------------------------
+STEP 10 — SET AUTHENTICATION IN SECURITYCONTEXT
+----------------------------------------------------------------
+
+SecurityContextHolder.getContext().setAuthentication(authToken);
+
+  → THE MOST IMPORTANT LINE
+  → Tells Spring Security: "This request is authenticated"
+  → After this line:
+      - SecurityConfig (Day 17) allows request through protected routes
+      - Controllers (Day 22) can call principal.getName() to get email
+
+----------------------------------------------------------------
+STEP 11 — PASS REQUEST FORWARD
+----------------------------------------------------------------
+
+filterChain.doFilter(request, response);
+
+  → Passes request to next filter or your controller
+  → Runs ALWAYS — whether authentication was set or not
+
+----------------------------------------------------------------
+WHY filterChain.doFilter() IS CALLED TWICE
+----------------------------------------------------------------
+
+  First call (inside the if at Step 2):
+    → No token found → skip JWT logic → pass request along
+    → return stops any further code in this filter
+
+  Second call (at the very end):
+    → After setting authentication → pass request to controller
+
+----------------------------------------------------------------
+WHAT HAPPENS IN EACH SCENARIO
+----------------------------------------------------------------
+
+  Request WITH valid token:
+    header found → token extracted → email extracted
+    → user loaded from DB → token validated
+    → SecurityContext filled → controller runs ✅
+
+  Request WITHOUT token:
+    header missing → filterChain.doFilter() called immediately
+    → SecurityContext stays empty
+    → SecurityConfig blocks protected routes → 403 ❌
+
+  Request WITH expired or tampered token:
+    isTokenValid() returns false
+    → SecurityContext never filled
+    → 403 Forbidden ❌
+
+----------------------------------------------------------------
+COMMON ERROR — Spring Security Missing
+----------------------------------------------------------------
+
+  Error:
+    package org.springframework.security.authentication does not exist
+    package org.springframework.security.core.context does not exist
+
+  Fix — Add this to pom.xml inside <dependencies>:
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+
+  Then: Right-click pom.xml → Maven → Reload Project
+
+----------------------------------------------------------------
+FULL FLOW SUMMARY
+----------------------------------------------------------------
+
+  Request comes in
+        ↓
+  Read Authorization header
+        ↓
+  No header / wrong format? → pass along, no auth set
+        ↓
+  Extract token → extract email
+        ↓
+  Load user from DB
+        ↓
+  Token valid? → create auth object → set in SecurityContext
+        ↓
+  Pass request to SecurityConfig → then to Controller
+
+----------------------------------------------------------------
+HOW DAY 16 CONNECTS TO OTHER DAYS
+----------------------------------------------------------------
+
+  Day 14 — JwtUtil
+    → extractEmail() and isTokenValid() called inside JwtFilter
+
+  Day 17 — SecurityConfig
+    → Registers JwtFilter in the filter chain
+    → Defines which routes are public vs protected
+
+  Day 18 — AuthService
+    → Implements UserDetailsService
+    → Provides loadUserByUsername() used in Step 6
+
+  Day 22 — PetController
+    → Uses Principal (set by JwtFilter) to get logged-in user email
+
+----------------------------------------------------------------
+DAY 16 CHECKLIST
+----------------------------------------------------------------
+
+  ✅ JwtFilter.java created in config/ folder
+  ✅ Spring Security dependency added to pom.xml
+  ✅ Maven reloaded with no errors
+  ✅ App starts cleanly
+  ✅ You understand what each step in doFilterInternal() does
+
+================================================================
+END OF FILE
+================================================================
