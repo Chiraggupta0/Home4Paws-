@@ -1,0 +1,227 @@
+🔍 Full Explanation — Every Part
+
+@Configuration
+
+@Configuration
+Tells Spring — "this class contains Bean definitions". Spring reads it at startup and registers everything marked with @Bean into the application context.
+
+@EnableWebSecurity
+
+@EnableWebSecurity
+Activates Spring Security for your app. Without this, security rules you define here are ignored. It hands control of security over to your custom config instead of Spring's defaults.
+
+Fields + Constructor
+
+private final JwtFilter jwtFilter;
+private final UserDetailsService userDetailsService;
+
+public SecurityConfig(JwtFilter jwtFilter, UserDetailsService userDetailsService) {
+    this.jwtFilter = jwtFilter;
+    this.userDetailsService = userDetailsService;
+}
+
+JwtFilter — your Day 16 filter, gets plugged into the chain here
+
+UserDetailsService — implemented by AuthService on Day 18
+
+Both injected automatically by Spring via constructor
+
+
+=========================================================
+Bean 1 — securityFilterChain()
+=========================================================
+
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+This is the most important method in the whole class. It defines all security rules for your app. Returns a SecurityFilterChain which Spring uses for every incoming request.
+
+---------------------------------------------------------
+Disable CSRF
+---------------------------------------------------------
+
+.csrf(csrf -> csrf.disable())
+
+CSRF (Cross-Site Request Forgery) protection is for browser-based session apps.
+
+Your app uses JWT tokens — not sessions or cookies.
+
+So CSRF protection is unnecessary and would block your Postman/API calls.
+
+Safe to disable for REST APIs.
+
+
+---------------------------------------------------------
+Route Permissions
+---------------------------------------------------------
+
+.authorizeHttpRequests(auth -> auth
+    .requestMatchers("/api/auth/**").permitAll()
+    .anyRequest().authenticated()
+)
+
+.requestMatchers("/api/auth/**").permitAll()
+— anyone can hit /api/auth/register and /api/auth/login without a token.
+The ** means all sub-paths under /api/auth/
+
+.anyRequest().authenticated()
+— every other route requires a valid JWT token.
+
+Rules are read top to bottom — first match wins.
+
+Examples:
+
+/api/auth/register  → public ✅
+/api/auth/login     → public ✅
+/api/pets           → needs token 🔒
+/api/requests       → needs token 🔒
+
+
+---------------------------------------------------------
+Stateless Session Management
+---------------------------------------------------------
+
+.sessionManagement(session -> session
+    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+)
+
+Tells Spring Security never create or use HTTP sessions.
+
+Every request must carry its own JWT token — nothing is remembered between requests.
+
+This is what makes your app truly stateless.
+
+
+---------------------------------------------------------
+Register AuthenticationProvider
+---------------------------------------------------------
+
+.authenticationProvider(authenticationProvider())
+
+Tells Spring which AuthenticationProvider to use when verifying credentials during login.
+
+Points to your DaoAuthenticationProvider bean defined below.
+
+
+---------------------------------------------------------
+Plug JwtFilter Into Chain
+---------------------------------------------------------
+
+.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+
+Inserts your JwtFilter before Spring's default UsernamePasswordAuthenticationFilter.
+
+This means JWT validation happens first on every request.
+
+By the time Spring's own filter runs, authentication is already set in SecurityContext.
+
+
+=========================================================
+Bean 2 — authenticationProvider()
+=========================================================
+
+@Bean
+public AuthenticationProvider authenticationProvider() {
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    provider.setUserDetailsService(userDetailsService);
+    provider.setPasswordEncoder(passwordEncoder());
+    return provider;
+}
+
+DaoAuthenticationProvider is Spring's built-in provider that:
+
+1. Uses UserDetailsService to load the user from database by email.
+2. Uses PasswordEncoder to compare the hashed password.
+
+This is used during login in AuthService on Day 18 when you call:
+
+authenticationManager.authenticate(...)
+
+
+=========================================================
+Bean 3 — authenticationManager()
+=========================================================
+
+@Bean
+public AuthenticationManager authenticationManager(
+        AuthenticationConfiguration config) throws Exception {
+    return config.getAuthenticationManager();
+}
+
+AuthenticationManager is the entry point for authentication.
+
+On Day 18 in AuthService, you'll call:
+
+authenticationManager.authenticate(...)
+
+to verify email + password during login.
+
+You expose it as a @Bean here so AuthService can inject it.
+
+
+=========================================================
+Bean 4 — passwordEncoder()
+=========================================================
+
+@Bean
+public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+}
+
+BCrypt is a one-way hashing algorithm for passwords.
+
+When a user registers:
+→ password is hashed and stored in DB.
+
+When a user logs in:
+→ BCrypt compares the plain password against the stored hash.
+
+You never store plain text passwords.
+
+Used by AuthService on Day 18:
+
+passwordEncoder.encode(rawPassword)
+
+
+=========================================================
+🗺️ How Everything Connects
+=========================================================
+
+Incoming request
+      ↓
+JwtFilter runs (Day 16)
+  → validates token
+  → sets SecurityContext
+      ↓
+SecurityFilterChain rules checked (Day 17 - this file)
+  → is route public? → allow through
+  → is route protected + auth set? → allow through
+  → is route protected + no auth? → 403
+      ↓
+Controller runs
+
+
+---------------------------------------------------------
+Login request (Day 18 - AuthService)
+---------------------------------------------------------
+
+→ authenticationManager.authenticate(email, password)
+
+→ DaoAuthenticationProvider loads user via UserDetailsService
+
+→ BCrypt compares passwords
+
+→ if match → return JWT token
+
+
+=========================================================
+✅ Day 17 Done When:
+=========================================================
+
+• SecurityConfig.java created in config/ folder
+
+• App starts with no errors
+
+• You understand what each @Bean does
+
+• You know which routes are public and which are protected
