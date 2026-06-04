@@ -1,0 +1,428 @@
+🔍 Full Explanation — Every Part
+
+=========================================================
+@RestController
+=========================================================
+
+@RestController
+
+Combines:
+
+• @Controller
+• @ResponseBody
+
+Every method automatically converts its return value to JSON.
+
+You never write ObjectMapper or JSON conversion manually.
+
+Spring handles it all.
+
+
+=========================================================
+@RequestMapping("/api/auth")
+=========================================================
+
+@RequestMapping("/api/auth")
+
+Sets the base URL for all endpoints in this controller.
+
+Every method's URL is added on top of this.
+
+Examples:
+
+/register
+becomes
+/api/auth/register
+
+/login
+becomes
+/api/auth/login
+
+
+=========================================================
+Constructor Injection
+=========================================================
+
+private final AuthService authService;
+
+public AuthController(AuthService authService) {
+    this.authService = authService;
+}
+
+Spring injects AuthService automatically.
+
+final means it never changes after being set.
+
+Controller only talks to AuthService.
+
+Controller never talks directly to:
+
+• Repository
+• Database
+
+This keeps responsibilities separated and follows a clean layered architecture.
+
+
+=========================================================
+Endpoint 1 — register()
+=========================================================
+
+@PostMapping("/register")
+
+public ResponseEntity<AuthResponse> register(
+        @RequestBody RegisterRequest request) {
+
+    AuthResponse response = authService.register(request);
+
+    return ResponseEntity.ok(response);
+}
+
+---------------------------------------------------------
+@PostMapping("/register")
+---------------------------------------------------------
+
+Handles:
+
+POST /api/auth/register
+
+POST is used because you are creating a new user.
+
+Data is sent inside the request body.
+
+
+---------------------------------------------------------
+@RequestBody RegisterRequest request
+---------------------------------------------------------
+
+@RequestBody
+
+Tells Spring to:
+
+1. Read JSON from the request body.
+2. Convert it into a RegisterRequest object automatically.
+
+JSON sent from Postman:
+
+{
+    "name": "John Doe",
+    "email": "john@gmail.com",
+    "password": "secret123",
+    "role": "ADOPTER"
+}
+
+Automatically becomes:
+
+RegisterRequest request
+
+
+Spring maps:
+
+request.getName()
+→ "John Doe"
+
+request.getEmail()
+→ "john@gmail.com"
+
+request.getPassword()
+→ "secret123"
+
+request.getRole()
+→ "ADOPTER"
+
+
+---------------------------------------------------------
+AuthService Call
+---------------------------------------------------------
+
+AuthResponse response =
+        authService.register(request);
+
+Control moves to:
+
+AuthService.register()
+
+which:
+
+1. Creates User object
+2. Hashes password using BCrypt
+3. Saves user to database
+4. Generates JWT token
+5. Returns AuthResponse
+
+
+---------------------------------------------------------
+ResponseEntity<AuthResponse>
+---------------------------------------------------------
+
+ResponseEntity<AuthResponse>
+
+ResponseEntity lets you control:
+
+• HTTP Status Code
+• Response Body
+• Headers (if needed)
+
+ResponseEntity.ok(response)
+
+returns:
+
+HTTP Status:
+200 OK
+
+Response Body:
+response
+
+
+---------------------------------------------------------
+Response Example
+---------------------------------------------------------
+
+{
+    "token": "eyJhbGci...",
+    "role": "ADOPTER"
+}
+
+
+=========================================================
+Endpoint 2 — login()
+=========================================================
+
+@PostMapping("/login")
+
+public ResponseEntity<AuthResponse> login(
+        @RequestBody LoginRequest request) {
+
+    AuthResponse response = authService.login(request);
+
+    return ResponseEntity.ok(response);
+}
+
+---------------------------------------------------------
+@PostMapping("/login")
+---------------------------------------------------------
+
+Handles:
+
+POST /api/auth/login
+
+
+---------------------------------------------------------
+Incoming JSON
+---------------------------------------------------------
+
+JSON sent from Postman:
+
+{
+    "email": "john@gmail.com",
+    "password": "secret123"
+}
+
+Automatically converted into:
+
+LoginRequest request
+
+
+---------------------------------------------------------
+Flow
+---------------------------------------------------------
+
+Step 1:
+
+@RequestBody converts JSON
+
+↓
+
+LoginRequest object
+
+
+Step 2:
+
+authService.login(request)
+
+↓
+
+AuthenticationManager.authenticate()
+
+↓
+
+loadUserByUsername()
+
+↓
+
+BCrypt verifies password
+
+
+Step 3:
+
+JWT token generated
+
+
+Step 4:
+
+AuthResponse returned
+
+
+---------------------------------------------------------
+ResponseEntity.ok()
+---------------------------------------------------------
+
+ResponseEntity.ok(response)
+
+sends back:
+
+HTTP Status:
+200 OK
+
+Body:
+token + role
+
+
+---------------------------------------------------------
+Response Example
+---------------------------------------------------------
+
+{
+    "token": "eyJhbGci...",
+    "role": "ADOPTER"
+}
+
+
+=========================================================
+🗺️ Complete Controller Flow
+=========================================================
+
+REGISTER
+
+POST /api/auth/register
+
+{
+    "name":"John Doe",
+    "email":"john@gmail.com",
+    "password":"secret123",
+    "role":"ADOPTER"
+}
+
+      ↓
+
+AuthController.register()
+
+      ↓
+
+@RequestBody
+
+      ↓
+
+RegisterRequest Object
+
+      ↓
+
+AuthService.register()
+
+      ↓
+
+User Created
+
+      ↓
+
+Password Hashed
+
+      ↓
+
+Saved To Database
+
+      ↓
+
+JWT Generated
+
+      ↓
+
+ResponseEntity.ok()
+
+      ↓
+
+HTTP 200 OK
+
+{
+    "token":"...",
+    "role":"ADOPTER"
+}
+
+
+---------------------------------------------------------
+
+LOGIN
+
+POST /api/auth/login
+
+{
+    "email":"john@gmail.com",
+    "password":"secret123"
+}
+
+      ↓
+
+AuthController.login()
+
+      ↓
+
+@RequestBody
+
+      ↓
+
+LoginRequest Object
+
+      ↓
+
+AuthService.login()
+
+      ↓
+
+AuthenticationManager.authenticate()
+
+      ↓
+
+Password Verified
+
+      ↓
+
+JWT Generated
+
+      ↓
+
+ResponseEntity.ok()
+
+      ↓
+
+HTTP 200 OK
+
+{
+    "token":"...",
+    "role":"ADOPTER"
+}
+
+
+=========================================================
+✅ Day 19 Done When
+=========================================================
+
+• AuthController.java created
+
+• AuthService injected successfully
+
+• /api/auth/register works
+
+• /api/auth/login works
+
+• RegisterRequest JSON converts correctly
+
+• LoginRequest JSON converts correctly
+
+• JWT token returned after registration
+
+• JWT token returned after login
+
+• Postman tests pass successfully
+
+• No startup errors
+
+🚀 Authentication API Layer Complete!
