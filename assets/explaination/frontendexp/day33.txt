@@ -1,0 +1,541 @@
+    ```txt
+    📦 Day 33 — Login Page Integration (Code Explanation)
+
+    =========================================================
+    🎯 Goal
+    =========================================================
+
+    The goal of Day 33 is to allow existing users to log in.
+
+    Before Day 33:
+
+    ✅ User could register
+
+    ❌ User could not log in from React
+
+    ---------------------------------------------------------
+
+    After Day 33:
+
+    ✅ User enters credentials
+
+    ✅ React sends login request
+
+    ✅ Spring Boot validates credentials
+
+    ✅ JWT token returned
+
+    ✅ Token stored in browser
+
+    ✅ User redirected
+
+    =========================================================
+    File Updated
+    =========================================================
+
+    src/pages/Login.jsx
+
+    This is the only file modified today.
+
+    =========================================================
+    New Imports Added
+    =========================================================
+
+    import { useState } from "react";
+
+    Purpose:
+
+    Allows React to store form values.
+
+    Without this:
+
+    Email and password fields cannot be managed.
+
+    ---------------------------------------------------------
+
+    import { useNavigate } from "react-router-dom";
+
+    Purpose:
+
+    Used to redirect users after successful login.
+
+    Example:
+
+    navigate("/pets");
+
+    sends user to Pets page.
+
+    ---------------------------------------------------------
+
+    import api from "../api/axiosConfig";
+
+    Purpose:
+
+    Imports Axios configuration.
+
+    Allows communication with Spring Boot backend.
+
+    =========================================================
+    useState()
+    =========================================================
+
+    Added:
+
+    email
+
+    password
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Store values typed by user.
+
+    Example:
+
+    User enters:
+
+    john@gmail.com
+
+    React stores:
+
+    email = "john@gmail.com"
+
+    ---------------------------------------------------------
+
+    User enters:
+
+    secret123
+
+    React stores:
+
+    password = "secret123"
+
+    =========================================================
+    handleChange()
+    =========================================================
+
+    Purpose:
+
+    Updates state whenever user types.
+
+    ---------------------------------------------------------
+
+    Before typing:
+
+    email = ""
+
+    ---------------------------------------------------------
+
+    After typing:
+
+    john@gmail.com
+
+    ---------------------------------------------------------
+
+    State becomes:
+
+    email = "john@gmail.com"
+
+    ---------------------------------------------------------
+
+    Without handleChange():
+
+    Inputs would not update React state.
+
+    =========================================================
+    handleSubmit()
+    =========================================================
+
+    Purpose:
+
+    Runs when Login button is clicked.
+
+    This is the most important addition in Day 33.
+
+    =========================================================
+    e.preventDefault()
+    =========================================================
+
+    Purpose:
+
+    Stops browser from refreshing page.
+
+    ---------------------------------------------------------
+
+    Without this:
+
+    Page refreshes
+
+    React state resets
+
+    Login fails
+
+    =========================================================
+    Axios POST Request
+    =========================================================
+
+    Added:
+
+    POST /api/auth/login
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Send email and password to backend.
+
+    ---------------------------------------------------------
+
+    Data sent:
+
+    {
+        "email": "john@gmail.com",
+        "password": "secret123"
+    }
+
+    ---------------------------------------------------------
+
+    Backend receives:
+
+    LoginRequest
+
+    =========================================================
+    Spring Boot Processing
+    =========================================================
+
+    Request Flow
+
+    Login Page
+          ↓
+    Axios
+          ↓
+    AuthController
+          ↓
+    AuthService
+          ↓
+    AuthenticationManager
+          ↓
+    Password Verification
+          ↓
+    JWT Generation
+          ↓
+    Response Returned
+
+    =========================================================
+    Response Handling
+    =========================================================
+
+    Backend returns:
+
+    {
+        "token": "...",
+        "role": "ADOPTER"
+    }
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    React receives login information.
+
+    =========================================================
+    Saving Token
+    =========================================================
+
+    Added:
+
+    localStorage.setItem()
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Store JWT token in browser.
+
+    ---------------------------------------------------------
+
+    Example:
+
+    token = eyJhbGciOiJIUzI1NiJ9...
+
+    ---------------------------------------------------------
+
+    Benefit:
+
+    User remains logged in after refresh.
+
+    =========================================================
+    Saving Role
+    =========================================================
+
+    Added:
+
+    localStorage.setItem("role")
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Store user role.
+
+    ---------------------------------------------------------
+
+    Possible values:
+
+    ADOPTER
+
+    SHELTER
+
+    ---------------------------------------------------------
+
+    Future use:
+
+    Show different pages based on role.
+
+    =========================================================
+    Success Message
+    =========================================================
+
+    Added:
+
+    alert("Login successful!")
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Notify user that authentication succeeded.
+
+    =========================================================
+    Navigation After Login
+    =========================================================
+
+    Added:
+
+    navigate("/pets")
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Redirect user to pets page.
+
+    ---------------------------------------------------------
+
+    Flow:
+
+    Login Success
+          ↓
+    Token Saved
+          ↓
+    Role Saved
+          ↓
+    Redirect To Pets Page
+
+    =========================================================
+    Error Handling
+    =========================================================
+
+    Added:
+
+    try-catch block
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Handle login failures safely.
+
+    =========================================================
+    Wrong Password
+    =========================================================
+
+    Example:
+
+    Email:
+
+    john@gmail.com
+
+    Password:
+
+    wrongpassword
+
+    ---------------------------------------------------------
+
+    Backend rejects login.
+
+    ---------------------------------------------------------
+
+    Catch block executes.
+
+    ---------------------------------------------------------
+
+    Message displayed:
+
+    Login failed
+
+    =========================================================
+    Non-Existing User
+    =========================================================
+
+    Example:
+
+    Email:
+
+    unknown@gmail.com
+
+    Password:
+
+    secret123
+
+    ---------------------------------------------------------
+
+    Backend rejects login.
+
+    ---------------------------------------------------------
+
+    Catch block handles error.
+
+    =========================================================
+    Required Fields
+    =========================================================
+
+    Added:
+
+    required attribute
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Prevent empty form submission.
+
+    ---------------------------------------------------------
+
+    Example:
+
+    Empty email
+
+    ↓
+
+    Browser blocks submission
+
+    ↓
+
+    Request never sent
+
+    =========================================================
+    What Changed Compared To Day 31
+    =========================================================
+
+    Day 31 Login Page
+
+    ---------------------------------------------------------
+
+    Static UI only
+
+    Email field
+
+    Password field
+
+    Button
+
+    No functionality
+
+    ---------------------------------------------------------
+
+    Day 33 Login Page
+
+    Email state added
+
+    Password state added
+
+    handleChange() added
+
+    handleSubmit() added
+
+    Axios POST request added
+
+    JWT handling added
+
+    Role handling added
+
+    Redirect added
+
+    Error handling added
+
+    =========================================================
+    Complete Login Flow
+    =========================================================
+
+    User Opens Login Page
+              ↓
+    User Enters Email
+              ↓
+    User Enters Password
+              ↓
+    Clicks Login
+              ↓
+    handleSubmit()
+              ↓
+    Axios POST Request
+              ↓
+    Spring Boot Validates User
+              ↓
+    JWT Generated
+              ↓
+    Response Returned
+              ↓
+    Token Stored
+              ↓
+    Role Stored
+              ↓
+    Redirect To /pets
+
+    =========================================================
+    How Day 33 Connects To Day 34
+    =========================================================
+
+    Today:
+
+    Authentication completed.
+
+    ---------------------------------------------------------
+
+    Next:
+
+    Load real pets from backend.
+
+    GET /api/pets
+
+    Use JWT token stored today.
+
+    Display pets on React page.
+
+    =========================================================
+    ✅ Day 33 Complete When
+    =========================================================
+
+    ✅ Login page connected to backend
+
+    ✅ Axios POST request works
+
+    ✅ Email state works
+
+    ✅ Password state works
+
+    ✅ JWT token received
+
+    ✅ Token stored in localStorage
+
+    ✅ Role stored in localStorage
+
+    ✅ Redirect works
+
+    ✅ Wrong password handled
+
+    ✅ Unknown user handled
+
+    🎉 Day 33 Complete — Full Login Functionality Added To React Frontend.
+    ```

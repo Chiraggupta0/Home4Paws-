@@ -1,0 +1,429 @@
+    📦 Day 32 — Register Page Integration (React + Spring Boot)
+
+    =========================================================
+    🎯 Goal
+    =======
+
+    Today we connect the React Register page to the Spring Boot backend.
+
+    This is the first real frontend-to-backend integration in Home4Paws.
+
+    Before Day 32:
+
+    User could fill the form.
+
+    Nothing was sent to the backend.
+
+    ---
+
+    After Day 32:
+
+    User fills form
+    ↓
+    React sends request
+    ↓
+    Spring Boot receives data
+    ↓
+    User saved in PostgreSQL
+    ↓
+    JWT token generated
+    ↓
+    Frontend receives token
+    ↓
+    Token stored in browser
+    ↓
+    User redirected
+
+    =========================================================
+    Files Used
+    ==========
+
+    Updated
+
+    src/pages/Register.jsx
+
+    ---
+
+    Already Existing
+
+    src/api/axiosConfig.js
+
+    src/App.jsx
+
+    src/main.jsx
+
+    =========================================================
+    React State Management
+    ======================
+
+    Purpose:
+
+    Store form data while the user types.
+
+    Fields Stored:
+
+    name
+
+    email
+
+    password
+
+    role
+
+    ---
+
+    Benefit:
+
+    React always knows the latest values entered by the user.
+
+    =========================================================
+    Input Handling
+    ==============
+
+    Purpose:
+
+    Update React state whenever the user types.
+
+    ---
+
+    When user enters:
+
+    John Doe
+
+    React immediately updates:
+
+    name = "John Doe"
+
+    ---
+
+    When user changes role:
+
+    ADOPTER
+    ↓
+    SHELTER
+
+    React updates:
+
+    role = "SHELTER"
+
+    =========================================================
+    Form Submission
+    ===============
+
+    Purpose:
+
+    Send registration data to Spring Boot.
+
+    ---
+
+    Triggered When:
+
+    Register button clicked
+
+    ---
+
+    Steps:
+
+    Prevent page refresh
+
+    Collect form data
+
+    Send POST request
+
+    Wait for response
+
+    Handle success or error
+
+    =========================================================
+    Backend API Used
+    ================
+
+    POST
+
+    /api/auth/register
+
+    ---
+
+    Request Body
+
+    {
+    "name": "John Doe",
+    "email": "[john@gmail.com](mailto:john@gmail.com)",
+    "password": "secret123",
+    "role": "ADOPTER"
+    }
+
+    ---
+
+    Spring Boot Processes
+
+    AuthController
+    ↓
+    AuthService
+    ↓
+    UserRepository
+    ↓
+    Database Save
+    ↓
+    JWT Generation
+
+    =========================================================
+    Successful Response
+    ===================
+
+    Backend Returns
+
+    {
+    "token": "eyJhbGci...",
+    "role": "ADOPTER"
+    }
+
+    ---
+
+    Purpose
+
+    Token:
+
+    Used for authentication.
+
+    ---
+
+    Role:
+
+    Used for role-based access control.
+
+    =========================================================
+    Local Storage
+    =============
+
+    Purpose:
+
+    Persist login information.
+
+    ---
+
+    Values Stored
+
+    token
+
+    role
+
+    ---
+
+    Example
+
+    token = eyJhbGciOiJIUzI1NiJ9...
+
+    role = ADOPTER
+
+    ---
+
+    Benefit
+
+    User remains logged in even after page refresh.
+
+    =========================================================
+    Navigation
+    ==========
+
+    After successful registration:
+
+    Redirect to
+
+    /pets
+
+    ---
+
+    Reason:
+
+    Allow user to immediately start browsing pets.
+
+    =========================================================
+    Error Handling
+    ==============
+
+    Purpose:
+
+    Prevent application crashes.
+
+    ---
+
+    Possible Errors
+
+    Duplicate email
+
+    Backend unavailable
+
+    Network issue
+
+    Validation failure
+
+    ---
+
+    Behavior
+
+    Show error message
+
+    Keep user on registration page
+
+    Allow retry
+
+    =========================================================
+    Testing Procedure
+    =================
+
+    Backend Running
+
+    mvn spring-boot:run
+
+    ---
+
+    Frontend Running
+
+    npm run dev
+
+    ---
+
+    Open
+
+    http://localhost:5173/register
+
+    ---
+
+    Enter
+
+    Name:
+    React User
+
+    Email:
+    [reactuser123@gmail.com](mailto:reactuser123@gmail.com)
+
+    Password:
+    secret123
+
+    Role:
+    ADOPTER
+
+    ---
+
+    Click Register
+
+    =========================================================
+    Expected Result
+    ===============
+
+    Registration Successful
+
+    ---
+
+    User inserted into database
+
+    ---
+
+    JWT token returned
+
+    ---
+
+    Role returned
+
+    ---
+
+    Token saved in localStorage
+
+    ---
+
+    Role saved in localStorage
+
+    ---
+
+    Redirect to
+
+    /pets
+
+    =========================================================
+    Database Verification
+    =====================
+
+    Open pgAdmin
+
+    Check users table
+
+    ---
+
+    Expected
+
+    New user exists
+
+    Correct email stored
+
+    Correct role stored
+
+    Password stored as BCrypt hash
+
+    =========================================================
+    Architecture After Day 32
+    =========================
+
+    React Register Page
+    ↓
+    Axios
+    ↓
+    Spring Boot AuthController
+    ↓
+    AuthService
+    ↓
+    UserRepository
+    ↓
+    PostgreSQL
+
+    ---
+
+    Response
+
+    JWT Token
+    ↓
+    React
+    ↓
+    Local Storage
+    ↓
+    User Logged In
+
+    =========================================================
+    How Day 32 Connects To Day 33
+    =============================
+
+    Day 32
+
+    User Registration
+
+    ---
+
+    Day 33
+
+    User Login
+
+    POST /api/auth/login
+
+    Frontend will authenticate existing users and store JWT tokens using the same pattern implemented today.
+
+    =========================================================
+    ✅ Day 32 Complete When
+    ======================
+
+    ✅ Register page connected to backend
+
+    ✅ Registration API works
+
+    ✅ User saved in database
+
+    ✅ JWT token returned
+
+    ✅ Token stored in localStorage
+
+    ✅ Role stored in localStorage
+
+    ✅ Redirect works
+
+    ✅ Error handling works
+
+    🎉 Day 32 Complete — First Successful React ↔ Spring Boot Integration.
