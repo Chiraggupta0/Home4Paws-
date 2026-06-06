@@ -1,4 +1,6 @@
 package com.home4paws.home4paws.config;
+import com.home4paws.home4paws.config.JwtUtil;
+import com.home4paws.home4paws.service.CustomUserDetailsService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,10 +21,10 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService userDetailsService;
 
     // Constructor injection — Spring injects both automatically
-    public JwtFilter(JwtUtil jwtUtil,@Lazy UserDetailsService userDetailsService) {
+    public JwtFilter(JwtUtil jwtUtil,CustomUserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
     }
