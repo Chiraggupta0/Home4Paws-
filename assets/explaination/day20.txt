@@ -1,0 +1,376 @@
+    ```txt
+    📦 Day 20 — Test Auth Thoroughly
+
+    This is a testing day — no new code.
+    Just Postman testing and fixing whatever breaks.
+
+    =========================================================
+    🧪 Full Test Checklist
+    =========================================================
+
+    ---------------------------------------------------------
+    Test 1 — Register as ADOPTER
+    ---------------------------------------------------------
+
+    Method  : POST
+    URL     : http://localhost:8080/api/auth/register
+
+    Headers :
+    Content-Type: application/json
+
+    Body (raw → JSON)
+
+    {
+        "name": "John Doe",
+        "email": "john@gmail.com",
+        "password": "secret123",
+        "role": "ADOPTER"
+    }
+
+    ✅ Expected Response
+
+    {
+        "token": "eyJhbGci...",
+        "role": "ADOPTER"
+    }
+
+    ❌ If you get 500
+    → Check application.properties database connection
+
+    ❌ If you get 403
+    → /api/auth/register is not in permitAll() in SecurityConfig
+
+
+    ---------------------------------------------------------
+    Test 2 — Register as SHELTER
+    ---------------------------------------------------------
+
+    Method  : POST
+    URL     : http://localhost:8080/api/auth/register
+
+    Body (raw → JSON)
+
+    {
+        "name": "Happy Paws Shelter",
+        "email": "shelter@gmail.com",
+        "password": "shelter123",
+        "role": "SHELTER"
+    }
+
+    ✅ Expected Response
+
+    {
+        "token": "eyJhbGci...",
+        "role": "SHELTER"
+    }
+
+    ❌ If you get 400
+    → Check RegisterRequest.java has Role type, not String
+
+
+    ---------------------------------------------------------
+    Test 3 — Login as ADOPTER
+    ---------------------------------------------------------
+
+    Method  : POST
+    URL     : http://localhost:8080/api/auth/login
+
+    Body (raw → JSON)
+
+    {
+        "email": "john@gmail.com",
+        "password": "secret123"
+    }
+
+    ✅ Expected Response
+
+    {
+        "token": "eyJhbGci...",
+        "role": "ADOPTER"
+    }
+
+    ❌ If you get 403
+    → Password encoding mismatch
+    → Check PasswordEncoder bean in SecurityConfig
+
+    ❌ If you get 500
+    → Check AuthenticationManager is properly exposed as @Bean
+
+
+    ---------------------------------------------------------
+    Test 4 — Login with Wrong Password
+    ---------------------------------------------------------
+
+    Method  : POST
+    URL     : http://localhost:8080/api/auth/login
+
+    Body (raw → JSON)
+
+    {
+        "email": "john@gmail.com",
+        "password": "wrongpassword"
+    }
+
+    ✅ Expected
+
+    403 Forbidden
+
+    Wrong credentials should be rejected.
+
+
+    ---------------------------------------------------------
+    Test 5 — Login with Non-Existent Email
+    ---------------------------------------------------------
+
+    Method  : POST
+    URL     : http://localhost:8080/api/auth/login
+
+    Body (raw → JSON)
+
+    {
+        "email": "nobody@gmail.com",
+        "password": "secret123"
+    }
+
+    ✅ Expected
+
+    403 Forbidden
+
+    User does not exist.
+
+
+    ---------------------------------------------------------
+    Test 6 — Hit Protected Route WITHOUT Token
+    ---------------------------------------------------------
+
+    Method  : GET
+    URL     : http://localhost:8080/api/hello
+
+    Headers :
+    (none)
+
+    ✅ Expected
+
+    403 Forbidden
+
+    No token → access blocked.
+
+
+    ---------------------------------------------------------
+    Test 7 — Hit Protected Route WITH Valid Token
+    ---------------------------------------------------------
+
+    Method  : GET
+    URL     : http://localhost:8080/api/hello
+
+    Headers :
+
+    Authorization: Bearer eyJhbGci...
+
+    (Paste token from Test 1)
+
+    ✅ Expected
+
+    200 OK
+
+    Valid token → request allowed.
+
+
+    ---------------------------------------------------------
+    Test 8 — Hit Protected Route with FAKE Token
+    ---------------------------------------------------------
+
+    Method  : GET
+    URL     : http://localhost:8080/api/hello
+
+    Headers :
+
+    Authorization: Bearer thisisafaketoken123
+
+    ✅ Expected
+
+    403 Forbidden
+
+    Invalid token should be rejected.
+
+
+    ---------------------------------------------------------
+    Test 9 — Register Same Email Twice
+    ---------------------------------------------------------
+
+    Method  : POST
+    URL     : http://localhost:8080/api/auth/register
+
+    Body (raw → JSON)
+
+    {
+        "name": "John Doe",
+        "email": "john@gmail.com",
+        "password": "secret123",
+        "role": "ADOPTER"
+    }
+
+    ✅ Expected
+
+    500 Internal Server Error
+
+    Duplicate email violates unique constraint.
+
+    ⚙️ This will be handled properly on Day 24 with global exception handling.
+
+
+    ---------------------------------------------------------
+    Test 10 — Verify Users in pgAdmin
+    ---------------------------------------------------------
+
+    Open:
+
+    pgAdmin
+    → home4paws database
+    → users table
+    → Right Click
+    → View/Edit Data
+
+    You should see:
+
+    id | name                | email               | password        | role
+    ---------------------------------------------------------------------------
+    1  | John Doe            | john@gmail.com      | $2a$10$xyz...   | ADOPTER
+    2  | Happy Paws Shelter  | shelter@gmail.com   | $2a$10$abc...   | SHELTER
+
+
+    =========================================================
+    Key Things to Confirm
+    =========================================================
+
+    ✅ password column shows:
+
+    $2a$10$...
+
+    Meaning BCrypt hashing is working.
+
+    Never store plain text passwords.
+
+
+    ✅ role column shows:
+
+    ADOPTER
+
+    or
+
+    SHELTER
+
+    correctly.
+
+
+    ✅ created_at may be null
+
+    That's fine for now.
+
+
+    =========================================================
+    🔧 Common Errors and Fixes
+    =========================================================
+
+    Error:
+    403 on register
+
+    Cause:
+    Route not in permitAll()
+
+    Fix:
+    Check /api/auth/** in SecurityConfig
+
+
+    ---------------------------------------------------------
+
+    Error:
+    500 on register
+
+    Cause:
+    Database connection issue
+
+    Fix:
+    Check application.properties
+
+
+    ---------------------------------------------------------
+
+    Error:
+    403 on login
+
+    Cause:
+    Wrong password or BCrypt mismatch
+
+    Fix:
+    Re-register and try again
+
+
+    ---------------------------------------------------------
+
+    Error:
+    403 on protected route with token
+
+    Cause:
+    JwtFilter not reading token
+
+    Fix:
+    Check header format:
+
+    Authorization: Bearer <token>
+
+
+    ---------------------------------------------------------
+
+    Error:
+    500 on duplicate email
+
+    Cause:
+    No exception handling yet
+
+    Fix:
+    Expected for now.
+    Will be fixed on Day 24.
+
+
+    =========================================================
+    ✅ Day 20 Done When
+    =========================================================
+
+    Register ADOPTER
+    → Token returned
+    ✅
+
+    Register SHELTER
+    → Token returned
+    ✅
+
+    Login correct password
+    → Token returned
+    ✅
+
+    Login wrong password
+    → 403
+    ✅
+
+    Login fake email
+    → 403
+    ✅
+
+    Protected route without token
+    → 403
+    ✅
+
+    Protected route with valid token
+    → 200
+    ✅
+
+    Protected route with fake token
+    → 403
+    ✅
+
+    pgAdmin shows BCrypt hashed passwords
+    ✅
+
+    🎉 Day 20 Complete — Authentication Fully Tested!
+    ```
