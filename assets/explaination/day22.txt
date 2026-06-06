@@ -1,0 +1,133 @@
+    🔍 Full Explanation
+
+    @RequestMapping("/api/pets")
+    All endpoints in this controller sit under /api/pets. Each method's mapping adds on top of this.
+
+    Principal principal
+    javapublic ResponseEntity<Pet> addPet(@RequestBody Pet pet, Principal principal) {
+
+    Principal is injected automatically by Spring Security
+    principal.getName() returns the email of the currently logged-in user
+    This is possible because JwtFilter set the authentication in SecurityContext on every request
+    You never pass the email manually — Spring pulls it from the token
+
+
+    GET /api/pets
+    java@GetMapping
+    public ResponseEntity<List<Pet>> getAllPets() {
+        return ResponseEntity.ok(petService.getAllAvailablePets());
+    }
+
+    No Principal needed — any logged-in user can see available pets
+    Returns a list of all pets where available = true
+    ResponseEntity.ok() wraps the list with 200 OK
+
+
+    GET /api/pets/{id}
+    java@GetMapping("/{id}")
+    public ResponseEntity<Pet> getPetById(@PathVariable Long id) {
+        return ResponseEntity.ok(petService.getPetById(id));
+    }
+
+    @PathVariable — reads the id from the URL
+    /api/pets/3 → id = 3
+    Returns single pet or throws exception if not found
+
+
+    POST /api/pets
+    java@PostMapping
+    public ResponseEntity<Pet> addPet(@RequestBody Pet pet, Principal principal) {
+        return ResponseEntity.ok(petService.addPet(pet, principal.getName()));
+    }
+
+    @RequestBody — reads JSON from request body and converts to Pet object
+    principal.getName() — gets the shelter's email from the JWT token
+    Passes both to PetService.addPet() which links pet to the shelter
+    Only shelter accounts should call this — you'll enforce role-based access on Day 39
+
+
+    DELETE /api/pets/{id}
+    java@DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePet(@PathVariable Long id, Principal principal) {
+        petService.deletePet(id, principal.getName());
+        return ResponseEntity.noContent().build();
+    }
+
+    ResponseEntity<Void> — no body to return, just a status code
+    ResponseEntity.noContent().build() — sends 204 No Content
+    PetService.deletePet() handles the authorization check internally
+
+
+    🧪 Testing in Postman
+    First grab your shelter token by logging in:
+    POST http://localhost:8080/api/auth/login
+    {
+        "email": "shelter@gmail.com",
+        "password": "shelter123"
+    }
+    Copy the token from the response.
+
+    Test 1 — Add a pet
+    Method  : POST
+    URL     : http://localhost:8080/api/pets
+    Headers : Authorization: Bearer <shelter_token>
+    Body    : raw → JSON
+
+    {
+        "name": "Bruno",
+        "species": "Dog",
+        "breed": "Labrador",
+        "age": 2,
+        "description": "Friendly and energetic"
+    }
+    ✅ Expected: 200 with the saved pet including id and shelter object
+
+    Test 2 — Add 2 more pets
+    json{
+        "name": "Milo",
+        "species": "Cat",
+        "breed": "Persian",
+        "age": 3,
+        "description": "Calm and quiet"
+    }
+    json{
+        "name": "Rocky",
+        "species": "Dog",
+        "breed": "German Shepherd",
+        "age": 1,
+        "description": "Playful puppy"
+    }
+
+    Test 3 — Get all available pets
+    Method  : GET
+    URL     : http://localhost:8080/api/pets
+    Headers : Authorization: Bearer <any_token>
+    ✅ Expected: 200 with list of all 3 pets
+
+    Test 4 — Get single pet
+    Method  : GET
+    URL     : http://localhost:8080/api/pets/1
+    Headers : Authorization: Bearer <any_token>
+    ✅ Expected: 200 with that single pet
+
+    Test 5 — Delete a pet
+    Method  : DELETE
+    URL     : http://localhost:8080/api/pets/1
+    Headers : Authorization: Bearer <shelter_token>
+    ✅ Expected: 204 No Content
+
+    Test 6 — Try adding pet with adopter token
+    Method  : POST
+    URL     : http://localhost:8080/api/pets
+    Headers : Authorization: Bearer <adopter_token>
+    Body    : { "name": "Max", "species": "Dog", ... }
+    Right now this will succeed — role enforcement comes on Day 39. But make a note that an adopter should not be able to add pets.
+
+    ✅ Day 22 Done When:
+
+    PetController.java created in controller/ folder
+    App starts with no errors
+    Add 3 pets using shelter token ✅
+    Fetch all pets ✅
+    Fetch single pet by ID ✅
+    Delete a pet ✅

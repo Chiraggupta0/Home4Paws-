@@ -1,0 +1,512 @@
+```txt id="9x4m2k"
+🔍 Full Explanation — Every Part
+
+=========================================================
+@Service
+=========================================================
+
+@Service
+
+public class PetService {
+
+Registers this class as a Spring Bean.
+
+Marks it as the Service Layer (Business Logic Layer).
+
+PetController (Day 22) will inject and call this service instead of directly talking to the database.
+
+Flow:
+
+Client Request
+      ↓
+PetController
+      ↓
+PetService
+      ↓
+PetRepository
+      ↓
+Database
+
+This separation keeps the code clean and follows Spring Boot architecture.
+
+
+=========================================================
+Fields + Constructor
+=========================================================
+
+private final PetRepository petRepository;
+private final UserRepository userRepository;
+
+---------------------------------------------------------
+PetRepository
+---------------------------------------------------------
+
+Used to communicate with the pets table.
+
+Provides methods like:
+
+petRepository.save()
+
+petRepository.findAll()
+
+petRepository.findById()
+
+petRepository.delete()
+
+petRepository.findByAvailableTrue()
+
+All SQL is generated automatically by Spring Data JPA.
+
+---------------------------------------------------------
+UserRepository
+---------------------------------------------------------
+
+Used to communicate with the users table.
+
+Needed because when a shelter adds a pet, we must determine:
+
+"Which shelter owns this pet?"
+
+To do that, we find the logged-in shelter using their email.
+
+Example:
+
+userRepository.findByEmail("shelter@gmail.com")
+
+
+=========================================================
+Method 1 — addPet()
+=========================================================
+
+public Pet addPet(Pet pet, String shelterEmail) {
+
+    User shelter = userRepository.findByEmail(shelterEmail)
+            .orElseThrow(() -> new UsernameNotFoundException(
+                    "Shelter not found: " + shelterEmail));
+
+    pet.setShelter(shelter);
+
+    return petRepository.save(pet);
+}
+
+---------------------------------------------------------
+Purpose
+---------------------------------------------------------
+
+Creates and saves a new pet.
+
+Links the pet to the shelter that added it.
+
+---------------------------------------------------------
+Step-by-Step
+---------------------------------------------------------
+
+Step 1
+
+Receive:
+
+Pet object
+
+and
+
+Shelter Email
+
+Example:
+
+addPet(pet, "shelter@gmail.com")
+
+---------------------------------------------------------
+
+Step 2
+
+Find shelter user from database.
+
+User shelter = userRepository.findByEmail(shelterEmail)
+
+Generated SQL:
+
+SELECT *
+FROM users
+WHERE email = 'shelter@gmail.com';
+
+---------------------------------------------------------
+
+Step 3
+
+If user does not exist:
+
+throw new UsernameNotFoundException(
+        "Shelter not found"
+);
+
+Request immediately fails.
+
+---------------------------------------------------------
+
+Step 4
+
+Associate pet with shelter.
+
+pet.setShelter(shelter);
+
+Now the pet belongs to that shelter.
+
+Example:
+
+Buddy
+  ↓
+Happy Paws Shelter
+
+---------------------------------------------------------
+
+Step 5
+
+Save pet.
+
+petRepository.save(pet);
+
+Generated SQL:
+
+INSERT INTO pets (...)
+
+---------------------------------------------------------
+
+Step 6
+
+Return saved pet.
+
+The returned object now contains:
+
+• Generated ID
+• Shelter relationship
+• Saved values
+
+
+=========================================================
+Method 2 — getAllAvailablePets()
+=========================================================
+
+public List<Pet> getAllAvailablePets() {
+    return petRepository.findByAvailableTrue();
+}
+
+---------------------------------------------------------
+Purpose
+---------------------------------------------------------
+
+Returns only pets available for adoption.
+
+---------------------------------------------------------
+Repository Method
+---------------------------------------------------------
+
+findByAvailableTrue()
+
+Spring Data JPA automatically generates:
+
+SELECT *
+FROM pets
+WHERE available = true;
+
+---------------------------------------------------------
+Why This Matters
+---------------------------------------------------------
+
+Available pets appear in the adoption listing.
+
+Once adopted:
+
+available = false
+
+The pet disappears from the list automatically.
+
+---------------------------------------------------------
+Example
+---------------------------------------------------------
+
+Database:
+
+Buddy      available=true
+Max        available=true
+Rocky      available=false
+
+Result:
+
+Buddy
+Max
+
+Rocky is hidden because already adopted.
+
+
+=========================================================
+Method 3 — getPetById()
+=========================================================
+
+public Pet getPetById(Long id) {
+
+    return petRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException(
+                    "Pet not found with id: " + id));
+}
+
+---------------------------------------------------------
+Purpose
+---------------------------------------------------------
+
+Fetch one pet using its ID.
+
+---------------------------------------------------------
+Step-by-Step
+---------------------------------------------------------
+
+Example:
+
+getPetById(5)
+
+---------------------------------------------------------
+
+Spring executes:
+
+SELECT *
+FROM pets
+WHERE id = 5;
+
+---------------------------------------------------------
+
+If found:
+
+Return Pet object.
+
+---------------------------------------------------------
+
+If not found:
+
+Throw:
+
+RuntimeException(
+    "Pet not found with id: 5"
+)
+
+---------------------------------------------------------
+Used By
+---------------------------------------------------------
+
+PetController
+
+deletePet()
+
+AdoptionRequestService (Day 27)
+
+Any future pet details page
+
+
+=========================================================
+Method 4 — deletePet()
+=========================================================
+
+public void deletePet(Long id, String shelterEmail) {
+
+    Pet pet = getPetById(id);
+
+    if (!pet.getShelter().getEmail().equals(shelterEmail)) {
+
+        throw new RuntimeException(
+                "You are not authorized to delete this pet");
+    }
+
+    petRepository.delete(pet);
+}
+
+---------------------------------------------------------
+Purpose
+---------------------------------------------------------
+
+Deletes a pet.
+
+Only the shelter that owns the pet may delete it.
+
+---------------------------------------------------------
+Step 1
+---------------------------------------------------------
+
+Find pet.
+
+Pet pet = getPetById(id);
+
+---------------------------------------------------------
+Step 2
+---------------------------------------------------------
+
+Authorization Check.
+
+Compare:
+
+Pet Owner Email
+
+with
+
+Logged-In Shelter Email
+
+Example:
+
+Pet Owner:
+shelter1@gmail.com
+
+Logged-In User:
+shelter2@gmail.com
+
+Not equal.
+
+---------------------------------------------------------
+Step 3
+---------------------------------------------------------
+
+Throw exception.
+
+"You are not authorized to delete this pet"
+
+Delete operation stops.
+
+---------------------------------------------------------
+Step 4
+---------------------------------------------------------
+
+If emails match:
+
+petRepository.delete(pet);
+
+Generated SQL:
+
+DELETE
+FROM pets
+WHERE id = ?;
+
+---------------------------------------------------------
+Result
+---------------------------------------------------------
+
+Pet permanently removed from database.
+
+
+=========================================================
+🗺️ How Everything Connects
+=========================================================
+
+Day 10 — PetRepository
+
+save()
+    ↓
+addPet()
+
+findByAvailableTrue()
+    ↓
+getAllAvailablePets()
+
+findById()
+    ↓
+getPetById()
+
+delete()
+    ↓
+deletePet()
+
+
+---------------------------------------------------------
+
+Day 21 — PetService
+
+Contains all business logic.
+
+• Add pet
+• View pets
+• Get pet details
+• Delete pet
+
+
+---------------------------------------------------------
+
+Day 22 — PetController
+
+Receives HTTP requests.
+
+Calls:
+
+petService.addPet()
+
+petService.getAllAvailablePets()
+
+petService.deletePet()
+
+Passes logged-in user's email using Principal.
+
+
+---------------------------------------------------------
+
+Day 27 — AdoptionRequestService
+
+Calls:
+
+petService.getPetById()
+
+When adoption succeeds:
+
+pet.setAvailable(false)
+
+petRepository.save(pet)
+
+Pet disappears from available list.
+
+
+=========================================================
+📊 Complete Request Flow
+=========================================================
+
+POST /api/pets
+      ↓
+PetController
+      ↓
+Principal.getName()
+      ↓
+PetService.addPet()
+      ↓
+UserRepository.findByEmail()
+      ↓
+Pet.setShelter()
+      ↓
+PetRepository.save()
+      ↓
+PostgreSQL
+      ↓
+Saved Pet Returned
+
+
+=========================================================
+✅ Day 21 Done When
+=========================================================
+
+✓ Pet.java exists
+
+✓ Pet.java contains @ManyToOne relationship to User
+
+✓ PetRepository.java exists
+
+✓ findByAvailableTrue() exists
+
+✓ PetService.java created
+
+✓ addPet() works
+
+✓ getAllAvailablePets() works
+
+✓ getPetById() works
+
+✓ deletePet() works
+
+✓ Shelter ownership validation works
+
+✓ Application starts without errors
+
+✓ You understand what every method does and why it exists
+
+🚀 Ready for Day 22 — PetController + Protected Pet APIs
+```
