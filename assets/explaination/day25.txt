@@ -1,0 +1,256 @@
+    ```txt
+    📦 Day 25 — Role-Based Authorization
+
+    Until now:
+
+    ✅ Any logged-in user with a valid JWT token could access all Pet APIs.
+
+    That meant:
+
+    - Adopters could add pets ❌
+    - Adopters could delete pets ❌
+    - Shelters could add pets ✅
+    - Shelters could delete pets ✅
+
+    Although PetService already checks pet ownership before deletion, authorization should be enforced at the controller/security level before business logic runs.
+
+    Today we added role-based authorization using Spring Security.
+
+    =========================================================
+    🎯 Goal
+    =========================================================
+
+    ADOPTER
+
+    ✅ View pets
+    ❌ Add pets
+    ❌ Delete pets
+
+    ---------------------------------------------------------
+
+    SHELTER
+
+    ✅ View pets
+    ✅ Add pets
+    ✅ Delete pets
+
+    =========================================================
+    What Was Updated?
+    =========================================================
+
+    1. Enabled Method-Level Security
+
+    Spring Security normally protects URLs.
+
+    To protect individual controller methods using annotations like:
+
+    @PreAuthorize
+
+    method security must be enabled.
+
+    Once enabled, Spring checks user roles before allowing a controller method to execute.
+
+    =========================================================
+    2. Added Role Checks to PetController
+    =========================================================
+
+    The following endpoints were restricted:
+
+    POST /api/pets
+
+    DELETE /api/pets/{id}
+
+    These endpoints now require:
+
+    ROLE_SHELTER
+
+    Before the controller method runs, Spring verifies that the authenticated user has the SHELTER role.
+
+    =========================================================
+    🔍 How @PreAuthorize Works
+    =========================================================
+
+    Request arrives
+          ↓
+    JWT validated by JwtFilter
+          ↓
+    User loaded from database
+          ↓
+    Role extracted from UserDetails
+          ↓
+    @PreAuthorize checks role
+          ↓
+    Allowed or Rejected
+
+    If user role is:
+
+    ROLE_SHELTER
+          ↓
+    Request proceeds
+
+    If user role is:
+
+    ROLE_ADOPTER
+          ↓
+    403 Forbidden
+
+    =========================================================
+    Why This Works
+    =========================================================
+
+    Your User entity already implements UserDetails.
+
+    The getAuthorities() method converts roles into Spring Security authorities.
+
+    Examples:
+
+    ADOPTER
+    ↓
+
+    ROLE_ADOPTER
+
+    ---------------------------------------------------------
+
+    SHELTER
+    ↓
+
+    ROLE_SHELTER
+
+    Spring Security reads these authorities automatically during authorization checks.
+
+    =========================================================
+    Security Flow After Day 25
+    =========================================================
+
+    Incoming Request
+          ↓
+    JwtFilter
+          ↓
+    Token Validation
+          ↓
+    User Authentication
+          ↓
+    Role Extraction
+          ↓
+    @PreAuthorize
+          ↓
+    Controller
+          ↓
+    Service Layer
+
+    =========================================================
+    Benefits of Day 25
+    =========================================================
+
+    ✅ Adopters cannot add pets
+
+    ✅ Adopters cannot delete pets
+
+    ✅ Shelters can add pets
+
+    ✅ Shelters can delete pets
+
+    ✅ Viewing pets remains available to all authenticated users
+
+    ✅ Authorization happens before business logic executes
+
+    ✅ Better security and cleaner architecture
+
+    =========================================================
+    Testing Results
+    =========================================================
+
+    Shelter Token
+
+    POST /api/pets
+
+    Expected:
+
+    200 OK
+
+    ---------------------------------------------------------
+
+    Adopter Token
+
+    POST /api/pets
+
+    Expected:
+
+    403 Forbidden
+
+    ---------------------------------------------------------
+
+    Shelter Token
+
+    DELETE /api/pets/{id}
+
+    Expected:
+
+    204 No Content
+
+    ---------------------------------------------------------
+
+    Adopter Token
+
+    DELETE /api/pets/{id}
+
+    Expected:
+
+    403 Forbidden
+
+    ---------------------------------------------------------
+
+    Adopter Token
+
+    GET /api/pets
+
+    Expected:
+
+    200 OK
+
+    ---------------------------------------------------------
+
+    Shelter Token
+
+    GET /api/pets
+
+    Expected:
+
+    200 OK
+
+    =========================================================
+    Architecture After Day 25
+    =========================================================
+
+    JwtFilter
+       ↓
+    Authentication
+       ↓
+    Role-Based Authorization
+       ↓
+    PetController
+       ↓
+    PetService
+       ↓
+    PetRepository
+
+    =========================================================
+    ✅ Day 25 Complete When
+    =========================================================
+
+    ✅ Method security enabled
+
+    ✅ Role checks added
+
+    ✅ Only shelters can add pets
+
+    ✅ Only shelters can delete pets
+
+    ✅ Adopters can still browse pets
+
+    ✅ 403 returned for unauthorized actions
+
+    ✅ Role-based authorization fully integrated
+
+    🎉 Day 25 Complete — Home4Paws now has secure role-based access control using Spring Security.
+    ```

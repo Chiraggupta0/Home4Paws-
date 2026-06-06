@@ -3,6 +3,7 @@ package com.home4paws.home4paws.controller;
 import com.home4paws.home4paws.model.Pet;
 import com.home4paws.home4paws.service.PetService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -18,24 +19,45 @@ public class PetController {
         this.petService = petService;
     }
 
+    // Anyone logged in can view all available pets
     @GetMapping
     public ResponseEntity<List<Pet>> getAllPets() {
         return ResponseEntity.ok(petService.getAllAvailablePets());
     }
 
+    // Anyone logged in can view a pet by ID
     @GetMapping("/{id}")
     public ResponseEntity<Pet> getPetById(@PathVariable Long id) {
         return ResponseEntity.ok(petService.getPetById(id));
     }
 
+    // Only SHELTER users can add pets
     @PostMapping
-    public ResponseEntity<Pet> addPet(@RequestBody Pet pet, Principal principal) {
-        return ResponseEntity.ok(petService.addPet(pet, principal.getName()));
+    @PreAuthorize("hasRole('SHELTER')")
+    public ResponseEntity<Pet> addPet(
+            @RequestBody Pet pet,
+            Principal principal) {
+
+        return ResponseEntity.ok(
+                petService.addPet(
+                        pet,
+                        principal.getName()
+                )
+        );
     }
 
+    // Only SHELTER users can delete pets
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePet(@PathVariable Long id, Principal principal) {
-        petService.deletePet(id, principal.getName());
+    @PreAuthorize("hasRole('SHELTER')")
+    public ResponseEntity<Void> deletePet(
+            @PathVariable Long id,
+            Principal principal) {
+
+        petService.deletePet(
+                id,
+                principal.getName()
+        );
+
         return ResponseEntity.noContent().build();
     }
 }

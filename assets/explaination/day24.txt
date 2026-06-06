@@ -1,0 +1,491 @@
+    ```txt
+    📦 Day 24 — Global Exception Handling
+
+    Until now, when something breaks, Spring returns ugly errors:
+
+    500 Internal Server Error
+
+    or
+
+    Pet not found with id: 999
+
+    This is not professional.
+
+    Today we'll create a centralized exception handling system so every error returns clean JSON.
+
+    =========================================================
+    🎯 Goal
+    =========================================================
+
+    Instead of:
+
+    500 Internal Server Error
+
+    Return:
+
+    {
+        "timestamp": "2026-06-06T13:00:00",
+        "status": 400,
+        "error": "Bad Request",
+        "message": "Pet not found with id: 999"
+    }
+
+    =========================================================
+    Step 1 — Create ErrorResponse DTO
+    =========================================================
+
+    Create:
+
+    src/main/java/com/home4paws/home4paws/exception/ErrorResponse.java
+
+    ---------------------------------------------------------
+
+    package com.home4paws.home4paws.exception;
+
+    import java.time.LocalDateTime;
+
+    public class ErrorResponse {
+
+        private LocalDateTime timestamp;
+        private int status;
+        private String error;
+        private String message;
+
+        public ErrorResponse(
+                LocalDateTime timestamp,
+                int status,
+                String error,
+                String message) {
+
+            this.timestamp = timestamp;
+            this.status = status;
+            this.error = error;
+            this.message = message;
+        }
+
+        public LocalDateTime getTimestamp() {
+            return timestamp;
+        }
+
+        public int getStatus() {
+            return status;
+        }
+
+        public String getError() {
+            return error;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
+    =========================================================
+    🔍 Full Explanation — ErrorResponse.java
+    =========================================================
+
+    What is a DTO?
+
+    DTO = Data Transfer Object
+
+    Used to send data between:
+
+    Backend
+       ↓
+    Frontend
+
+    Instead of returning raw exceptions, we return an ErrorResponse object.
+
+    ---------------------------------------------------------
+    Field 1 — timestamp
+    ---------------------------------------------------------
+
+    private LocalDateTime timestamp;
+
+    Stores when the error happened.
+
+    Example:
+
+    "timestamp": "2026-06-06T13:30:15"
+
+    Useful for:
+
+    - debugging
+    - server logs
+    - tracing issues
+
+    ---------------------------------------------------------
+    Field 2 — status
+    ---------------------------------------------------------
+
+    private int status;
+
+    Stores HTTP status code.
+
+    Examples:
+
+    400
+    404
+    500
+
+    ---------------------------------------------------------
+    Field 3 — error
+    ---------------------------------------------------------
+
+    private String error;
+
+    Human-readable error type.
+
+    Examples:
+
+    "Bad Request"
+    "Not Found"
+    "Internal Server Error"
+
+    ---------------------------------------------------------
+    Field 4 — message
+    ---------------------------------------------------------
+
+    private String message;
+
+    Actual error message.
+
+    Example:
+
+    "Pet not found with id: 999"
+
+    ---------------------------------------------------------
+    Constructor
+    ---------------------------------------------------------
+
+    public ErrorResponse(
+            LocalDateTime timestamp,
+            int status,
+            String error,
+            String message)
+
+    Creates a complete error object.
+
+    Example:
+
+    new ErrorResponse(
+        LocalDateTime.now(),
+        400,
+        "Bad Request",
+        "Pet not found with id: 999"
+    );
+
+    ---------------------------------------------------------
+    Getters
+    ---------------------------------------------------------
+
+    Spring uses getters when converting Java → JSON.
+
+    Example:
+
+    getStatus()
+
+    becomes:
+
+    "status": 400
+
+    automatically.
+
+    =========================================================
+    Step 2 — Create GlobalExceptionHandler
+    =========================================================
+
+    Create:
+
+    src/main/java/com/home4paws/home4paws/exception/GlobalExceptionHandler.java
+
+    ---------------------------------------------------------
+
+    package com.home4paws.home4paws.exception;
+
+    import org.springframework.http.HttpStatus;
+    import org.springframework.http.ResponseEntity;
+    import org.springframework.security.core.userdetails.UsernameNotFoundException;
+    import org.springframework.web.bind.annotation.ExceptionHandler;
+    import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+    import java.time.LocalDateTime;
+
+    @RestControllerAdvice
+    public class GlobalExceptionHandler {
+
+        @ExceptionHandler(RuntimeException.class)
+        public ResponseEntity<ErrorResponse> handleRuntimeException(
+                RuntimeException ex) {
+
+            ErrorResponse error = new ErrorResponse(
+                    LocalDateTime.now(),
+                    HttpStatus.BAD_REQUEST.value(),
+                    "Bad Request",
+                    ex.getMessage()
+            );
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(error);
+        }
+
+        @ExceptionHandler(UsernameNotFoundException.class)
+        public ResponseEntity<ErrorResponse> handleUsernameNotFound(
+                UsernameNotFoundException ex) {
+
+            ErrorResponse error = new ErrorResponse(
+                    LocalDateTime.now(),
+                    HttpStatus.NOT_FOUND.value(),
+                    "Not Found",
+                    ex.getMessage()
+            );
+
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(error);
+        }
+
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ErrorResponse> handleGenericException(
+                Exception ex) {
+
+            ErrorResponse error = new ErrorResponse(
+                    LocalDateTime.now(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Internal Server Error",
+                    ex.getMessage()
+            );
+
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(error);
+        }
+    }
+
+    =========================================================
+    🔍 Full Explanation — GlobalExceptionHandler.java
+    =========================================================
+
+    @RestControllerAdvice
+
+    @RestControllerAdvice
+
+    This is a global exception catcher.
+
+    Think of it as:
+
+    Controller 1
+    Controller 2
+    Controller 3
+            ↓
+    GlobalExceptionHandler
+
+    Whenever any controller throws an exception:
+
+    throw new RuntimeException(...)
+
+    Spring automatically sends it here.
+
+    ---------------------------------------------------------
+    Handler 1 — RuntimeException
+    ---------------------------------------------------------
+
+    @ExceptionHandler(RuntimeException.class)
+
+    Handles:
+
+    throw new RuntimeException(
+            "Pet not found with id: " + id);
+
+    from PetService.
+
+    Parameter:
+
+    RuntimeException ex
+
+    Spring automatically passes the exception object.
+
+    Example:
+
+    RuntimeException("Pet not found with id: 999")
+
+    Build Error Response:
+
+    ErrorResponse error = new ErrorResponse(
+            LocalDateTime.now(),
+            HttpStatus.BAD_REQUEST.value(),
+            "Bad Request",
+            ex.getMessage()
+    );
+
+    Creates:
+
+    {
+      "timestamp": "...",
+      "status": 400,
+      "error": "Bad Request",
+      "message": "Pet not found with id: 999"
+    }
+
+    Return ResponseEntity:
+
+    return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(error);
+
+    Returns:
+
+    400 Bad Request
+
+    with JSON body.
+
+    ---------------------------------------------------------
+    Handler 2 — UsernameNotFoundException
+    ---------------------------------------------------------
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+
+    Handles:
+
+    throw new UsernameNotFoundException(
+            "User not found");
+
+    usually from:
+
+    CustomUserDetailsService
+
+    or
+
+    PetService
+
+    Returns:
+
+    404 Not Found
+
+    instead of ugly 500 errors.
+
+    ---------------------------------------------------------
+    Handler 3 — Generic Exception
+    ---------------------------------------------------------
+
+    @ExceptionHandler(Exception.class)
+
+    Acts as a safety net.
+
+    Handles everything not caught above.
+
+    Examples:
+
+    NullPointerException
+    SQLException
+    IllegalArgumentException
+
+    Returns:
+
+    500 Internal Server Error
+
+    with clean JSON.
+
+    =========================================================
+    🗺️ Request Flow
+    =========================================================
+
+    Before Day 24:
+
+    PetController
+         ↓
+    PetService
+         ↓
+    throw RuntimeException
+         ↓
+    Spring default error page
+
+    ---------------------------------------------------------
+
+    After Day 24:
+
+    PetController
+         ↓
+    PetService
+         ↓
+    throw RuntimeException
+         ↓
+    GlobalExceptionHandler
+         ↓
+    ErrorResponse DTO
+         ↓
+    Clean JSON returned
+
+    =========================================================
+    🧪 Testing
+    =========================================================
+
+    Invalid Pet ID
+
+    GET /api/pets/999
+
+    (Use a valid JWT token)
+
+    Expected:
+
+    {
+        "timestamp": "...",
+        "status": 400,
+        "error": "Bad Request",
+        "message": "Pet not found with id: 999"
+    }
+
+    ---------------------------------------------------------
+
+    Delete Pet Using Adopter Token
+
+    DELETE /api/pets/1
+
+    Expected:
+
+    {
+        "timestamp": "...",
+        "status": 400,
+        "error": "Bad Request",
+        "message": "You are not authorized to delete this pet"
+    }
+
+    ---------------------------------------------------------
+
+    Fake User Login
+
+    {
+        "email": "fake@gmail.com",
+        "password": "secret123"
+    }
+
+    Expected:
+
+    {
+        "timestamp": "...",
+        "status": 404,
+        "error": "Not Found",
+        "message": "User not found with email: fake@gmail.com"
+    }
+
+    =========================================================
+    ✅ Day 24 Done When
+    =========================================================
+
+    ✅ ErrorResponse.java created
+
+    ✅ GlobalExceptionHandler.java created
+
+    ✅ You understand @RestControllerAdvice
+
+    ✅ Invalid pet ID returns JSON error
+
+    ✅ Unauthorized delete returns JSON error
+
+    ✅ Fake login returns JSON error
+
+    ✅ No ugly Spring error pages
+
+    🎉 Day 24 Complete = Professional Error Handling Layer Added to Home4Paws.
+    ```
