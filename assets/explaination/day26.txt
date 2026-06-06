@@ -1,0 +1,292 @@
+    ```txt
+    📦 Day 26 — AdoptionRequestService
+
+    =========================================================
+    🎯 Goal
+    =========================================================
+
+    Today we build the business logic for adoption requests.
+
+    An adopter should be able to:
+
+    ✅ Send an adoption request for a pet
+
+    ✅ View all requests they have submitted
+
+    The shelter approval/rejection workflow will be implemented on Day 27.
+
+    =========================================================
+    What Was Created?
+    =========================================================
+
+    File:
+
+    service/
+    └── AdoptionRequestService.java
+
+    This service contains all business logic related to adoption requests.
+
+    The controller will call this service on Day 28.
+
+    =========================================================
+    Dependencies Used
+    =========================================================
+
+    AdoptionRequestRepository
+
+    Used to:
+
+    - Save adoption requests
+    - Fetch adopter requests
+
+    ---------------------------------------------------------
+
+    UserRepository
+
+    Used to:
+
+    - Find adopter by email
+
+    ---------------------------------------------------------
+
+    PetRepository
+
+    Used to:
+
+    - Find pet by ID
+
+    =========================================================
+    Method 1 — sendRequest()
+    =========================================================
+
+    Purpose:
+
+    Allows an adopter to submit an adoption request for a pet.
+
+    Inputs:
+
+    - petId
+    - adopterEmail
+
+    Flow:
+
+    1. Find adopter using email
+
+    2. Find pet using pet ID
+
+    3. Create a new AdoptionRequest object
+
+    4. Set adopter
+
+    5. Set pet
+
+    6. Set status = PENDING
+
+    7. Save request
+
+    8. Return saved request
+
+    =========================================================
+    🔍 Why Status Starts as PENDING
+    =========================================================
+
+    When a request is first created:
+
+    The shelter has not reviewed it yet.
+
+    Therefore:
+
+    RequestStatus.PENDING
+
+    is assigned automatically.
+
+    Example:
+
+    Adopter requests Bruno
+           ↓
+    Request created
+           ↓
+    Status = PENDING
+           ↓
+    Shelter reviews later
+
+    =========================================================
+    Method 2 — getMyRequests()
+    =========================================================
+
+    Purpose:
+
+    Allows an adopter to see all requests they have submitted.
+
+    Input:
+
+    - adopterEmail
+
+    Flow:
+
+    1. Find adopter using email
+
+    2. Get adopter ID
+
+    3. Query repository
+
+    4. Return all requests belonging to that adopter
+
+    =========================================================
+    Repository Methods Used
+    =========================================================
+
+    findByAdopterId(Long adopterId)
+
+    Returns:
+
+    All requests submitted by a specific adopter.
+
+    ---------------------------------------------------------
+
+    findByPetId(Long petId)
+
+    Already available.
+
+    Will be useful on Day 27 when shelters review requests.
+
+    ---------------------------------------------------------
+
+    findByStatus(RequestStatus status)
+
+    Allows fetching:
+
+    PENDING
+    APPROVED
+    REJECTED
+
+    requests.
+
+    ---------------------------------------------------------
+
+    findByAdopterIdAndStatus(...)
+
+    Allows filtering adopter requests by status.
+
+    Example:
+
+    Show only APPROVED requests.
+
+    =========================================================
+    Request Flow
+    =========================================================
+
+    Adopter Login
+          ↓
+    Receives JWT
+          ↓
+    Chooses Pet
+          ↓
+    sendRequest()
+          ↓
+    AdoptionRequest Created
+          ↓
+    Status = PENDING
+          ↓
+    Saved in Database
+
+    =========================================================
+    Database Example
+    =========================================================
+
+    adoption_requests
+
+    ---------------------------------------------------------
+
+    id | adopter_id | pet_id | status
+
+    1  | 1          | 2      | PENDING
+
+    2  | 1          | 3      | PENDING
+
+    ---------------------------------------------------------
+
+    A single adopter can create multiple requests.
+
+    =========================================================
+    Why This Logic Belongs In Service
+    =========================================================
+
+    Controller Responsibility:
+
+    - Receive request
+    - Call service
+    - Return response
+
+    ---------------------------------------------------------
+
+    Service Responsibility:
+
+    - Find users
+    - Find pets
+    - Create adoption requests
+    - Apply business rules
+    - Save data
+
+    Keeping business logic in the service layer keeps controllers clean and maintainable.
+
+    =========================================================
+    How Day 26 Connects To Day 27
+    =========================================================
+
+    Today:
+
+    Request Created
+           ↓
+    Status = PENDING
+
+    ---------------------------------------------------------
+
+    Day 27:
+
+    Shelter Reviews Request
+           ↓
+    APPROVE or REJECT
+           ↓
+    Pet Availability Updated
+
+    If APPROVED:
+
+    Pet becomes unavailable.
+
+    If REJECTED:
+
+    Pet remains available.
+
+    =========================================================
+    Architecture After Day 26
+    =========================================================
+
+    Controller
+          ↓
+    AdoptionRequestService
+          ↓
+    AdoptionRequestRepository
+          ↓
+    Database
+
+    =========================================================
+    ✅ Day 26 Done When
+    =========================================================
+
+    ✅ AdoptionRequestService.java created
+
+    ✅ sendRequest() implemented
+
+    ✅ getMyRequests() implemented
+
+    ✅ Adoption requests saved successfully
+
+    ✅ New requests automatically start as PENDING
+
+    ✅ Adopters can retrieve their own requests
+
+    ✅ Project compiles successfully
+
+    🎉 Day 26 Complete — Adoption Request Business Logic Added To Home4Paws.
+    ```
