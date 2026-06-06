@@ -1,0 +1,367 @@
+    ```txt
+    📦 Day 27 — Approve & Reject Adoption Requests
+
+    =========================================================
+    🎯 Goal
+    =========================================================
+
+    Today we add the shelter review workflow.
+
+    A shelter can:
+
+    ✅ Approve an adoption request
+
+    ✅ Reject an adoption request
+
+    When a request is approved:
+
+    ✅ Request status becomes APPROVED
+
+    ✅ Pet becomes unavailable for future adoption
+
+    When a request is rejected:
+
+    ✅ Request status becomes REJECTED
+
+    ✅ Pet remains available
+
+    =========================================================
+    What Was Updated?
+    =========================================================
+
+    File Updated:
+
+    service/
+    └── AdoptionRequestService.java
+
+    New Method Added:
+
+    updateStatus()
+
+    This method contains all business logic related to approving and rejecting adoption requests.
+
+    =========================================================
+    Method — updateStatus()
+    =========================================================
+
+    Purpose:
+
+    Allows a shelter to update the status of an adoption request.
+
+    Inputs:
+
+    - requestId
+    - RequestStatus
+
+    Flow:
+
+    1. Find request by ID
+
+    2. Verify request exists
+
+    3. Update request status
+
+    4. If APPROVED:
+          - Find associated pet
+          - Mark pet as ADOPTED
+
+    5. Save pet
+
+    6. Save request
+
+    7. Return updated request
+
+    =========================================================
+    Business Rule 1 — Approve Request
+    =========================================================
+
+    When a shelter approves a request:
+
+    PENDING
+       ↓
+    APPROVED
+
+    The associated pet must also be updated.
+
+    AVAILABLE
+       ↓
+    ADOPTED
+
+    Reason:
+
+    A pet can only be adopted once.
+
+    After approval:
+
+    The pet should no longer appear in:
+
+    GET /api/pets
+
+    because PetService only returns pets whose status is:
+
+    AVAILABLE
+
+    =========================================================
+    Business Rule 2 — Reject Request
+    =========================================================
+
+    When a shelter rejects a request:
+
+    PENDING
+       ↓
+    REJECTED
+
+    The pet remains:
+
+    AVAILABLE
+
+    Reason:
+
+    Other adopters should still be allowed to submit requests.
+
+    =========================================================
+    Business Rule 3 — Request Must Exist
+    =========================================================
+
+    Before updating:
+
+    The request is loaded from the database.
+
+    If request does not exist:
+
+    Throw exception
+
+    Example:
+
+    Request not found with id: 999
+
+    GlobalExceptionHandler handles the response automatically.
+
+    =========================================================
+    Approval Flow
+    =========================================================
+
+    Shelter
+        ↓
+    Approve Request
+        ↓
+    updateStatus()
+        ↓
+    Request Status = APPROVED
+        ↓
+    Pet Status = ADOPTED
+        ↓
+    Save Changes
+
+    =========================================================
+    Rejection Flow
+    =========================================================
+
+    Shelter
+        ↓
+    Reject Request
+        ↓
+    updateStatus()
+        ↓
+    Request Status = REJECTED
+        ↓
+    Pet Remains AVAILABLE
+        ↓
+    Save Changes
+
+    =========================================================
+    Database Example
+    =========================================================
+
+    Before Approval
+
+    adoption_requests
+
+    id | pet_id | status
+
+    1  | 1      | PENDING
+
+    ---------------------------------------------------------
+
+    pets
+
+    id | name  | status
+
+    1  | Bruno | AVAILABLE
+
+    =========================================================
+
+    After Approval
+
+    adoption_requests
+
+    id | pet_id | status
+
+    1  | 1      | APPROVED
+
+    ---------------------------------------------------------
+
+    pets
+
+    id | name  | status
+
+    1  | Bruno | ADOPTED
+
+    =========================================================
+
+    After Rejection
+
+    adoption_requests
+
+    id | pet_id | status
+
+    1  | 1      | REJECTED
+
+    ---------------------------------------------------------
+
+    pets
+
+    id | name  | status
+
+    1  | Bruno | AVAILABLE
+
+    =========================================================
+    How Day 27 Connects To Previous Days
+    =========================================================
+
+    Day 21
+
+    PetService returns only:
+
+    AVAILABLE pets
+
+    ---------------------------------------------------------
+
+    Day 26
+
+    sendRequest()
+
+    creates requests with:
+
+    PENDING status
+
+    ---------------------------------------------------------
+
+    Day 27
+
+    updateStatus()
+
+    changes request status and updates pet availability.
+
+    =========================================================
+    Why This Logic Belongs In Service
+    =========================================================
+
+    Controller Responsibility:
+
+    - Receive request
+    - Call service
+    - Return response
+
+    ---------------------------------------------------------
+
+    Service Responsibility:
+
+    - Find request
+    - Apply business rules
+    - Update pet status
+    - Save data
+
+    Business logic should always remain in the service layer.
+
+    =========================================================
+    Testing Checklist
+    =========================================================
+
+    Test 1
+
+    Approve a request
+
+    Expected:
+
+    Request status = APPROVED
+
+    ---------------------------------------------------------
+
+    Test 2
+
+    Verify pet status changed
+
+    Expected:
+
+    Pet status = ADOPTED
+
+    ---------------------------------------------------------
+
+    Test 3
+
+    Reject a request
+
+    Expected:
+
+    Request status = REJECTED
+
+    ---------------------------------------------------------
+
+    Test 4
+
+    Verify pet remains available
+
+    Expected:
+
+    Pet status = AVAILABLE
+
+    ---------------------------------------------------------
+
+    Test 5
+
+    Approve non-existent request
+
+    Expected:
+
+    Error returned
+
+    {
+        "status": 400,
+        "message": "Request not found with id: 999"
+    }
+
+    =========================================================
+    Architecture After Day 27
+    =========================================================
+
+    Controller
+          ↓
+    AdoptionRequestService
+          ↓
+    AdoptionRequestRepository
+          ↓
+    PetRepository
+          ↓
+    Database
+
+    =========================================================
+    ✅ Day 27 Done When
+    =========================================================
+
+    ✅ updateStatus() implemented
+
+    ✅ APPROVED updates request status
+
+    ✅ APPROVED marks pet as ADOPTED
+
+    ✅ REJECTED updates request status
+
+    ✅ REJECTED keeps pet AVAILABLE
+
+    ✅ Pet disappears from GET /api/pets after approval
+
+    ✅ Project compiles successfully
+
+    🎉 Day 27 Complete — Adoption Approval & Rejection Logic Added To Home4Paws.
+    ```

@@ -65,4 +65,26 @@ public class AdoptionRequestService {
                 adopter.getId()
         );
     }
+    public AdoptionRequest updateStatus(
+            Long requestId,
+            RequestStatus status) {
+
+        AdoptionRequest request = adoptionRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Request not found with id: " + requestId));
+
+        request.setStatus(status);
+
+        if (status == RequestStatus.APPROVED) {
+
+            Pet pet = request.getPet();
+
+            // Pet becomes unavailable
+            pet.setStatus("ADOPTED");
+
+            petRepository.save(pet);
+        }
+
+        return adoptionRequestRepository.save(request);
+    }
 }

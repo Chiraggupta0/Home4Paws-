@@ -1,0 +1,429 @@
+    📦 Day 28 — Full Postman Testing Guide
+
+    =========================================================
+    STEP 1 — Login As Adopter
+    =========================================================
+
+    Method:
+    POST
+
+    URL:
+    http://localhost:8080/api/auth/login
+
+    Headers:
+
+    Content-Type : application/json
+
+    Body → raw → JSON
+
+    {
+        "email": "john@gmail.com",
+        "password": "secret123"
+    }
+
+    Expected:
+
+    200 OK
+
+    Response:
+
+    {
+        "token": "eyJhbGciOiJIUzI1NiJ9....",
+        "role": "ADOPTER"
+    }
+
+    Copy this token.
+
+    Name it:
+
+    ADOPTER_TOKEN
+
+    =========================================================
+    STEP 2 — Login As Shelter
+    =========================================================
+
+    Method:
+    POST
+
+    URL:
+    http://localhost:8080/api/auth/login
+
+    Headers:
+
+    Content-Type : application/json
+
+    Body → raw → JSON
+
+    {
+        "email": "shelter@gmail.com",
+        "password": "shelter123"
+    }
+
+    Expected:
+
+    200 OK
+
+    Response:
+
+    {
+        "token": "eyJhbGciOiJIUzI1NiJ9....",
+        "role": "SHELTER"
+    }
+
+    Copy this token.
+
+    Name it:
+
+    SHELTER_TOKEN
+
+    =========================================================
+    STEP 3 — View Available Pets
+    =========================================================
+
+    Method:
+    GET
+
+    URL:
+    http://localhost:8080/api/pets
+
+    Headers:
+
+    Authorization : Bearer ADOPTER_TOKEN
+
+    Expected:
+
+    200 OK
+
+    Example Response:
+
+    [
+      {
+        "id": 1,
+        "name": "Bruno",
+        "species": "Dog",
+        "status": "AVAILABLE"
+      },
+      {
+        "id": 2,
+        "name": "Milo",
+        "species": "Cat",
+        "status": "AVAILABLE"
+      }
+    ]
+
+    Choose a pet ID.
+
+    Example:
+
+    petId = 1
+
+    =========================================================
+    STEP 4 — Adopter Sends Adoption Request
+    =========================================================
+
+    Method:
+    POST
+
+    URL:
+    http://localhost:8080/api/requests/1
+
+    (Replace 1 with your pet ID)
+
+    Headers:
+
+    Authorization : Bearer ADOPTER_TOKEN
+
+    Body:
+
+    None
+
+    Expected:
+
+    200 OK
+
+    Example Response:
+
+    {
+        "id": 1,
+        "status": "PENDING"
+    }
+
+    Remember this:
+
+    requestId = 1
+
+    =========================================================
+    STEP 5 — View My Requests
+    =========================================================
+
+    Method:
+    GET
+
+    URL:
+    http://localhost:8080/api/requests/my
+
+    Headers:
+
+    Authorization : Bearer ADOPTER_TOKEN
+
+    Expected:
+
+    200 OK
+
+    Example:
+
+    [
+      {
+        "id": 1,
+        "status": "PENDING",
+        "pet": {
+          "id": 1,
+          "name": "Bruno"
+        }
+      }
+    ]
+
+    =========================================================
+    STEP 6 — Approve Request (Shelter)
+    =========================================================
+
+    Method:
+    PUT
+
+    URL:
+    http://localhost:8080/api/requests/1/approve
+
+    Headers:
+
+    Authorization : Bearer SHELTER_TOKEN
+
+    Body:
+
+    None
+
+    Expected:
+
+    200 OK
+
+    Example Response:
+
+    {
+        "id": 1,
+        "status": "APPROVED"
+    }
+
+    =========================================================
+    STEP 7 — Verify Pet Disappears
+    =========================================================
+
+    Method:
+    GET
+
+    URL:
+    http://localhost:8080/api/pets
+
+    Headers:
+
+    Authorization : Bearer ADOPTER_TOKEN
+
+    Expected:
+
+    200 OK
+
+    Pet with ID 1 should NO LONGER appear.
+
+    Reason:
+
+    Status changed:
+
+    AVAILABLE
+       ↓
+    ADOPTED
+
+    =========================================================
+    STEP 8 — Verify Request Status
+    =========================================================
+
+    Method:
+    GET
+
+    URL:
+    http://localhost:8080/api/requests/my
+
+    Headers:
+
+    Authorization : Bearer ADOPTER_TOKEN
+
+    Expected:
+
+    Request should show:
+
+    APPROVED
+
+    =========================================================
+    TEST REJECTION FLOW
+    =========================================================
+
+    =========================================================
+    STEP 9 — Send Another Request
+    =========================================================
+
+    Use another pet.
+
+    Example:
+
+    Pet ID = 2
+
+    Method:
+    POST
+
+    URL:
+    http://localhost:8080/api/requests/2
+
+    Headers:
+
+    Authorization : Bearer ADOPTER_TOKEN
+
+    Expected:
+
+    200 OK
+
+    Response:
+
+    {
+        "id": 2,
+        "status": "PENDING"
+    }
+
+    =========================================================
+    STEP 10 — Reject Request
+    =========================================================
+
+    Method:
+    PUT
+
+    URL:
+    http://localhost:8080/api/requests/2/reject
+
+    Headers:
+
+    Authorization : Bearer SHELTER_TOKEN
+
+    Expected:
+
+    200 OK
+
+    Response:
+
+    {
+        "id": 2,
+        "status": "REJECTED"
+    }
+
+    =========================================================
+    STEP 11 — Verify Pet Still Available
+    =========================================================
+
+    Method:
+    GET
+
+    URL:
+    http://localhost:8080/api/pets
+
+    Headers:
+
+    Authorization : Bearer ADOPTER_TOKEN
+
+    Expected:
+
+    Pet ID 2 should STILL appear.
+
+    Reason:
+
+    REJECTED does not change pet availability.
+
+    =========================================================
+    ROLE SECURITY TESTS
+    =========================================================
+
+    =========================================================
+    Test A — Shelter Sends Request
+    =========================================================
+
+    Method:
+    POST
+
+    URL:
+    http://localhost:8080/api/requests/2
+
+    Headers:
+
+    Authorization : Bearer SHELTER_TOKEN
+
+    Expected:
+
+    403 Forbidden
+
+    =========================================================
+    Test B — Adopter Approves Request
+    =========================================================
+
+    Method:
+    PUT
+
+    URL:
+    http://localhost:8080/api/requests/1/approve
+
+    Headers:
+
+    Authorization : Bearer ADOPTER_TOKEN
+
+    Expected:
+
+    403 Forbidden
+
+    =========================================================
+    Test C — Adopter Rejects Request
+    =========================================================
+
+    Method:
+    PUT
+
+    URL:
+    http://localhost:8080/api/requests/1/reject
+
+    Headers:
+
+    Authorization : Bearer ADOPTER_TOKEN
+
+    Expected:
+
+    403 Forbidden
+
+    =========================================================
+    DAY 28 SUCCESS CHECKLIST
+    =========================================================
+
+    ✅ Adopter login works
+
+    ✅ Shelter login works
+
+    ✅ GET /api/pets works
+
+    ✅ POST /api/requests/{petId} works
+
+    ✅ GET /api/requests/my works
+
+    ✅ PUT /api/requests/{id}/approve works
+
+    ✅ PUT /api/requests/{id}/reject works
+
+    ✅ Approved pet disappears from pet list
+
+    ✅ Rejected pet remains in pet list
+
+    ✅ Adopter cannot approve/reject requests
+
+    ✅ Shelter cannot send adoption requests
+
+    🎉 Day 28 Complete = Full Adoption Workflow Working

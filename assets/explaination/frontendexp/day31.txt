@@ -1,0 +1,518 @@
+    📦 Day 31 — React Frontend Setup (Code Explanation)
+
+    =========================================================
+    File 1 — axiosConfig.js
+    =========================================================
+
+    Purpose:
+
+    This file creates a reusable Axios instance for the entire application.
+
+    Instead of writing:
+
+    axios.get(...)
+    axios.post(...)
+
+    everywhere with repeated configuration, we create one central API object.
+
+    ---------------------------------------------------------
+
+    import axios from "axios";
+
+    Imports Axios library.
+
+    Axios is used to send HTTP requests from React to Spring Boot.
+
+    ---------------------------------------------------------
+
+    const api = axios.create({...})
+
+    Creates a custom Axios instance.
+
+    Every request made through this instance will automatically use the same configuration.
+
+    ---------------------------------------------------------
+
+    baseURL: "http://localhost:8080"
+
+    Sets the backend server address.
+
+    Now:
+
+    api.get("/api/pets")
+
+    becomes:
+
+    http://localhost:8080/api/pets
+
+    automatically.
+
+    ---------------------------------------------------------
+
+    api.interceptors.request.use(...)
+
+    Interceptor runs before every request.
+
+    Purpose:
+
+    Automatically attach JWT token.
+
+    ---------------------------------------------------------
+
+    localStorage.getItem("token")
+
+    Reads the JWT token stored after login.
+
+    ---------------------------------------------------------
+
+    config.headers.Authorization = Bearer <token>
+
+    Adds JWT token to request headers.
+
+    Without this:
+
+    Spring Security will return 403 Forbidden.
+
+    ---------------------------------------------------------
+
+    export default api;
+
+    Makes the configured Axios instance available to the entire application.
+
+    =========================================================
+    File 2 — Navbar.jsx
+    =========================================================
+
+    Purpose:
+
+    Provides navigation links between pages.
+
+    ---------------------------------------------------------
+
+    import { Link } from "react-router-dom";
+
+    Link is React Router's version of an anchor tag.
+
+    Difference:
+
+    <a> reloads the page.
+
+    <Link> changes page instantly without reload.
+
+    ---------------------------------------------------------
+
+    function Navbar()
+
+    Defines a reusable React component.
+
+    ---------------------------------------------------------
+
+    <Link to="/">
+
+    Navigates to Home page.
+
+    ---------------------------------------------------------
+
+    <Link to="/login">
+
+    Navigates to Login page.
+
+    ---------------------------------------------------------
+
+    <Link to="/register">
+
+    Navigates to Register page.
+
+    ---------------------------------------------------------
+
+    <Link to="/pets">
+
+    Navigates to Pets page.
+
+    ---------------------------------------------------------
+
+    export default Navbar;
+
+    Allows Navbar to be imported into App.jsx.
+
+    =========================================================
+    File 3 — Home.jsx
+    =========================================================
+
+    Purpose:
+
+    Landing page of Home4Paws.
+
+    ---------------------------------------------------------
+
+    function Home()
+
+    Creates Home component.
+
+    ---------------------------------------------------------
+
+    <h1>Home4Paws</h1>
+
+    Main heading displayed on homepage.
+
+    ---------------------------------------------------------
+
+    <p>Pet Adoption Platform</p>
+
+    Short description shown under heading.
+
+    ---------------------------------------------------------
+
+    export default Home;
+
+    Allows component to be used by router.
+
+    =========================================================
+    File 4 — Login.jsx
+    =========================================================
+
+    Purpose:
+
+    UI for user login.
+
+    Backend connection comes later.
+
+    ---------------------------------------------------------
+
+    function Login()
+
+    Creates Login page component.
+
+    ---------------------------------------------------------
+
+    <form>
+
+    Groups login inputs together.
+
+    Forms are used to collect user data.
+
+    ---------------------------------------------------------
+
+    <input type="email">
+
+    Email field.
+
+    Browser automatically validates email format.
+
+    ---------------------------------------------------------
+
+    placeholder="Email"
+
+    Shows hint text before user types.
+
+    ---------------------------------------------------------
+
+    <input type="password">
+
+    Password field.
+
+    Characters are hidden for security.
+
+    ---------------------------------------------------------
+
+    <button>
+
+    Login button.
+
+    Later it will trigger API call.
+
+    ---------------------------------------------------------
+
+    export default Login;
+
+    Makes Login component available to router.
+
+    =========================================================
+    File 5 — Register.jsx
+    =========================================================
+
+    Purpose:
+
+    UI for new user registration.
+
+    ---------------------------------------------------------
+
+    function Register()
+
+    Creates Register page component.
+
+    ---------------------------------------------------------
+
+    <input placeholder="Name">
+
+    Collects user's name.
+
+    ---------------------------------------------------------
+
+    <input type="email">
+
+    Collects email address.
+
+    ---------------------------------------------------------
+
+    <input type="password">
+
+    Collects password.
+
+    ---------------------------------------------------------
+
+    <select>
+
+    Dropdown menu.
+
+    Allows user to choose role.
+
+    ---------------------------------------------------------
+
+    <option>ADOPTER</option>
+
+    User wants to adopt pets.
+
+    ---------------------------------------------------------
+
+    <option>SHELTER</option>
+
+    User manages pets and adoption requests.
+
+    ---------------------------------------------------------
+
+    <button>
+
+    Registration button.
+
+    Later sends data to backend.
+
+    =========================================================
+    File 6 — Pets.jsx
+    =========================================================
+
+    Purpose:
+
+    Page that will display available pets.
+
+    ---------------------------------------------------------
+
+    function Pets()
+
+    Creates Pets page component.
+
+    ---------------------------------------------------------
+
+    <h2>Available Pets</h2>
+
+    Page title.
+
+    Later pet cards will be rendered below it.
+
+    =========================================================
+    File 7 — App.jsx
+    =========================================================
+
+    Purpose:
+
+    Main application component.
+
+    Controls routing.
+
+    =========================================================
+
+    import { BrowserRouter, Routes, Route }
+
+    Imports React Router components.
+
+    ---------------------------------------------------------
+
+    BrowserRouter
+
+    Enables routing inside React application.
+
+    Without it:
+
+    Routing will not work.
+
+    ---------------------------------------------------------
+
+    Routes
+
+    Container for all routes.
+
+    ---------------------------------------------------------
+
+    Route
+
+    Defines individual URL mappings.
+
+    =========================================================
+    Navbar Placement
+    =========================================================
+
+    <Navbar />
+
+    Placed outside Routes.
+
+    Reason:
+
+    Navbar should appear on every page.
+
+    =========================================================
+    Route Definitions
+    =========================================================
+
+    path="/"
+
+    Maps URL:
+
+    http://localhost:5173/
+
+    to Home component.
+
+    ---------------------------------------------------------
+
+    path="/login"
+
+    Maps URL:
+
+    http://localhost:5173/login
+
+    to Login component.
+
+    ---------------------------------------------------------
+
+    path="/register"
+
+    Maps URL:
+
+    http://localhost:5173/register
+
+    to Register component.
+
+    ---------------------------------------------------------
+
+    path="/pets"
+
+    Maps URL:
+
+    http://localhost:5173/pets
+
+    to Pets component.
+
+    =========================================================
+    File 8 — main.jsx
+    =========================================================
+
+    Purpose:
+
+    Application entry point.
+
+    First file executed by React.
+
+    ---------------------------------------------------------
+
+    import React
+
+    Imports React library.
+
+    ---------------------------------------------------------
+
+    import ReactDOM
+
+    Used to render React components into HTML.
+
+    ---------------------------------------------------------
+
+    import App
+
+    Imports root component.
+
+    =========================================================
+    ReactDOM.createRoot(...)
+    =========================================================
+
+    Finds:
+
+    <div id="root"></div>
+
+    inside index.html.
+
+    ---------------------------------------------------------
+
+    .render(...)
+
+    Renders React application into browser.
+
+    =========================================================
+    React.StrictMode
+    =========================================================
+
+    Development-only tool.
+
+    Helps detect:
+
+    - Unsafe code
+    - Deprecated APIs
+    - Side effects
+
+    Removed automatically in production builds.
+
+    =========================================================
+    Application Startup Flow
+    =========================================================
+
+    main.jsx
+        ↓
+    App.jsx
+        ↓
+    BrowserRouter
+        ↓
+    Navbar
+        ↓
+    Selected Route
+        ↓
+    Selected Page Component
+
+    =========================================================
+    What Day 31 Achieved
+    =========================================================
+
+    ✅ React project created
+
+    ✅ Routing configured
+
+    ✅ Axios configured
+
+    ✅ Navbar created
+
+    ✅ Home page created
+
+    ✅ Login page created
+
+    ✅ Register page created
+
+    ✅ Pets page created
+
+    ✅ Frontend ready for backend integration
+
+    =========================================================
+    How Day 31 Connects To Day 32
+    =========================================================
+
+    Today:
+
+    Frontend structure created.
+
+    ---------------------------------------------------------
+
+    Day 32:
+
+    Register page connects to:
+
+    POST /api/auth/register
+
+    using Axios.
+
+    First real frontend-backend communication begins.
