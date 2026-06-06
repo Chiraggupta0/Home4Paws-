@@ -1,0 +1,282 @@
+    📦 Day 23 — Test Pet APIs
+
+    This is a full testing day — no new code.
+    The goal is to verify that every Pet API works correctly and that authorization rules are enforced.
+
+    🔑 Setup — Get Fresh Tokens First
+    Shelter Token
+
+    Method: POST
+    URL:
+
+    http://localhost:8080/api/auth/login
+
+    Body (JSON):
+
+    {
+        "email": "shelter@gmail.com",
+        "password": "shelter123"
+    }
+
+    ✅ Save the returned JWT token as:
+
+    <shelter_token>
+    Adopter Token
+
+    Method: POST
+    URL:
+
+    http://localhost:8080/api/auth/login
+
+    Body (JSON):
+
+    {
+        "email": "chirag@gmail.com",
+        "password": "secret123"
+    }
+
+    ✅ Save the returned JWT token as:
+
+    <adopter_token>
+    🧪 Test 1 — Add 3 Pets Using Shelter Token
+
+    Method: POST
+
+    URL:
+
+    http://localhost:8080/api/pets
+
+    Headers:
+
+    Authorization: Bearer <shelter_token>
+    Content-Type: application/json
+    Pet 1
+    {
+        "name": "Bruno",
+        "species": "Dog",
+        "breed": "Labrador",
+        "age": 2,
+        "description": "Friendly and energetic"
+    }
+    Pet 2
+    {
+        "name": "Milo",
+        "species": "Cat",
+        "breed": "Persian",
+        "age": 3,
+        "description": "Calm and quiet"
+    }
+    Pet 3
+    {
+        "name": "Rocky",
+        "species": "Dog",
+        "breed": "German Shepherd",
+        "age": 1,
+        "description": "Playful puppy"
+    }
+    ✅ Expected
+    200 OK
+
+    Response should contain:
+
+    {
+        "id": 1,
+        "name": "Bruno",
+        "species": "Dog",
+        "breed": "Labrador",
+        "age": 2,
+        "description": "Friendly and energetic",
+        "status": "AVAILABLE"
+    }
+    🧪 Test 2 — Fetch All Available Pets
+
+    Method: GET
+
+    URL:
+
+    http://localhost:8080/api/pets
+
+    Headers:
+
+    Authorization: Bearer <any_valid_token>
+    ✅ Expected
+    200 OK
+
+    Returns a list of all pets whose:
+
+    status = AVAILABLE
+    🧪 Test 3 — Fetch Single Pet By ID
+
+    Method: GET
+
+    URL:
+
+    http://localhost:8080/api/pets/1
+
+    Headers:
+
+    Authorization: Bearer <any_valid_token>
+    ✅ Expected
+    200 OK
+
+    Returns the pet with ID 1.
+
+    🧪 Test 4 — Fetch Non-Existent Pet
+
+    Method: GET
+
+    URL:
+
+    http://localhost:8080/api/pets/999
+
+    Headers:
+
+    Authorization: Bearer <any_valid_token>
+    ✅ Expected
+    500 Internal Server Error
+
+    Message:
+
+    Pet not found with id: 999
+
+    This will be improved on Day 24.
+
+    🧪 Test 5 — Delete Pet Using Shelter Token
+
+    Method: DELETE
+
+    URL:
+
+    http://localhost:8080/api/pets/3
+
+    Headers:
+
+    Authorization: Bearer <shelter_token>
+    ✅ Expected
+    204 No Content
+
+    No response body.
+
+    🧪 Test 6 — Verify Pet Was Deleted
+
+    Method: GET
+
+    URL:
+
+    http://localhost:8080/api/pets
+
+    Headers:
+
+    Authorization: Bearer <any_valid_token>
+    ✅ Expected
+
+    Only Bruno and Milo remain.
+
+    Rocky should be gone.
+
+    🧪 Test 7 — Try Deleting Pet Using Adopter Token
+
+    Method: DELETE
+
+    URL:
+
+    http://localhost:8080/api/pets/1
+
+    Headers:
+
+    Authorization: Bearer <adopter_token>
+    ✅ Expected
+    500 Internal Server Error
+
+    Message:
+
+    You are not authorized to delete this pet
+
+    Reason:
+
+    The pet belongs to the shelter account.
+
+    🧪 Test 8 — Delete Already Deleted Pet
+
+    Method: DELETE
+
+    URL:
+
+    http://localhost:8080/api/pets/3
+
+    Headers:
+
+    Authorization: Bearer <shelter_token>
+    ✅ Expected
+    500 Internal Server Error
+
+    Message:
+
+    Pet not found with id: 3
+    🧪 Test 9 — Add Pet Without Token
+
+    Method: POST
+
+    URL:
+
+    http://localhost:8080/api/pets
+
+    Headers:
+
+    (none)
+
+    Body:
+
+    {
+        "name": "Max",
+        "species": "Dog",
+        "breed": "Poodle",
+        "age": 2,
+        "description": "Fluffy"
+    }
+    ✅ Expected
+    403 Forbidden
+
+    Blocked by Spring Security.
+
+    🧪 Test 10 — Verify Data in pgAdmin
+
+    Open:
+
+    pgAdmin
+     └── home4paws
+          └── Schemas
+               └── public
+                    └── Tables
+                         └── pets
+                              └── View/Edit Data
+
+    Run:
+
+    SELECT id, name, species, breed, age, status, shelter_id
+    FROM pets;
+    ✅ Expected
+    id	name	species	breed	age	status	shelter_id
+    1	Bruno	Dog	Labrador	2	AVAILABLE	2
+    2	Milo	Cat	Persian	3	AVAILABLE	2
+
+    Rocky should be deleted.
+
+    🔧 Common Errors & Fixes
+    Error	Cause	Fix
+    403 on POST /api/pets	Missing or expired token	Login again and use fresh token
+    Empty list on GET /api/pets	No pets with AVAILABLE status	Verify pets were added
+    500 on GET /api/pets/999	Pet doesn't exist	Expected
+    500 on DELETE with adopter token	Ownership validation	Expected
+    status is null	Missing pet.setStatus("AVAILABLE")	Add before save
+    shelter is null	Missing pet.setShelter(shelter)	Add before save
+    ✅ Day 23 Complete When
+    ✅ Shelter can add pets
+    ✅ Pets are saved in PostgreSQL
+    ✅ All pets can be fetched
+    ✅ Single pet lookup works
+    ✅ Invalid ID handling works
+    ✅ Shelter can delete own pets
+    ✅ Adopter cannot delete shelter pets
+    ✅ JWT protection works
+    ✅ PostgreSQL data matches API responses
