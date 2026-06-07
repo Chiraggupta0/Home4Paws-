@@ -1,0 +1,558 @@
+    📦 Day 40 — Logout & Session Management (Code Explanation)
+
+    =========================================================
+    🎯 Goal
+    =========================================================
+
+    The goal of Day 40 is to allow users to safely end
+    their session and leave the application.
+
+    Before Day 40:
+
+    ✅ Users could register
+
+    ✅ Users could login
+
+    ✅ JWT token stored in browser
+
+    ❌ No logout functionality
+
+    ❌ Session remained active until storage was cleared
+
+    ---------------------------------------------------------
+
+    After Day 40:
+
+    ✅ Users can logout
+
+    ✅ JWT token removed
+
+    ✅ Role removed
+
+    ✅ Redirect to login page
+
+    ✅ Protected pages become inaccessible
+
+    =========================================================
+    Files Updated
+    =========================================================
+
+    src/components/Navbar.jsx
+
+    ---------------------------------------------------------
+
+    Optional
+
+    src/App.jsx
+
+    =========================================================
+    File 1 — Navbar.jsx
+    =========================================================
+
+    Purpose:
+
+    Add logout functionality and improve navigation
+    based on authentication state.
+
+    =========================================================
+    useNavigate()
+    =========================================================
+
+    Added:
+
+    useNavigate()
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Redirect users after logout.
+
+    ---------------------------------------------------------
+
+    Without it:
+
+    User remains on current page.
+
+    ---------------------------------------------------------
+
+    With it:
+
+    User automatically returns to login page.
+
+    =========================================================
+    handleLogout()
+    =========================================================
+
+    New function added.
+
+    Purpose:
+
+    End the user's session.
+
+    ---------------------------------------------------------
+
+    Triggered when:
+
+    Logout button clicked.
+
+    =========================================================
+    Removing Token
+    =========================================================
+
+    Added:
+
+    localStorage.removeItem("token")
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Delete JWT token.
+
+    ---------------------------------------------------------
+
+    Before:
+
+    token = eyJhbGciOiJIUzI1NiJ9...
+
+    ---------------------------------------------------------
+
+    After:
+
+    token removed
+
+    =========================================================
+    Removing Role
+    =========================================================
+
+    Added:
+
+    localStorage.removeItem("role")
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Delete stored user role.
+
+    ---------------------------------------------------------
+
+    Before:
+
+    role = ADOPTER
+
+    or
+
+    role = SHELTER
+
+    ---------------------------------------------------------
+
+    After:
+
+    role removed
+
+    =========================================================
+    Success Message
+    =========================================================
+
+    Added:
+
+    alert("Logged out successfully!")
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Inform user that logout was successful.
+
+    =========================================================
+    Navigation After Logout
+    =========================================================
+
+    Added:
+
+    navigate("/login")
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Redirect user to login page.
+
+    ---------------------------------------------------------
+
+    Flow:
+
+    Logout
+        ↓
+    Storage Cleared
+        ↓
+    Redirect To Login
+
+    =========================================================
+    Conditional Navbar Rendering
+    =========================================================
+
+    Purpose:
+
+    Display different navigation options
+    depending on authentication status.
+
+    =========================================================
+    Guest User Navigation
+    =========================================================
+
+    When token does NOT exist:
+
+    Navbar shows:
+
+    Home
+
+    Pets
+
+    Login
+
+    Register
+
+    ---------------------------------------------------------
+
+    Reason:
+
+    Guest users must authenticate first.
+
+    =========================================================
+    Authenticated User Navigation
+    =========================================================
+
+    When token exists:
+
+    Navbar hides:
+
+    Login
+
+    Register
+
+    ---------------------------------------------------------
+
+    Reason:
+
+    User is already authenticated.
+
+    =========================================================
+    Adopter Navigation
+    =========================================================
+
+    When role = ADOPTER
+
+    Navbar shows:
+
+    My Requests
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Allow adopters to track requests.
+
+    =========================================================
+    Shelter Navigation
+    =========================================================
+
+    When role = SHELTER
+
+    Navbar shows:
+
+    Shelter Requests
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Allow shelters to manage requests.
+
+    =========================================================
+    Logout Button Rendering
+    =========================================================
+
+    Condition:
+
+    token exists
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Only logged-in users should see Logout.
+
+    =========================================================
+    Not Logged In
+    =========================================================
+
+    Logout button hidden.
+
+    =========================================================
+    Logged In
+    =========================================================
+
+    Logout button visible.
+
+    =========================================================
+    User Experience Improvement
+    =========================================================
+
+    Before Day 40
+
+    ---------------------------------------------------------
+
+    User had to manually clear browser storage.
+
+    ---------------------------------------------------------
+
+    No visible way to end session.
+
+    =========================================================
+    After Day 40
+    =========================================================
+
+    Single-click logout.
+
+    Automatic session cleanup.
+
+    Automatic redirect.
+
+    Improved security.
+
+    =========================================================
+    Optional App.jsx Changes
+    =========================================================
+
+    Purpose:
+
+    Protect additional routes.
+
+    ---------------------------------------------------------
+
+    Protected:
+
+    /pets
+
+    ---------------------------------------------------------
+
+    Protected:
+
+    /pets/:id
+
+    ---------------------------------------------------------
+
+    Result:
+
+    Logged-out users cannot view protected content.
+
+    =========================================================
+    Logout Flow
+    =========================================================
+
+    User Logged In
+            ↓
+    JWT Stored
+            ↓
+    Role Stored
+            ↓
+    User Uses Application
+            ↓
+    Clicks Logout
+            ↓
+    handleLogout()
+            ↓
+    Token Removed
+            ↓
+    Role Removed
+            ↓
+    Redirect To Login
+            ↓
+    Protected Routes Block Access
+
+    =========================================================
+    Testing Scenario 1
+    =========================================================
+
+    Login As Adopter
+
+    ---------------------------------------------------------
+
+    Navbar Displays
+
+    Home
+
+    Pets
+
+    My Requests
+
+    Logout
+
+    ---------------------------------------------------------
+
+    Click Logout
+
+    ---------------------------------------------------------
+
+    Expected
+
+    Redirect To Login
+
+    =========================================================
+    Testing Scenario 2
+    =========================================================
+
+    Login As Shelter
+
+    ---------------------------------------------------------
+
+    Navbar Displays
+
+    Home
+
+    Pets
+
+    Shelter Requests
+
+    Logout
+
+    ---------------------------------------------------------
+
+    Click Logout
+
+    ---------------------------------------------------------
+
+    Expected
+
+    Redirect To Login
+
+    =========================================================
+    Testing Scenario 3
+    =========================================================
+
+    After Logout
+
+    Open:
+
+    /my-requests
+
+    ---------------------------------------------------------
+
+    Expected
+
+    Redirect To Login
+
+    =========================================================
+    Testing Scenario 4
+    =========================================================
+
+    After Logout
+
+    Open:
+
+    /shelter-requests
+
+    ---------------------------------------------------------
+
+    Expected
+
+    Redirect To Login
+
+    =========================================================
+    What Changed Compared To Day 39
+    =========================================================
+
+    Day 39
+
+    ---------------------------------------------------------
+
+    Protected routes added
+
+    Role validation added
+
+    Frontend security implemented
+
+    ---------------------------------------------------------
+
+    Day 40
+
+    Logout functionality added
+
+    Session cleanup added
+
+    Role cleanup added
+
+    Navigation improved
+
+    Authentication lifecycle completed
+
+    =========================================================
+    Complete Authentication Lifecycle
+    =========================================================
+
+    Register
+          ↓
+    User Created
+          ↓
+    Login
+          ↓
+    JWT Generated
+          ↓
+    Token Stored
+          ↓
+    Protected Routes
+          ↓
+    Role-Based Access
+          ↓
+    Logout
+          ↓
+    Token Removed
+          ↓
+    Role Removed
+          ↓
+    Session Ended
+
+    =========================================================
+    How Day 40 Connects To Day 41
+    =========================================================
+
+    Today:
+
+    Authentication system completed.
+
+    ---------------------------------------------------------
+
+    Next:
+
+    Improve UI/UX.
+
+    Add styling.
+
+    Create pet cards.
+
+    Improve page layouts.
+
+    Make application visually appealing.
+
+    =========================================================
+    ✅ Day 40 Complete When
+    =========================================================
+
+    ✅ Logout button added
+
+    ✅ Token removed successfully
+
+    ✅ Role removed successfully
+
+    ✅ Redirect to login works
+
+    ✅ Navbar updates correctly
+
+    ✅ Protected routes block access after logout
+
+    ✅ Session ends securely
+
+    🎉 Day 40 Complete — Full Authentication Lifecycle Implemented Successfully.

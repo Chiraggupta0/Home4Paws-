@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axiosConfig";
+import "../styles/Auth.css";
 
 function Register() {
 
@@ -56,65 +57,113 @@ function Register() {
     };
 
     return (
-        <div>
 
-            <h2>Register</h2>
+        <div className="auth-page">
 
-            <form onSubmit={handleSubmit}>
+            <div className="auth-card">
 
-                <input
-                    type="text"
-                    name="name"
-                    placeholder="Name"
-                    value={formData.name}
-                    onChange={handleChange}
-                />
+                <div className="brand">
 
-                <br /><br />
+                    <div className="brand-icon">
+                        🐾
+                    </div>
 
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={handleChange}
-                />
+                    <h1>
+                        Home4Paws
+                    </h1>
 
-                <br /><br />
+                </div>
 
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                />
+                <h2 className="auth-title">
+                    Create your account
+                </h2>
 
-                <br /><br />
+                <form onSubmit={handleSubmit}>
 
-                <select
-                    name="role"
-                    value={formData.role}
-                    onChange={handleChange}
-                >
-                    <option value="ADOPTER">
-                        ADOPTER
-                    </option>
+                    <div className="form-group">
 
-                    <option value="SHELTER">
-                        SHELTER
-                    </option>
-                </select>
+                        <label>
+                            Full Name
+                        </label>
 
-                <br /><br />
+                        <input
+                            type="text"
+                            name="name"
+                            placeholder="Enter your name"
+                            value={formData.name}
+                            onChange={handleChange}
+                        />
 
-                <button type="submit">
-                    Register
-                </button>
+                    </div>
 
-            </form>
+                    <div className="form-group">
+
+                        <label>
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            value={formData.email}
+                            onChange={handleChange}
+                        />
+
+                    </div>
+
+                    <div className="form-group">
+
+                        <label>
+                            Password
+                        </label>
+
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Enter password"
+                            value={formData.password}
+                            onChange={handleChange}
+                        />
+
+                    </div>
+
+                    <div className="form-group">
+
+                        <label>
+                            Role
+                        </label>
+
+                        <select
+                            name="role"
+                            value={formData.role}
+                            onChange={handleChange}
+                        >
+                            <option value="ADOPTER">
+                                Adopter
+                            </option>
+
+                            <option value="SHELTER">
+                                Shelter
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="submit-btn"
+                    >
+                        Sign Up
+                    </button>
+
+                </form>
+
+            </div>
 
         </div>
+
     );
 }
 

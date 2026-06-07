@@ -1,0 +1,469 @@
+    📦 Day 36 — Send Adoption Request (Code Explanation)
+
+    =========================================================
+    🎯 Goal
+    =========================================================
+
+    The goal of Day 36 is to allow adopters to send
+    adoption requests from the Pet Details page.
+
+    Before Day 36:
+
+    ✅ Users could view pet details
+
+    ❌ Users could not request adoption
+
+    ---------------------------------------------------------
+
+    After Day 36:
+
+    ✅ Adopter clicks "Adopt Me"
+
+    ✅ Request sent to backend
+
+    ✅ Adoption request stored in database
+
+    ✅ Success message displayed
+
+    =========================================================
+    File Updated
+    =========================================================
+
+    src/pages/PetDetails.jsx
+
+    This is the only file modified today.
+
+    =========================================================
+    useNavigate()
+    =========================================================
+
+    Added:
+
+    const navigate = useNavigate();
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Redirect users after successful request submission.
+
+    ---------------------------------------------------------
+
+    Before:
+
+    User stays on pet page.
+
+    ---------------------------------------------------------
+
+    After:
+
+    User redirected back to:
+
+    /pets
+
+    =========================================================
+    sendRequest()
+    =========================================================
+
+    New function added.
+
+    Purpose:
+
+    Send adoption request to backend.
+
+    ---------------------------------------------------------
+
+    Triggered When:
+
+    User clicks:
+
+    Adopt Me
+
+    button.
+
+    =========================================================
+    Axios POST Request
+    =========================================================
+
+    Added:
+
+    POST /api/requests/{petId}
+
+    ---------------------------------------------------------
+
+    Example:
+
+    POST /api/requests/1
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Tell backend that the logged-in adopter
+    wants to adopt this pet.
+
+    =========================================================
+    Request Flow
+    =========================================================
+
+    Pet Details Page
+             ↓
+    Adopt Me Button
+             ↓
+    sendRequest()
+             ↓
+    Axios POST Request
+             ↓
+    AdoptionRequestController
+             ↓
+    AdoptionRequestService
+             ↓
+    Database Save
+             ↓
+    Response Returned
+
+    =========================================================
+    pet.id Usage
+    =========================================================
+
+    Used:
+
+    pet.id
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Identify which pet is being requested.
+
+    ---------------------------------------------------------
+
+    Example:
+
+    Pet Details Page
+
+    Bruno
+
+    ID = 1
+
+    ---------------------------------------------------------
+
+    Request becomes:
+
+    POST /api/requests/1
+
+    =========================================================
+    Success Handling
+    =========================================================
+
+    Added:
+
+    alert()
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Inform user that request was submitted.
+
+    ---------------------------------------------------------
+
+    Message:
+
+    Adoption request submitted successfully!
+
+    =========================================================
+    Navigation After Success
+    =========================================================
+
+    Added:
+
+    navigate("/pets")
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Return user to pets list.
+
+    ---------------------------------------------------------
+
+    Flow:
+
+    Request Sent
+          ↓
+    Success Message
+          ↓
+    Redirect To Pets Page
+
+    =========================================================
+    Error Handling
+    =========================================================
+
+    Added:
+
+    try-catch block
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Handle backend failures safely.
+
+    =========================================================
+    Possible Errors
+    =========================================================
+
+    Pet not found
+
+    ---------------------------------------------------------
+
+    Duplicate request
+
+    ---------------------------------------------------------
+
+    Backend unavailable
+
+    ---------------------------------------------------------
+
+    Network error
+
+    ---------------------------------------------------------
+
+    Unauthorized access
+
+    =========================================================
+    Error Message Logic
+    =========================================================
+
+    Added:
+
+    error.response?.data?.message
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Display backend error if available.
+
+    ---------------------------------------------------------
+
+    Otherwise:
+
+    Failed to send request
+
+    is displayed.
+
+    =========================================================
+    Adopt Me Button
+    =========================================================
+
+    New button added.
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Allow adopter to send request.
+
+    ---------------------------------------------------------
+
+    Before Day 36:
+
+    No action available.
+
+    ---------------------------------------------------------
+
+    After Day 36:
+
+    User can request adoption.
+
+    =========================================================
+    Role Restriction
+    =========================================================
+
+    Added:
+
+    localStorage.getItem("role")
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Only show button to adopters.
+
+    =========================================================
+    ADOPTER
+    =========================================================
+
+    User sees:
+
+    Adopt Me
+
+    button.
+
+    ---------------------------------------------------------
+
+    Can submit adoption requests.
+
+    =========================================================
+    SHELTER
+    =========================================================
+
+    User does NOT see:
+
+    Adopt Me
+
+    button.
+
+    ---------------------------------------------------------
+
+    Reason:
+
+    Shelters should not adopt pets.
+
+    =========================================================
+    Conditional Rendering
+    =========================================================
+
+    React checks:
+
+    role === "ADOPTER"
+
+    ---------------------------------------------------------
+
+    If true:
+
+    Button displayed.
+
+    ---------------------------------------------------------
+
+    If false:
+
+    Nothing rendered.
+
+    =========================================================
+    What Changed Compared To Day 35
+    =========================================================
+
+    Day 35
+
+    ---------------------------------------------------------
+
+    View pet details
+
+    Read-only page
+
+    No actions available
+
+    ---------------------------------------------------------
+
+    Day 36
+
+    Adopt Me button added
+
+    POST request added
+
+    Success handling added
+
+    Error handling added
+
+    Role restriction added
+
+    Navigation added
+
+    =========================================================
+    Complete Flow
+    =========================================================
+
+    User Opens Pet Details
+               ↓
+    Pet Information Displayed
+               ↓
+    Adopt Me Button Visible
+               ↓
+    User Clicks Button
+               ↓
+    sendRequest()
+               ↓
+    Axios POST Request
+               ↓
+    Spring Boot Backend
+               ↓
+    Adoption Request Saved
+               ↓
+    Success Message
+               ↓
+    Redirect To Pets Page
+
+    =========================================================
+    Database Result
+    =========================================================
+
+    adoption_requests table
+
+    ---------------------------------------------------------
+
+    New Record Created
+
+    id
+
+    pet_id
+
+    adopter_id
+
+    status
+
+    ---------------------------------------------------------
+
+    Example
+
+    1
+
+    1
+
+    2
+
+    PENDING
+
+    =========================================================
+    How Day 36 Connects To Day 37
+    =========================================================
+
+    Today:
+
+    Adopter sends adoption request.
+
+    ---------------------------------------------------------
+
+    Next:
+
+    Create My Requests page.
+
+    Adopters will be able to view:
+
+    Pending requests
+
+    Approved requests
+
+    Rejected requests
+
+    =========================================================
+    ✅ Day 36 Complete When
+    =========================================================
+
+    ✅ Adopt Me button visible to adopters
+
+    ✅ Button hidden from shelters
+
+    ✅ POST /api/requests/{petId} works
+
+    ✅ Request saved in database
+
+    ✅ Success message displayed
+
+    ✅ Error handling works
+
+    ✅ Redirect works
+
+    🎉 Day 36 Complete — Adopters Can Now Submit Adoption Requests From The Frontend.

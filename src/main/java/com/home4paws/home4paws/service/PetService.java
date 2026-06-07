@@ -43,6 +43,13 @@ public class PetService {
         return petRepository.findByStatus("AVAILABLE");
     }
 
+    public List<Pet> getMyPets(String shelterEmail) {
+
+        return petRepository.findByShelterEmail(
+                shelterEmail
+        );
+    }
+
     // 3. GET PET BY ID — fetch single pet
 
     public Pet getPetById(Long id) {
@@ -66,4 +73,5 @@ public class PetService {
 
         petRepository.delete(pet);
     }
+
 }

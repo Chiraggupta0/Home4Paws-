@@ -1,0 +1,554 @@
+    ```txt
+    📦 Day 35 — Pet Details Page (Code Explanation)
+
+    =========================================================
+    🎯 Goal
+    =========================================================
+
+    The goal of Day 35 is to allow users to view detailed
+    information about a specific pet.
+
+    Before Day 35:
+
+    ✅ User could see a list of pets
+
+    ❌ User could not view a single pet's details
+
+    ---------------------------------------------------------
+
+    After Day 35:
+
+    ✅ User clicks a pet
+
+    ✅ React loads that pet's details
+
+    ✅ Backend returns pet information
+
+    ✅ Detailed page displayed
+
+    =========================================================
+    Files Updated
+    =========================================================
+
+    Created
+
+    src/pages/PetDetails.jsx
+
+    ---------------------------------------------------------
+
+    Updated
+
+    src/pages/Pets.jsx
+
+    ---------------------------------------------------------
+
+    Updated
+
+    src/App.jsx
+
+    =========================================================
+    File 1 — PetDetails.jsx
+    =========================================================
+
+    Purpose:
+
+    Display information about one specific pet.
+
+    ---------------------------------------------------------
+
+    This page is loaded when the user visits:
+
+    /pets/{id}
+
+    Example:
+
+    /pets/1
+
+    =========================================================
+    useParams()
+    =========================================================
+
+    Purpose:
+
+    Read values from URL.
+
+    ---------------------------------------------------------
+
+    Example URL:
+
+    /pets/1
+
+    ---------------------------------------------------------
+
+    useParams() returns:
+
+    id = 1
+
+    ---------------------------------------------------------
+
+    This ID is later used to call the backend.
+
+    =========================================================
+    Pet State
+    =========================================================
+
+    Added:
+
+    pet
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Store pet information received from backend.
+
+    ---------------------------------------------------------
+
+    Initially:
+
+    pet = null
+
+    ---------------------------------------------------------
+
+    After API call:
+
+    pet = {
+       id: 1,
+       name: "Bruno",
+       ...
+    }
+
+    =========================================================
+    Loading State
+    =========================================================
+
+    Added:
+
+    loading
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Track whether backend request is still running.
+
+    ---------------------------------------------------------
+
+    Initially:
+
+    loading = true
+
+    ---------------------------------------------------------
+
+    After response:
+
+    loading = false
+
+    =========================================================
+    useEffect()
+    =========================================================
+
+    Purpose:
+
+    Automatically load pet information when page opens.
+
+    ---------------------------------------------------------
+
+    Without useEffect()
+
+    User opens page
+
+    ↓
+
+    No API request sent
+
+    ---------------------------------------------------------
+
+    With useEffect()
+
+    User opens page
+
+    ↓
+
+    fetchPet() runs
+
+    ↓
+
+    Pet data loaded
+
+    =========================================================
+    fetchPet()
+    =========================================================
+
+    Purpose:
+
+    Load one pet from backend.
+
+    ---------------------------------------------------------
+
+    Called when:
+
+    PetDetails page loads.
+
+    ---------------------------------------------------------
+
+    Uses pet ID from URL.
+
+    =========================================================
+    Axios GET Request
+    =========================================================
+
+    Added:
+
+    GET /api/pets/{id}
+
+    ---------------------------------------------------------
+
+    Example:
+
+    GET /api/pets/1
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Request information about one pet.
+
+    =========================================================
+    Backend Flow
+    =========================================================
+
+    PetDetails Page
+            ↓
+    Axios
+            ↓
+    PetController
+            ↓
+    PetService
+            ↓
+    PetRepository
+            ↓
+    Database
+            ↓
+    Pet Returned
+
+    =========================================================
+    setPet()
+    =========================================================
+
+    Purpose:
+
+    Store backend response in React state.
+
+    ---------------------------------------------------------
+
+    Before:
+
+    pet = null
+
+    ---------------------------------------------------------
+
+    After:
+
+    pet = response.data
+
+    =========================================================
+    Loading Screen
+    =========================================================
+
+    Added:
+
+    if (loading)
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Show loading message while waiting.
+
+    ---------------------------------------------------------
+
+    User sees:
+
+    Loading pet...
+
+    =========================================================
+    Pet Not Found Handling
+    =========================================================
+
+    Added:
+
+    if (!pet)
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Handle invalid pet IDs.
+
+    ---------------------------------------------------------
+
+    Example:
+
+    /pets/999
+
+    ---------------------------------------------------------
+
+    User sees:
+
+    Pet not found
+
+    =========================================================
+    Displaying Pet Information
+    =========================================================
+
+    Information Displayed:
+
+    Name
+
+    Species
+
+    Breed
+
+    Age
+
+    Description
+
+    Status
+
+    ---------------------------------------------------------
+
+    Example:
+
+    Bruno
+
+    Species: Dog
+
+    Breed: Labrador
+
+    Age: 2
+
+    Description: Friendly and energetic
+
+    Status: AVAILABLE
+
+    =========================================================
+    File 2 — App.jsx Changes
+    =========================================================
+
+    Purpose:
+
+    Add route for pet details page.
+
+    ---------------------------------------------------------
+
+    Before Day 35
+
+    Routes:
+
+    /
+
+    /login
+
+    /register
+
+    /pets
+
+    ---------------------------------------------------------
+
+    After Day 35
+
+    Additional Route:
+
+    /pets/:id
+
+    =========================================================
+    What :id Means
+    =========================================================
+
+    :id is a route parameter.
+
+    ---------------------------------------------------------
+
+    Examples:
+
+    /pets/1
+
+    /pets/2
+
+    /pets/3
+
+    ---------------------------------------------------------
+
+    React automatically extracts:
+
+    id
+
+    using useParams().
+
+    =========================================================
+    File 3 — Pets.jsx Changes
+    =========================================================
+
+    Purpose:
+
+    Make pet names clickable.
+
+    ---------------------------------------------------------
+
+    Before Day 35
+
+    Pet names were plain text.
+
+    Example:
+
+    Bruno
+
+    ---------------------------------------------------------
+
+    User could not navigate anywhere.
+
+    =========================================================
+    Link Component Added
+    =========================================================
+
+    Purpose:
+
+    Navigate to pet details page.
+
+    ---------------------------------------------------------
+
+    Before:
+
+    Bruno
+
+    ---------------------------------------------------------
+
+    After:
+
+    Bruno (clickable)
+
+    =========================================================
+    Navigation Flow
+    =========================================================
+
+    User opens:
+
+    /pets
+
+    ---------------------------------------------------------
+
+    Clicks:
+
+    Bruno
+
+    ---------------------------------------------------------
+
+    React navigates to:
+
+    /pets/1
+
+    ---------------------------------------------------------
+
+    PetDetails page loads
+
+    ---------------------------------------------------------
+
+    Backend request sent
+
+    ---------------------------------------------------------
+
+    Pet information displayed
+
+    =========================================================
+    What Changed Compared To Day 34
+    =========================================================
+
+    Day 34
+
+    ---------------------------------------------------------
+
+    Display all pets
+
+    No detailed page
+
+    No individual pet view
+
+    ---------------------------------------------------------
+
+    Day 35
+
+    PetDetails page created
+
+    Dynamic route added
+
+    Single pet API call added
+
+    Pet names made clickable
+
+    Detailed information displayed
+
+    =========================================================
+    Complete Flow
+    =========================================================
+
+    User Opens Pets Page
+              ↓
+    List Of Pets Displayed
+              ↓
+    User Clicks Bruno
+              ↓
+    Navigate To /pets/1
+              ↓
+    useParams() Reads ID
+              ↓
+    Axios GET Request
+              ↓
+    Spring Boot
+              ↓
+    Database Query
+              ↓
+    Pet Returned
+              ↓
+    setPet()
+              ↓
+    Pet Details Displayed
+
+    =========================================================
+    How Day 35 Connects To Day 36
+    =========================================================
+
+    Today:
+
+    Users can view detailed pet information.
+
+    ---------------------------------------------------------
+
+    Next:
+
+    Allow adopters to send adoption requests.
+
+    POST /api/requests/{petId}
+
+    from the Pet Details page.
+
+    =========================================================
+    ✅ Day 35 Complete When
+    =========================================================
+
+    ✅ PetDetails page created
+
+    ✅ Dynamic routing works
+
+    ✅ useParams() works
+
+    ✅ GET /api/pets/{id} works
+
+    ✅ Pet names clickable
+
+    ✅ Full pet details displayed
+
+    ✅ Invalid pet IDs handled
+
+    🎉 Day 35 Complete — Users Can View Individual Pet Details.
+    ```

@@ -60,4 +60,15 @@ public class PetController {
 
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/my-pets")
+    @PreAuthorize("hasRole('SHELTER')")
+    public ResponseEntity<List<Pet>> getMyPets(
+            Principal principal) {
+
+        return ResponseEntity.ok(
+                petService.getMyPets(
+                        principal.getName()
+                )
+        );
+    }
 }

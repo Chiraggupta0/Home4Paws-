@@ -1,0 +1,607 @@
+    📦 Day 39 — Protected Routes & Role-Based Access (Code Explanation)
+
+    =========================================================
+    🎯 Goal
+    =========================================================
+
+    The goal of Day 39 is to protect frontend pages.
+
+    Before Day 39:
+
+    ✅ Users could log in
+
+    ✅ Roles were stored
+
+    ❌ Any user could manually type URLs
+
+    ❌ No frontend access control
+
+    ---------------------------------------------------------
+
+    After Day 39:
+
+    ✅ Login required for protected pages
+
+    ✅ Adopters only access adopter pages
+
+    ✅ Shelters only access shelter pages
+
+    ✅ Unauthorized users redirected
+
+    =========================================================
+    Files Created
+    =========================================================
+
+    src/components/ProtectedRoute.jsx
+
+    =========================================================
+    Files Updated
+    =========================================================
+
+    src/App.jsx
+
+    =========================================================
+    File 1 — ProtectedRoute.jsx
+    =========================================================
+
+    Purpose:
+
+    Create a reusable security wrapper for pages.
+
+    ---------------------------------------------------------
+
+    Instead of checking authentication inside every page,
+
+    one component handles all security checks.
+
+    =========================================================
+    Navigate Import
+    =========================================================
+
+    Added:
+
+    Navigate
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Redirect users automatically.
+
+    ---------------------------------------------------------
+
+    Examples:
+
+    Redirect to Login
+
+    Redirect to Pets page
+
+    =========================================================
+    Component Parameters
+    =========================================================
+
+    ProtectedRoute receives:
+
+    children
+
+    role
+
+    ---------------------------------------------------------
+
+    children
+
+    The page that should be displayed.
+
+    ---------------------------------------------------------
+
+    Example:
+
+    <MyRequests />
+
+    ---------------------------------------------------------
+
+    role
+
+    Optional role requirement.
+
+    ---------------------------------------------------------
+
+    Example:
+
+    ADOPTER
+
+    SHELTER
+
+    =========================================================
+    Token Check
+    =========================================================
+
+    Added:
+
+    localStorage.getItem("token")
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Verify user is logged in.
+
+    ---------------------------------------------------------
+
+    If token exists:
+
+    User is authenticated.
+
+    ---------------------------------------------------------
+
+    If token does not exist:
+
+    User is not logged in.
+
+    =========================================================
+    Unauthenticated User Handling
+    =========================================================
+
+    Condition:
+
+    if (!token)
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Prevent guests from accessing protected pages.
+
+    ---------------------------------------------------------
+
+    Action:
+
+    Redirect to:
+
+    /login
+
+    =========================================================
+    Role Check
+    =========================================================
+
+    Added:
+
+    localStorage.getItem("role")
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Identify current user's role.
+
+    ---------------------------------------------------------
+
+    Possible Values:
+
+    ADOPTER
+
+    SHELTER
+
+    =========================================================
+    Role Validation
+    =========================================================
+
+    Condition:
+
+    userRole !== role
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Verify user has required role.
+
+    ---------------------------------------------------------
+
+    Example:
+
+    Page requires:
+
+    SHELTER
+
+    ---------------------------------------------------------
+
+    Current role:
+
+    ADOPTER
+
+    ---------------------------------------------------------
+
+    Access denied.
+
+    =========================================================
+    Unauthorized Access Handling
+    =========================================================
+
+    If role does not match:
+
+    Redirect to:
+
+    /pets
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Prevent access to restricted pages.
+
+    =========================================================
+    Successful Validation
+    =========================================================
+
+    If:
+
+    Token exists
+
+    AND
+
+    Role matches
+
+    ---------------------------------------------------------
+
+    Component returns:
+
+    children
+
+    ---------------------------------------------------------
+
+    Meaning:
+
+    Requested page is displayed.
+
+    =========================================================
+    File 2 — App.jsx Changes
+    =========================================================
+
+    Purpose:
+
+    Apply route protection.
+
+    =========================================================
+    ProtectedRoute Import
+    =========================================================
+
+    Added:
+
+    import ProtectedRoute
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Allow routes to use security wrapper.
+
+    =========================================================
+    Protecting My Requests
+    =========================================================
+
+    Before Day 39:
+
+    /my-requests
+
+    loaded directly.
+
+    ---------------------------------------------------------
+
+    Problem:
+
+    Shelters could access adopter pages.
+
+    =========================================================
+    After Protection
+    =========================================================
+
+    Route wrapped inside:
+
+    ProtectedRoute
+
+    ---------------------------------------------------------
+
+    Required role:
+
+    ADOPTER
+
+    ---------------------------------------------------------
+
+    Result:
+
+    Only adopters can access page.
+
+    =========================================================
+    Protecting Shelter Requests
+    =========================================================
+
+    Before Day 39:
+
+    /shelter-requests
+
+    loaded directly.
+
+    ---------------------------------------------------------
+
+    Problem:
+
+    Adopters could access shelter dashboard.
+
+    =========================================================
+    After Protection
+    =========================================================
+
+    Route wrapped inside:
+
+    ProtectedRoute
+
+    ---------------------------------------------------------
+
+    Required role:
+
+    SHELTER
+
+    ---------------------------------------------------------
+
+    Result:
+
+    Only shelters can access page.
+
+    =========================================================
+    Optional Protection
+    =========================================================
+
+    Additional routes can be protected.
+
+    Examples:
+
+    /pets
+
+    /pets/:id
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Require login before viewing pet data.
+
+    =========================================================
+    Authentication Flow
+    =========================================================
+
+    User Opens URL
+            ↓
+    ProtectedRoute Executes
+            ↓
+    Token Checked
+            ↓
+    Role Checked
+            ↓
+    Access Granted
+            OR
+    Redirect
+
+    =========================================================
+    Guest User Example
+    =========================================================
+
+    User not logged in
+
+    ---------------------------------------------------------
+
+    Visits:
+
+    /my-requests
+
+    ---------------------------------------------------------
+
+    ProtectedRoute checks token
+
+    ---------------------------------------------------------
+
+    No token found
+
+    ---------------------------------------------------------
+
+    Redirect:
+
+    /login
+
+    =========================================================
+    Adopter Example
+    =========================================================
+
+    Role:
+
+    ADOPTER
+
+    ---------------------------------------------------------
+
+    Visits:
+
+    /my-requests
+
+    ---------------------------------------------------------
+
+    Role matches
+
+    ---------------------------------------------------------
+
+    Page displayed
+
+    =========================================================
+    Adopter Tries Shelter Page
+    =========================================================
+
+    Role:
+
+    ADOPTER
+
+    ---------------------------------------------------------
+
+    Visits:
+
+    /shelter-requests
+
+    ---------------------------------------------------------
+
+    Role mismatch
+
+    ---------------------------------------------------------
+
+    Redirect:
+
+    /pets
+
+    =========================================================
+    Shelter Example
+    =========================================================
+
+    Role:
+
+    SHELTER
+
+    ---------------------------------------------------------
+
+    Visits:
+
+    /shelter-requests
+
+    ---------------------------------------------------------
+
+    Role matches
+
+    ---------------------------------------------------------
+
+    Page displayed
+
+    =========================================================
+    Shelter Tries Adopter Page
+    =========================================================
+
+    Role:
+
+    SHELTER
+
+    ---------------------------------------------------------
+
+    Visits:
+
+    /my-requests
+
+    ---------------------------------------------------------
+
+    Role mismatch
+
+    ---------------------------------------------------------
+
+    Redirect:
+
+    /pets
+
+    =========================================================
+    What Changed Compared To Day 38
+    =========================================================
+
+    Day 38
+
+    ---------------------------------------------------------
+
+    Shelter dashboard created
+
+    Request management available
+
+    No frontend security
+
+    ---------------------------------------------------------
+
+    Day 39
+
+    ProtectedRoute component added
+
+    Authentication checks added
+
+    Role validation added
+
+    Unauthorized redirects added
+
+    Route protection implemented
+
+    =========================================================
+    Complete Flow
+    =========================================================
+
+    User Opens Protected Page
+              ↓
+    ProtectedRoute Runs
+              ↓
+    Check Token
+              ↓
+    Check Role
+              ↓
+    Valid User?
+          ↙         ↘
+        YES          NO
+         ↓            ↓
+    Show Page     Redirect
+
+    =========================================================
+    Security Improvement
+    =========================================================
+
+    Before:
+
+    Anyone could type URLs manually.
+
+    ---------------------------------------------------------
+
+    After:
+
+    Authentication required.
+
+    Role validation required.
+
+    Unauthorized access blocked.
+
+    =========================================================
+    How Day 39 Connects To Day 40
+    =========================================================
+
+    Today:
+
+    Frontend security added.
+
+    ---------------------------------------------------------
+
+    Next:
+
+    Add Logout functionality.
+
+    Clear token.
+
+    Clear role.
+
+    Redirect to Login.
+
+    Improve session management.
+
+    =========================================================
+    ✅ Day 39 Complete When
+    =========================================================
+
+    ✅ ProtectedRoute component created
+
+    ✅ Token validation works
+
+    ✅ Role validation works
+
+    ✅ Guests redirected to Login
+
+    ✅ Adopters blocked from shelter pages
+
+    ✅ Shelters blocked from adopter pages
+
+    ✅ Protected routes functioning correctly
+
+    🎉 Day 39 Complete — Frontend Authentication & Role-Based Security Implemented.

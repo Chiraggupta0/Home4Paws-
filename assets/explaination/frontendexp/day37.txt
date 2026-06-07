@@ -1,0 +1,531 @@
+    📦 Day 37 — My Requests Page (Code Explanation)
+
+    =========================================================
+    🎯 Goal
+    =========================================================
+
+    The goal of Day 37 is to allow adopters to view
+    all adoption requests they have submitted.
+
+    Before Day 37:
+
+    ✅ Adopters could send requests
+
+    ❌ Adopters could not see request status
+
+    ---------------------------------------------------------
+
+    After Day 37:
+
+    ✅ Adopters can view all requests
+
+    ✅ Request status is displayed
+
+    ✅ Requests update automatically
+
+    =========================================================
+    Files Created
+    =========================================================
+
+    src/pages/MyRequests.jsx
+
+    =========================================================
+    Files Updated
+    =========================================================
+
+    src/App.jsx
+
+    src/components/Navbar.jsx
+
+    =========================================================
+    File 1 — MyRequests.jsx
+    =========================================================
+
+    Purpose:
+
+    Display all adoption requests submitted by
+    the currently logged-in adopter.
+
+    ---------------------------------------------------------
+
+    This page becomes the adopter dashboard
+    for tracking requests.
+
+    =========================================================
+    useState()
+    =========================================================
+
+    Added:
+
+    requests
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Store adoption requests received from backend.
+
+    ---------------------------------------------------------
+
+    Initially:
+
+    requests = []
+
+    ---------------------------------------------------------
+
+    After API call:
+
+    requests = response.data
+
+    =========================================================
+    Loading State
+    =========================================================
+
+    Added:
+
+    loading
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Track whether data is still loading.
+
+    ---------------------------------------------------------
+
+    Initially:
+
+    loading = true
+
+    ---------------------------------------------------------
+
+    After API response:
+
+    loading = false
+
+    =========================================================
+    useEffect()
+    =========================================================
+
+    Purpose:
+
+    Automatically load requests when page opens.
+
+    ---------------------------------------------------------
+
+    Without useEffect():
+
+    Page opens
+
+    ↓
+
+    Nothing happens
+
+    ---------------------------------------------------------
+
+    With useEffect():
+
+    Page opens
+
+    ↓
+
+    fetchRequests() runs
+
+    ↓
+
+    Requests loaded
+
+    =========================================================
+    fetchRequests()
+    =========================================================
+
+    New function added.
+
+    Purpose:
+
+    Fetch all adoption requests belonging
+    to the logged-in adopter.
+
+    ---------------------------------------------------------
+
+    Called when:
+
+    My Requests page loads.
+
+    =========================================================
+    Axios GET Request
+    =========================================================
+
+    Added:
+
+    GET /api/requests/my
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Ask Spring Boot for all requests submitted
+    by the logged-in user.
+
+    =========================================================
+    Backend Flow
+    =========================================================
+
+    MyRequests Page
+            ↓
+    Axios
+            ↓
+    AdoptionRequestController
+            ↓
+    AdoptionRequestService
+            ↓
+    AdoptionRequestRepository
+            ↓
+    Database
+            ↓
+    Request List Returned
+
+    =========================================================
+    setRequests()
+    =========================================================
+
+    Purpose:
+
+    Store backend response inside React state.
+
+    ---------------------------------------------------------
+
+    Before:
+
+    requests = []
+
+    ---------------------------------------------------------
+
+    After:
+
+    requests = response.data
+
+    =========================================================
+    Loading Screen
+    =========================================================
+
+    Added:
+
+    if (loading)
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Show loading message while waiting.
+
+    ---------------------------------------------------------
+
+    User sees:
+
+    Loading requests...
+
+    =========================================================
+    Empty State Handling
+    =========================================================
+
+    Added:
+
+    requests.length === 0
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Handle users who have never submitted
+    an adoption request.
+
+    ---------------------------------------------------------
+
+    Instead of blank page:
+
+    User sees:
+
+    No requests found.
+
+    =========================================================
+    Displaying Requests
+    =========================================================
+
+    Added:
+
+    requests.map()
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Loop through every adoption request.
+
+    ---------------------------------------------------------
+
+    Each request becomes a card.
+
+    =========================================================
+    Request Information Displayed
+    =========================================================
+
+    Pet Name
+
+    ---------------------------------------------------------
+
+    Example:
+
+    Bruno
+
+    ---------------------------------------------------------
+
+    Status
+
+    ---------------------------------------------------------
+
+    Example:
+
+    PENDING
+
+    APPROVED
+
+    REJECTED
+
+    =========================================================
+    key={request.id}
+    =========================================================
+
+    Purpose:
+
+    Provide React with a unique identifier.
+
+    ---------------------------------------------------------
+
+    Allows efficient UI updates.
+
+    =========================================================
+    File 2 — App.jsx Changes
+    =========================================================
+
+    Purpose:
+
+    Add route for My Requests page.
+
+    ---------------------------------------------------------
+
+    Before Day 37
+
+    Routes:
+
+    /
+
+    /login
+
+    /register
+
+    /pets
+
+    /pets/:id
+
+    ---------------------------------------------------------
+
+    After Day 37
+
+    Additional Route:
+
+    /my-requests
+
+    =========================================================
+    Route Purpose
+    =========================================================
+
+    URL:
+
+    /my-requests
+
+    ---------------------------------------------------------
+
+    Loads:
+
+    MyRequests Component
+
+    ---------------------------------------------------------
+
+    Allows adopters to view request history.
+
+    =========================================================
+    File 3 — Navbar.jsx Changes
+    =========================================================
+
+    Purpose:
+
+    Provide navigation to My Requests page.
+
+    =========================================================
+    Conditional Rendering
+    =========================================================
+
+    Added:
+
+    localStorage.getItem("role")
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Only adopters should see the link.
+
+    =========================================================
+    ADOPTER
+    =========================================================
+
+    Navbar displays:
+
+    My Requests
+
+    ---------------------------------------------------------
+
+    Can view request history.
+
+    =========================================================
+    SHELTER
+    =========================================================
+
+    Navbar does NOT display:
+
+    My Requests
+
+    ---------------------------------------------------------
+
+    Reason:
+
+    Shelters do not submit adoption requests.
+
+    =========================================================
+    Navigation Flow
+    =========================================================
+
+    Adopter Login
+            ↓
+    Navbar Displays
+            ↓
+    My Requests Link
+            ↓
+    User Clicks Link
+            ↓
+    Navigate To
+    /my-requests
+            ↓
+    Requests Loaded
+            ↓
+    Status Displayed
+
+    =========================================================
+    What Changed Compared To Day 36
+    =========================================================
+
+    Day 36
+
+    ---------------------------------------------------------
+
+    Send adoption request
+
+    No way to track request
+
+    ---------------------------------------------------------
+
+    Day 37
+
+    Request tracking added
+
+    MyRequests page created
+
+    Status display added
+
+    Navbar integration added
+
+    =========================================================
+    Complete Flow
+    =========================================================
+
+    User Logs In
+            ↓
+    User Sends Adoption Request
+            ↓
+    Request Stored In Database
+            ↓
+    User Opens My Requests
+            ↓
+    GET /api/requests/my
+            ↓
+    Backend Returns Requests
+            ↓
+    React Displays Requests
+            ↓
+    User Sees Current Status
+
+    =========================================================
+    Possible Status Values
+    =========================================================
+
+    PENDING
+
+    Request waiting for shelter decision.
+
+    ---------------------------------------------------------
+
+    APPROVED
+
+    Shelter approved adoption.
+
+    ---------------------------------------------------------
+
+    REJECTED
+
+    Shelter rejected adoption.
+
+    =========================================================
+    How Day 37 Connects To Day 38
+    =========================================================
+
+    Today:
+
+    Adopters can track requests.
+
+    ---------------------------------------------------------
+
+    Next:
+
+    Shelters will see all incoming adoption requests
+    for their pets.
+
+    They will be able to:
+
+    Approve requests
+
+    Reject requests
+
+    Manage adoptions
+
+    =========================================================
+    ✅ Day 37 Complete When
+    =========================================================
+
+    ✅ MyRequests page created
+
+    ✅ GET /api/requests/my works
+
+    ✅ Requests displayed
+
+    ✅ Pet names displayed
+
+    ✅ Status displayed
+
+    ✅ Navbar link works
+
+    ✅ Empty state handled
+
+    ✅ Role-based visibility works
+
+    🎉 Day 37 Complete — Adopters Can Track Their Adoption Requests From The Frontend.

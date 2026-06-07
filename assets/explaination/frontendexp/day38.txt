@@ -1,0 +1,672 @@
+    📦 Day 38 — Shelter Requests Page (Code Explanation)
+
+    =========================================================
+    🎯 Goal
+    =========================================================
+
+    The goal of Day 38 is to allow shelters to manage
+    adoption requests from the frontend.
+
+    Before Day 38:
+
+    ✅ Adopters could send requests
+
+    ✅ Adopters could track requests
+
+    ❌ Shelters could not view requests
+
+    ❌ Shelters could not approve requests
+
+    ❌ Shelters could not reject requests
+
+    ---------------------------------------------------------
+
+    After Day 38:
+
+    ✅ Shelters can view requests
+
+    ✅ Shelters can approve requests
+
+    ✅ Shelters can reject requests
+
+    ✅ Request status updates instantly
+
+    =========================================================
+    Files Created
+    =========================================================
+
+    src/pages/ShelterRequests.jsx
+
+    =========================================================
+    Files Updated
+    =========================================================
+
+    src/App.jsx
+
+    src/components/Navbar.jsx
+
+    =========================================================
+    File 1 — ShelterRequests.jsx
+    =========================================================
+
+    Purpose:
+
+    Provide a dashboard for shelters to manage
+    adoption requests.
+
+    ---------------------------------------------------------
+
+    This page displays:
+
+    Pet Name
+
+    Adopter Name
+
+    Current Status
+
+    Approve Button
+
+    Reject Button
+
+    =========================================================
+    useState()
+    =========================================================
+
+    Added:
+
+    requests
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Store adoption requests returned by backend.
+
+    ---------------------------------------------------------
+
+    Initially:
+
+    requests = []
+
+    ---------------------------------------------------------
+
+    After API call:
+
+    requests = response.data
+
+    =========================================================
+    Loading State
+    =========================================================
+
+    Added:
+
+    loading
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Track whether request data is loading.
+
+    ---------------------------------------------------------
+
+    Initially:
+
+    loading = true
+
+    ---------------------------------------------------------
+
+    After API finishes:
+
+    loading = false
+
+    =========================================================
+    useEffect()
+    =========================================================
+
+    Purpose:
+
+    Automatically load requests when page opens.
+
+    ---------------------------------------------------------
+
+    Without useEffect():
+
+    Page loads
+
+    ↓
+
+    Nothing happens
+
+    ---------------------------------------------------------
+
+    With useEffect():
+
+    Page loads
+
+    ↓
+
+    fetchRequests() runs
+
+    ↓
+
+    Requests displayed
+
+    =========================================================
+    fetchRequests()
+    =========================================================
+
+    New function added.
+
+    Purpose:
+
+    Load all requests belonging to the shelter.
+
+    ---------------------------------------------------------
+
+    Called when:
+
+    Page first loads
+
+    ---------------------------------------------------------
+
+    Called again after status updates
+
+    =========================================================
+    Axios GET Request
+    =========================================================
+
+    Added:
+
+    GET /api/requests/shelter
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Ask backend for all requests related to
+    pets owned by the logged-in shelter.
+
+    =========================================================
+    Backend Flow
+    =========================================================
+
+    ShelterRequests Page
+              ↓
+    Axios
+              ↓
+    AdoptionRequestController
+              ↓
+    AdoptionRequestService
+              ↓
+    Repository
+              ↓
+    Database
+              ↓
+    Request List Returned
+
+    =========================================================
+    setRequests()
+    =========================================================
+
+    Purpose:
+
+    Store backend response inside React state.
+
+    ---------------------------------------------------------
+
+    Before:
+
+    requests = []
+
+    ---------------------------------------------------------
+
+    After:
+
+    requests = response.data
+
+    =========================================================
+    Displaying Requests
+    =========================================================
+
+    Added:
+
+    requests.map()
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Loop through every adoption request.
+
+    ---------------------------------------------------------
+
+    Each request becomes a separate card.
+
+    =========================================================
+    Information Displayed
+    =========================================================
+
+    Pet Name
+
+    ---------------------------------------------------------
+
+    Example:
+
+    Bruno
+
+    ---------------------------------------------------------
+
+    Adopter Name
+
+    ---------------------------------------------------------
+
+    Example:
+
+    John
+
+    ---------------------------------------------------------
+
+    Request Status
+
+    ---------------------------------------------------------
+
+    Possible Values:
+
+    PENDING
+
+    APPROVED
+
+    REJECTED
+
+    =========================================================
+    updateStatus()
+    =========================================================
+
+    New function added.
+
+    Purpose:
+
+    Allow shelters to approve or reject requests.
+
+    ---------------------------------------------------------
+
+    Triggered when:
+
+    Approve button clicked
+
+    or
+
+    Reject button clicked
+
+    =========================================================
+    Axios PUT Request
+    =========================================================
+
+    Added:
+
+    PUT /api/requests/{id}
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Update request status in backend.
+
+    =========================================================
+    Approve Flow
+    =========================================================
+
+    Shelter clicks:
+
+    Approve
+
+    ---------------------------------------------------------
+
+    Request sent:
+
+    {
+       "status": "APPROVED"
+    }
+
+    ---------------------------------------------------------
+
+    Backend updates request.
+
+    ---------------------------------------------------------
+
+    Pet becomes unavailable
+    (if business logic exists).
+
+    =========================================================
+    Reject Flow
+    =========================================================
+
+    Shelter clicks:
+
+    Reject
+
+    ---------------------------------------------------------
+
+    Request sent:
+
+    {
+       "status": "REJECTED"
+    }
+
+    ---------------------------------------------------------
+
+    Backend updates request.
+
+    ---------------------------------------------------------
+
+    Pet remains available.
+
+    =========================================================
+    Automatic Refresh
+    =========================================================
+
+    Added:
+
+    fetchRequests()
+
+    ---------------------------------------------------------
+
+    Called after successful update.
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Refresh request list immediately.
+
+    ---------------------------------------------------------
+
+    Benefit:
+
+    User sees updated status without refreshing page.
+
+    =========================================================
+    Conditional Buttons
+    =========================================================
+
+    Added:
+
+    request.status === "PENDING"
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Only show action buttons for pending requests.
+
+    =========================================================
+    PENDING
+    =========================================================
+
+    Buttons Visible:
+
+    Approve
+
+    Reject
+
+    =========================================================
+    APPROVED
+    =========================================================
+
+    Buttons Hidden
+
+    =========================================================
+    REJECTED
+    =========================================================
+
+    Buttons Hidden
+
+    =========================================================
+    Loading Screen
+    =========================================================
+
+    Added:
+
+    if (loading)
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Display loading message while backend responds.
+
+    ---------------------------------------------------------
+
+    User sees:
+
+    Loading requests...
+
+    =========================================================
+    Empty State Handling
+    =========================================================
+
+    Added:
+
+    requests.length === 0
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Handle shelters with no adoption requests.
+
+    ---------------------------------------------------------
+
+    User sees:
+
+    No requests found.
+
+    =========================================================
+    File 2 — App.jsx Changes
+    =========================================================
+
+    Purpose:
+
+    Register route for Shelter Requests page.
+
+    ---------------------------------------------------------
+
+    Before Day 38
+
+    Routes:
+
+    /
+
+    /login
+
+    /register
+
+    /pets
+
+    /pets/:id
+
+    /my-requests
+
+    ---------------------------------------------------------
+
+    After Day 38
+
+    Additional Route:
+
+    /shelter-requests
+
+    =========================================================
+    Route Purpose
+    =========================================================
+
+    URL:
+
+    /shelter-requests
+
+    ---------------------------------------------------------
+
+    Loads:
+
+    ShelterRequests Component
+
+    =========================================================
+    File 3 — Navbar.jsx Changes
+    =========================================================
+
+    Purpose:
+
+    Allow shelters to navigate to request dashboard.
+
+    =========================================================
+    Role-Based Rendering
+    =========================================================
+
+    Added:
+
+    localStorage.getItem("role")
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Only shelters should see this link.
+
+    =========================================================
+    SHELTER
+    =========================================================
+
+    Navbar displays:
+
+    Shelter Requests
+
+    ---------------------------------------------------------
+
+    Can manage requests.
+
+    =========================================================
+    ADOPTER
+    =========================================================
+
+    Navbar does NOT display:
+
+    Shelter Requests
+
+    ---------------------------------------------------------
+
+    Reason:
+
+    Adopters do not manage requests.
+
+    =========================================================
+    Navigation Flow
+    =========================================================
+
+    Shelter Login
+            ↓
+    Navbar Displays
+            ↓
+    Shelter Requests Link
+            ↓
+    User Clicks Link
+            ↓
+    Navigate To
+    /shelter-requests
+            ↓
+    Requests Loaded
+            ↓
+    Approve / Reject Actions Available
+
+    =========================================================
+    What Changed Compared To Day 37
+    =========================================================
+
+    Day 37
+
+    ---------------------------------------------------------
+
+    Adopters tracked requests
+
+    No shelter dashboard
+
+    ---------------------------------------------------------
+
+    Day 38
+
+    Shelter dashboard created
+
+    Request management added
+
+    Approve functionality added
+
+    Reject functionality added
+
+    Status refresh added
+
+    =========================================================
+    Complete Flow
+    =========================================================
+
+    Adopter Sends Request
+              ↓
+    Request Stored
+              ↓
+    Shelter Opens Dashboard
+              ↓
+    GET /api/requests/shelter
+              ↓
+    Requests Displayed
+              ↓
+    Shelter Clicks Approve
+              ↓
+    PUT /api/requests/{id}
+              ↓
+    Status Updated
+              ↓
+    Request List Refreshes
+              ↓
+    Adopter Sees Updated Status
+
+    =========================================================
+    How Day 38 Connects To Day 39
+    =========================================================
+
+    Today:
+
+    Shelters can manage requests.
+
+    ---------------------------------------------------------
+
+    Next:
+
+    Build role-based UI controls.
+
+    Hide unauthorized pages.
+
+    Protect frontend routes.
+
+    Improve user experience.
+
+    =========================================================
+    ✅ Day 38 Complete When
+    =========================================================
+
+    ✅ ShelterRequests page created
+
+    ✅ GET /api/requests/shelter works
+
+    ✅ Requests displayed
+
+    ✅ Adopter names displayed
+
+    ✅ Approve button works
+
+    ✅ Reject button works
+
+    ✅ Status updates correctly
+
+    ✅ Navbar link visible only to shelters
+
+    ✅ Request list refreshes automatically
+
+    🎉 Day 38 Complete — Shelters Can Fully Manage Adoption Requests From The Frontend.

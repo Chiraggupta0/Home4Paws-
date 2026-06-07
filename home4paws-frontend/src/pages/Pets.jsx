@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import api from "../api/axiosConfig";
+import "../styles/Pets.css";
 
 function Pets() {
 
     const [pets, setPets] = useState([]);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchPets();
@@ -14,7 +14,8 @@ function Pets() {
 
         try {
 
-            const response = await api.get("/api/pets");
+            const response =
+                await api.get("/api/pets");
 
             setPets(response.data);
 
@@ -22,71 +23,54 @@ function Pets() {
 
             console.error(error);
 
-            alert("Failed to load pets");
-
-        } finally {
-
-            setLoading(false);
-
         }
     };
 
-    if (loading) {
-        return <h2>Loading pets...</h2>;
-    }
-
     return (
 
-        <div>
+        <div className="pet-container">
 
-            <h2>Available Pets</h2>
+            <h1>Available Pets</h1>
 
-            {
-                pets.length === 0 ? (
+            <div className="pet-grid">
 
-                    <p>No pets available.</p>
-
-                ) : (
-
+                {
                     pets.map((pet) => (
 
                         <div
                             key={pet.id}
-                            style={{
-                                border: "1px solid black",
-                                padding: "10px",
-                                marginBottom: "10px"
-                            }}
+                            className="pet-card"
                         >
 
                             <h3>{pet.name}</h3>
 
                             <p>
-                                <strong>Species:</strong> {pet.species}
+                                Breed: {pet.breed}
                             </p>
 
                             <p>
-                                <strong>Breed:</strong> {pet.breed}
+                                Age: {pet.age}
                             </p>
 
-                            <p>
-                                <strong>Age:</strong> {pet.age}
-                            </p>
+                            <div className="pet-actions">
 
-                            <p>
-                                <strong>Description:</strong> {pet.description}
-                            </p>
+                                <button
+                                    onClick={() =>
+                                        window.location.href =
+                                            `/pets/${pet.id}`
+                                    }
+                                >
+                                    View Details
+                                </button>
 
-                            <p>
-                                <strong>Status:</strong> {pet.status}
-                            </p>
+                            </div>
 
                         </div>
 
                     ))
+                }
 
-                )
-            }
+            </div>
 
         </div>
 

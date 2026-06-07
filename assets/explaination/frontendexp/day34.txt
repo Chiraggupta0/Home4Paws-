@@ -1,0 +1,531 @@
+    ```txt
+    📦 Day 34 — Load Available Pets (Code Explanation)
+
+    =========================================================
+    🎯 Goal
+    =========================================================
+
+    The goal of Day 34 is to display real pet data from the backend.
+
+    Before Day 34:
+
+    ✅ Pets page existed
+
+    ❌ No backend connection
+
+    ❌ No pet data displayed
+
+    ---------------------------------------------------------
+
+    After Day 34:
+
+    ✅ React calls Spring Boot
+
+    ✅ Pet data loaded from PostgreSQL
+
+    ✅ Pets displayed on screen
+
+    ✅ Loading state handled
+
+    ✅ Empty list handled
+
+    =========================================================
+    File Updated
+    =========================================================
+
+    src/pages/Pets.jsx
+
+    This is the only file modified today.
+
+    =========================================================
+    New Imports Added
+    =========================================================
+
+    import { useEffect, useState } from "react";
+
+    Purpose:
+
+    Provides React Hooks.
+
+    ---------------------------------------------------------
+
+    useState()
+
+    Used to store data that changes.
+
+    ---------------------------------------------------------
+
+    useEffect()
+
+    Used to run code when the component loads.
+
+    ---------------------------------------------------------
+
+    import api from "../api/axiosConfig";
+
+    Purpose:
+
+    Imports Axios instance.
+
+    Used to call Spring Boot APIs.
+
+    =========================================================
+    Pets State
+    =========================================================
+
+    Added:
+
+    pets
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Store pet data received from backend.
+
+    ---------------------------------------------------------
+
+    Initially:
+
+    pets = []
+
+    ---------------------------------------------------------
+
+    After API call:
+
+    pets = [
+      {...},
+      {...}
+    ]
+
+    =========================================================
+    Loading State
+    =========================================================
+
+    Added:
+
+    loading
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Track whether data is still being loaded.
+
+    ---------------------------------------------------------
+
+    Initially:
+
+    loading = true
+
+    ---------------------------------------------------------
+
+    After API finishes:
+
+    loading = false
+
+    =========================================================
+    useEffect()
+    =========================================================
+
+    Purpose:
+
+    Run code automatically when page loads.
+
+    ---------------------------------------------------------
+
+    Without useEffect():
+
+    User opens page
+
+    ↓
+
+    Nothing happens
+
+    ---------------------------------------------------------
+
+    With useEffect():
+
+    User opens page
+
+    ↓
+
+    fetchPets() runs automatically
+
+    ↓
+
+    Backend request sent
+
+    =========================================================
+    fetchPets()
+    =========================================================
+
+    New function added.
+
+    Purpose:
+
+    Load all available pets from backend.
+
+    ---------------------------------------------------------
+
+    Called when:
+
+    Pets page loads.
+
+    =========================================================
+    Axios GET Request
+    =========================================================
+
+    Added:
+
+    GET /api/pets
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Ask Spring Boot for available pets.
+
+    ---------------------------------------------------------
+
+    Request Flow
+
+    React
+       ↓
+    Axios
+       ↓
+    Spring Boot
+       ↓
+    PetController
+       ↓
+    PetService
+       ↓
+    PetRepository
+       ↓
+    PostgreSQL
+
+    =========================================================
+    Backend Response
+    =========================================================
+
+    Expected:
+
+    [
+      {
+        "id": 1,
+        "name": "Bruno"
+      },
+      {
+        "id": 2,
+        "name": "Milo"
+      }
+    ]
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Provide pet data to React.
+
+    =========================================================
+    setPets()
+    =========================================================
+
+    Added:
+
+    setPets(response.data)
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Store backend response inside React state.
+
+    ---------------------------------------------------------
+
+    Before:
+
+    pets = []
+
+    ---------------------------------------------------------
+
+    After:
+
+    pets = response.data
+
+    =========================================================
+    try-catch-finally
+    =========================================================
+
+    Purpose:
+
+    Handle success and failure safely.
+
+    =========================================================
+    try Block
+    =========================================================
+
+    Contains API call.
+
+    ---------------------------------------------------------
+
+    If request succeeds:
+
+    Pet data loaded.
+
+    =========================================================
+    catch Block
+    =========================================================
+
+    Handles errors.
+
+    ---------------------------------------------------------
+
+    Examples:
+
+    Backend not running
+
+    Network issue
+
+    Invalid token
+
+    ---------------------------------------------------------
+
+    Behavior:
+
+    Error logged
+
+    Message displayed
+
+    =========================================================
+    finally Block
+    =========================================================
+
+    Purpose:
+
+    Runs whether request succeeds or fails.
+
+    ---------------------------------------------------------
+
+    Sets:
+
+    loading = false
+
+    ---------------------------------------------------------
+
+    Reason:
+
+    Loading screen must disappear.
+
+    =========================================================
+    Loading Screen
+    =========================================================
+
+    Added:
+
+    if (loading)
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Show loading message while waiting for backend.
+
+    ---------------------------------------------------------
+
+    User sees:
+
+    Loading pets...
+
+    =========================================================
+    Empty List Handling
+    =========================================================
+
+    Added:
+
+    pets.length === 0
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Handle database with no pets.
+
+    ---------------------------------------------------------
+
+    Instead of blank screen:
+
+    User sees:
+
+    No pets available.
+
+    =========================================================
+    Displaying Pets
+    =========================================================
+
+    Added:
+
+    pets.map()
+
+    ---------------------------------------------------------
+
+    Purpose:
+
+    Loop through every pet.
+
+    ---------------------------------------------------------
+
+    Example:
+
+    Bruno
+
+    Milo
+
+    Rocky
+
+    ---------------------------------------------------------
+
+    Creates one card for each pet.
+
+    =========================================================
+    key={pet.id}
+    =========================================================
+
+    Purpose:
+
+    Help React uniquely identify each pet.
+
+    ---------------------------------------------------------
+
+    Benefit:
+
+    Efficient UI updates.
+
+    =========================================================
+    Pet Information Displayed
+    =========================================================
+
+    For every pet:
+
+    Name
+
+    Species
+
+    Breed
+
+    Age
+
+    Description
+
+    Status
+
+    ---------------------------------------------------------
+
+    Example:
+
+    Bruno
+
+    Species: Dog
+
+    Breed: Labrador
+
+    Age: 2
+
+    Description: Friendly and energetic
+
+    Status: AVAILABLE
+
+    =========================================================
+    What Changed Compared To Day 31
+    =========================================================
+
+    Day 31 Pets Page
+
+    ---------------------------------------------------------
+
+    Static page
+
+    Only title displayed
+
+    No backend connection
+
+    ---------------------------------------------------------
+
+    Day 34 Pets Page
+
+    Backend integration added
+
+    Axios GET request added
+
+    Pet state added
+
+    Loading state added
+
+    Error handling added
+
+    Pet cards added
+
+    Empty list handling added
+
+    =========================================================
+    Complete Flow
+    =========================================================
+
+    User Opens Pets Page
+              ↓
+    useEffect() Runs
+              ↓
+    fetchPets()
+              ↓
+    Axios GET Request
+              ↓
+    Spring Boot
+              ↓
+    Database Query
+              ↓
+    Pet Data Returned
+              ↓
+    setPets()
+              ↓
+    React Re-renders
+              ↓
+    Pet Cards Displayed
+
+    =========================================================
+    How Day 34 Connects To Day 35
+    =========================================================
+
+    Today:
+
+    Users can view all pets.
+
+    ---------------------------------------------------------
+
+    Next:
+
+    Create Pet Details Page.
+
+    GET /api/pets/{id}
+
+    Display full information for one pet.
+
+    =========================================================
+    ✅ Day 34 Complete When
+    =========================================================
+
+    ✅ Pets page connected to backend
+
+    ✅ GET /api/pets works
+
+    ✅ Pet data displayed
+
+    ✅ Loading state works
+
+    ✅ Error handling works
+
+    ✅ Empty list handling works
+
+    ✅ Real database data visible
+
+    🎉 Day 34 Complete — Frontend Successfully Displays Real Pets From Spring Boot Backend.
+    ```

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axiosConfig";
+import "../styles/Auth.css";
+import { Link } from "react-router-dom";
 
 function Login() {
 
@@ -43,7 +45,14 @@ function Login() {
 
             alert("Login successful!");
 
-            navigate("/pets");
+            if (response.data.role === "SHELTER") {
+
+                navigate("/my-dogs");
+
+            } else {
+
+                navigate("/pets");
+            }
 
         } catch (error) {
 
@@ -60,39 +69,70 @@ function Login() {
 
     return (
 
-        <div>
+        <div className="auth-page">
 
-            <h2>Login</h2>
+            <div className="auth-card">
 
-            <form onSubmit={handleSubmit}>
+                <div className="brand">
 
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                />
+                    <div className="brand-icon">
+                        🐾
+                    </div>
 
-                <br /><br />
+                    <h1>Home4Paws</h1>
 
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                />
+                </div>
 
-                <br /><br />
+                <h2 className="auth-title">
+                    Sign In
+                </h2>
 
-                <button type="submit">
-                    Login
-                </button>
+                <form onSubmit={handleSubmit}>
 
-            </form>
+                    <div className="form-group">
+
+                        <label>Email</label>
+
+                        <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="Enter email"
+                        />
+
+                    </div>
+
+                    <div className="form-group">
+
+                        <label>Password</label>
+
+                        <input
+                            type="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="Enter password"
+                        />
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="submit-btn"
+                    >
+                        Sign In
+                    </button>
+                    <p className="register-link">
+                        Don't have an account?{" "}
+                        <Link to="/register">
+                            Register
+                        </Link>
+                    </p>
+
+                </form>
+
+            </div>
 
         </div>
 

@@ -20,4 +20,6 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
 
     // find all available pets of a specific species
     List<Pet> findBySpeciesAndStatus(String species, String status);
+
+    List<Pet> findByShelterEmail(String email);
 }
