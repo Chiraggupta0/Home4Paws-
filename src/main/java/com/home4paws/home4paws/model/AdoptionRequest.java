@@ -28,6 +28,17 @@ public class AdoptionRequest {
     @Column(name = "requested_at")
     private LocalDateTime requestedAt;
 
+    @PrePersist
+    public void prePersist() {
+
+        this.requestedAt = LocalDateTime.now();
+
+        if (this.status == null) {
+            this.status = RequestStatus.PENDING;
+        }
+    }
+//    whenever a request is created it set created_at and status as pending --- part of jpa
+
     // Getters & Setters
 
     public Long getId() { return id; }

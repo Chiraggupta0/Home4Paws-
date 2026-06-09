@@ -1,6 +1,7 @@
 package com.home4paws.home4paws.service;
 
 import com.home4paws.home4paws.model.Pet;
+import com.home4paws.home4paws.model.PetStatus;
 import com.home4paws.home4paws.model.User;
 import com.home4paws.home4paws.repository.PetRepository;
 import com.home4paws.home4paws.repository.UserRepository;
@@ -32,7 +33,7 @@ public class PetService {
         pet.setShelter(shelter);
 
         // Set default status
-        pet.setStatus("AVAILABLE");
+        pet.setStatus(PetStatus.AVAILABLE);
 
         return petRepository.save(pet);
     }
@@ -40,7 +41,7 @@ public class PetService {
     // 2. GET ALL AVAILABLE PETS — anyone can see these
 
     public List<Pet> getAllAvailablePets() {
-        return petRepository.findByStatus("AVAILABLE");
+        return petRepository.findByStatus(PetStatus.AVAILABLE);
     }
 
     public List<Pet> getMyPets(String shelterEmail) {

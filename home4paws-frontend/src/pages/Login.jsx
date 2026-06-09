@@ -33,6 +33,8 @@ function Login() {
                 formData
             );
 
+            //  the below are used to store them locally so that if the user refreshes page or open close browser then he in still signed in this is a part of jwt (this is view in inspect in network tab)
+
             localStorage.setItem(
                 "token",
                 response.data.token

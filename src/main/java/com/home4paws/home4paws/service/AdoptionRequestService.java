@@ -1,14 +1,12 @@
 package com.home4paws.home4paws.service;
 
-import com.home4paws.home4paws.model.AdoptionRequest;
-import com.home4paws.home4paws.model.Pet;
-import com.home4paws.home4paws.model.RequestStatus;
-import com.home4paws.home4paws.model.User;
+import com.home4paws.home4paws.model.*;
 import com.home4paws.home4paws.repository.AdoptionRequestRepository;
 import com.home4paws.home4paws.repository.PetRepository;
 import com.home4paws.home4paws.repository.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import com.home4paws.home4paws.model.PetStatus;
 
 import java.util.List;
 
@@ -80,7 +78,7 @@ public class AdoptionRequestService {
             Pet pet = request.getPet();
 
             // Pet becomes unavailable
-            pet.setStatus("ADOPTED");
+            pet.setStatus(PetStatus.ADOPTED);
 
             petRepository.save(pet);
         }

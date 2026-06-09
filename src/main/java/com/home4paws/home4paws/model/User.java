@@ -1,6 +1,7 @@
 package com.home4paws.home4paws.model;
 
 import jakarta.persistence.*;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,6 +34,21 @@ public class User implements UserDetails {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "phone_number")
+    private String phoneNumber;
+    //SMS notifications
+    // QR scan alerts
+    // Owner contact details
+
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;
+    //Profile page
+    //NGO profile
+    //User avatar
+
+    @Column(name = "is_verified")
+    private Boolean verified = false;
+
     // Getters & Setters
 
     public Long getId() { return id; }
@@ -49,6 +65,36 @@ public class User implements UserDetails {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
+    }
+
+    public void setProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
+    }
+
+    public Boolean getVerified() {
+        return verified;
+    }
+
+    public void setVerified(Boolean verified) {
+        this.verified = verified;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
+    // it automatically sets createdat when a user is saved (when he registers)
 
     // UserDetails implementation
 

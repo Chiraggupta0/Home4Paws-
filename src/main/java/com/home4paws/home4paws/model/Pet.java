@@ -23,8 +23,9 @@ public class Pet {
 
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;         // AVAILABLE, ADOPTED, PENDING
+    private PetStatus status;         // AVAILABLE, ADOPTED, PENDING
 
     @ManyToOne
     @JoinColumn(name = "shelter_id", nullable = false)
@@ -33,7 +34,15 @@ public class Pet {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
 
+        if (this.status == null) {
+            this.status = PetStatus.AVAILABLE;
+        }
+    }
+//    automatically set created_at when shelter adds a dog
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -53,8 +62,12 @@ public class Pet {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public void setStatus(PetStatus status) {
+        this.status = status;
+    }
+    public PetStatus getStatus() {
+        return status;
+    }
 
     public User getShelter() { return shelter; }
     public void setShelter(User shelter) { this.shelter = shelter; }

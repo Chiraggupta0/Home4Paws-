@@ -33,7 +33,7 @@ public class PetController {
 
     // Only SHELTER users can add pets
     @PostMapping
-    @PreAuthorize("hasRole('SHELTER')")
+    @PreAuthorize("hasRole('NGO_SHELTER')")
     public ResponseEntity<Pet> addPet(
             @RequestBody Pet pet,
             Principal principal) {
@@ -48,7 +48,7 @@ public class PetController {
 
     // Only SHELTER users can delete pets
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('SHELTER')")
+    @PreAuthorize("hasRole('NGO_SHELTER')")
     public ResponseEntity<Void> deletePet(
             @PathVariable Long id,
             Principal principal) {
@@ -61,7 +61,7 @@ public class PetController {
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/my-pets")
-    @PreAuthorize("hasRole('SHELTER')")
+    @PreAuthorize("hasRole('NGO_SHELTER')")
     public ResponseEntity<List<Pet>> getMyPets(
             Principal principal) {
 
