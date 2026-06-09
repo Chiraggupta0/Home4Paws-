@@ -24,7 +24,7 @@ public class AdoptionRequestController {
     // Adopter sends adoption request
 
     @PostMapping("/{petId}")
-    @PreAuthorize("hasRole('ADOPTER')")
+    @PreAuthorize("hasRole('NORMAL_USER')")
     public ResponseEntity<AdoptionRequest> sendRequest(
             @PathVariable Long petId,
             Principal principal) {
@@ -40,7 +40,7 @@ public class AdoptionRequestController {
     // Adopter views own requests
 
     @GetMapping("/my")
-    @PreAuthorize("hasRole('ADOPTER')")
+    @PreAuthorize("hasRole('NORMAL_USER')")
     public ResponseEntity<List<AdoptionRequest>> getMyRequests(
             Principal principal) {
 
@@ -51,17 +51,31 @@ public class AdoptionRequestController {
         );
     }
 
+    @GetMapping("/my-pets")
+    @PreAuthorize("hasRole('NGO_SHELTER')")
+    public ResponseEntity<List<AdoptionRequest>> getRequestsForMyPets(
+            Principal principal) {
+
+        return ResponseEntity.ok(
+                adoptionRequestService.getRequestsForMyPets(
+                        principal.getName()
+                )
+        );
+    }
+
     // Shelter approves request
 
     @PutMapping("/{requestId}/approve")
-    @PreAuthorize("hasRole('SHELTER')")
+    @PreAuthorize("hasRole('NGO_SHELTER')")
     public ResponseEntity<AdoptionRequest> approveRequest(
-            @PathVariable Long requestId) {
+            @PathVariable Long requestId,
+            Principal principal) {
 
         return ResponseEntity.ok(
                 adoptionRequestService.updateStatus(
                         requestId,
-                        RequestStatus.APPROVED
+                        RequestStatus.APPROVED,
+                        principal.getName()
                 )
         );
     }
@@ -69,14 +83,16 @@ public class AdoptionRequestController {
     // Shelter rejects request
 
     @PutMapping("/{requestId}/reject")
-    @PreAuthorize("hasRole('SHELTER')")
+    @PreAuthorize("hasRole('NGO_SHELTER')")
     public ResponseEntity<AdoptionRequest> rejectRequest(
-            @PathVariable Long requestId) {
+            @PathVariable Long requestId,
+            Principal principal) {
 
         return ResponseEntity.ok(
                 adoptionRequestService.updateStatus(
                         requestId,
-                        RequestStatus.REJECTED
+                        RequestStatus.REJECTED,
+                        principal.getName()
                 )
         );
     }

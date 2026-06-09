@@ -41,6 +41,15 @@ public class AdoptionRequestService {
                 .orElseThrow(() -> new RuntimeException(
                         "Pet not found with id: " + petId));
 
+        // Prevent duplicate requests
+        if (adoptionRequestRepository.existsByAdopterIdAndPetId(
+                adopter.getId(),
+                pet.getId())) {
+
+            throw new RuntimeException(
+                    "You have already requested this pet");
+        }
+
         AdoptionRequest request = new AdoptionRequest();
 
         request.setAdopter(adopter);
@@ -63,13 +72,34 @@ public class AdoptionRequestService {
                 adopter.getId()
         );
     }
+
+    public List<AdoptionRequest> getRequestsForMyPets(
+            String shelterEmail) {
+
+        return adoptionRequestRepository
+                .findByPetShelterEmail(
+                        shelterEmail
+                );
+    }
+
     public AdoptionRequest updateStatus(
             Long requestId,
-            RequestStatus status) {
+            RequestStatus status,
+            String shelterEmail) {
 
         AdoptionRequest request = adoptionRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException(
                         "Request not found with id: " + requestId));
+        String ownerEmail =
+                request.getPet()
+                        .getShelter()
+                        .getEmail();
+
+        if (!ownerEmail.equals(shelterEmail)) {
+            throw new RuntimeException(
+                    "You are not authorized to manage this request"
+            );
+        }
 
         request.setStatus(status);
 
@@ -85,4 +115,5 @@ public class AdoptionRequestService {
 
         return adoptionRequestRepository.save(request);
     }
+
 }

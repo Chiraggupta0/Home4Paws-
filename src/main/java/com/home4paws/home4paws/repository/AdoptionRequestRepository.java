@@ -20,4 +20,11 @@ public interface AdoptionRequestRepository extends JpaRepository<AdoptionRequest
 
     // find all requests by a specific adopter with a specific status
     List<AdoptionRequest> findByAdopterIdAndStatus(Long adopterId, RequestStatus status);
+
+    List<AdoptionRequest> findByPetShelterEmail(String email);
+
+    boolean existsByAdopterIdAndPetId(
+            Long adopterId,
+            Long petId
+    );
 }
