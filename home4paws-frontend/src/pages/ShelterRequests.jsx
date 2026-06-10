@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axiosConfig";
+import "../styles/ShelterRequests.css";
 
 function ShelterRequests() {
 
@@ -15,7 +16,7 @@ function ShelterRequests() {
         try {
 
             const response =
-                await api.get("/api/requests/shelter");
+                await api.get("/api/requests/my-pets");
 
             setRequests(response.data);
 
@@ -36,10 +37,12 @@ function ShelterRequests() {
 
         try {
 
-            await api.put(
-                `/api/requests/${id}`,
-                { status }
-            );
+            const endpoint =
+                status === "APPROVED"
+                    ? `/api/requests/${id}/approve`
+                    : `/api/requests/${id}/reject`;
+
+            await api.put(endpoint);
 
             fetchRequests();
 

@@ -27,7 +27,7 @@ function Navbar() {
                     🐾
                 </div>
 
-                <h1>Home4Paws</h1>
+                <h2>Home4Paws</h2>
 
             </div>
 
@@ -35,10 +35,10 @@ function Navbar() {
 
                 {/* ADOPTER MENU */}
                 {
-                    role === "ADOPTER" && (
+                    role === "NORMAL_USER" && (
                         <>
                             <Link to="/pets">
-                                Pet Dogs
+                                Browse Pets
                             </Link>
 
                             <Link to="/my-requests">
@@ -49,14 +49,14 @@ function Navbar() {
                 }
 
                 {/* SHELTER MENU */}
-                {role === "SHELTER" && (
+                {role === "NGO_SHELTER" && (
                     <>
                         <Link to="/add-pet">
-                            Add Dog
+                            Add Pet
                         </Link>
 
                         <Link to="/my-dogs">
-                            My Dogs
+                            My Pets
                         </Link>
 
                         <Link to="/shelter-requests">
@@ -65,14 +65,14 @@ function Navbar() {
                     </>
                 )}
 
-                {/* COMMON LINKS */}
-                <Link to="/">
-                    NGOs
-                </Link>
 
-                <Link to="/">
-                    Subscribe
-                </Link>
+                {/*<Link to="/">*/}
+                {/*    NGOs*/}
+                {/*</Link>*/}
+
+                {/*<Link to="/">*/}
+                {/*    Subscribe*/}
+                {/*</Link>*/}
 
             </div>
 

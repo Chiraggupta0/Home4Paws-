@@ -57,7 +57,7 @@ function App() {
             <Route
                 path="/my-requests"
                 element={
-                    <ProtectedRoute role="ADOPTER">
+                    <ProtectedRoute role="NORMAL_USER">
                         <MyRequests />
                     </ProtectedRoute>
                 }
@@ -73,7 +73,7 @@ function App() {
             <Route
                 path="/add-pet"
                 element={
-                    <ProtectedRoute role="SHELTER">
+                    <ProtectedRoute role="NGO_SHELTER">
                         <AddPet />
                     </ProtectedRoute>
                 }
