@@ -70,18 +70,23 @@ export default function Register() {
       {/* Left panel */}
       <div className="auth-panel-left">
         <div className="auth-left-top">
-          <Link to="/" className="auth-left-brand">
-            <div className="auth-left-brand__icon">🐾</div>
-            <span className="auth-left-brand__name">Home4Paws</span>
-          </Link>
+          <div className="auth-left-tag">🐶 India's #1 dog adoption platform</div>
           <h2 className="auth-left-headline">
             Join thousands of<br /><em>dog lovers</em>
           </h2>
           <p className="auth-left-sub">
             Whether you're looking to adopt or you run a shelter — Home4Paws makes the connection simple and joyful.
           </p>
+          <div className="auth-left-stats">
+            <div className="auth-left-stat"><strong>2.4k+</strong><span>Dogs rehomed</span></div>
+            <div className="auth-left-stat"><strong>180+</strong><span>Shelters</span></div>
+            <div className="auth-left-stat"><strong>Free</strong><span>Forever</span></div>
+          </div>
         </div>
         <div className="auth-left-paws">🐾 🐾 🐾 🐾 🐾</div>
+        <div className="auth-dog-wrap">
+          <img src="/dog.jpg" alt="Golden retriever" />
+        </div>
       </div>
 
       {/* Right panel */}

@@ -42,18 +42,23 @@ export default function Login() {
       {/* Left panel */}
       <div className="auth-panel-left">
         <div className="auth-left-top">
-          <Link to="/" className="auth-left-brand">
-            <div className="auth-left-brand__icon">🐾</div>
-            <span className="auth-left-brand__name">Home4Paws</span>
-          </Link>
+          <div className="auth-left-tag">🐾 Trusted by 10,000+ adopters</div>
           <h2 className="auth-left-headline">
             Every dog deserves<br /><em>a loving home</em>
           </h2>
           <p className="auth-left-sub">
             Thousands of rescued animals are waiting to meet you. Sign in and make a difference today.
           </p>
+          <div className="auth-left-stats">
+            <div className="auth-left-stat"><strong>2.4k+</strong><span>Dogs rehomed</span></div>
+            <div className="auth-left-stat"><strong>180+</strong><span>Shelters</span></div>
+            <div className="auth-left-stat"><strong>98%</strong><span>Happy adopters</span></div>
+          </div>
         </div>
         <div className="auth-left-paws">🐾 🐾 🐾 🐾 🐾</div>
+        <div className="auth-dog-wrap">
+          <img src="/dog.jpg" alt="Golden retriever" />
+        </div>
       </div>
 
       {/* Right panel */}

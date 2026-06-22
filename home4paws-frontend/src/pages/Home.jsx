@@ -64,16 +64,16 @@ function Counter({ end, suffix }) {
 
   useEffect(() => {
     if (!inView) return;
-    const dur  = 1800;
-    const step = 16;
-    const inc  = end / (dur / step);
-    let cur = 0;
-    const t = setInterval(() => {
-      cur = Math.min(cur + inc, end);
-      setVal(Math.floor(cur));
-      if (cur >= end) clearInterval(t);
-    }, step);
-    return () => clearInterval(t);
+    const dur = 1800;
+    const start = performance.now();
+    let raf;
+    const tick = (now) => {
+      const progress = Math.min((now - start) / dur, 1);
+      setVal(Math.floor(progress * end));
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [inView, end]);
 
   return <span ref={ref}>{val}{suffix}</span>;

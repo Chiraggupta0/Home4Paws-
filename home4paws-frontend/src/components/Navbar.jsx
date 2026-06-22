@@ -7,16 +7,26 @@ import '../styles/Navbar.css';
 export default function Navbar() {
   const navigate   = useNavigate();
   const location   = useLocation();
-  const [scrolled, setScrolled] = useState(false);
-  const [open,     setOpen]     = useState(false);
+  const [hidden,  setHidden]  = useState(false);
+  const [open,    setOpen]    = useState(false);
 
   const token = localStorage.getItem('token');
   const role  = localStorage.getItem('role');
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40);
+    let last = window.scrollY;
+    let ticking = false;
+    const fn = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const cur = window.scrollY;
+        setHidden(cur > 80 && cur > last);
+        last = cur;
+        ticking = false;
+      });
+    };
     window.addEventListener('scroll', fn, { passive: true });
-    fn();
     return () => window.removeEventListener('scroll', fn);
   }, []);
 
@@ -38,7 +48,11 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className={`nav ${scrolled ? 'nav--solid' : 'nav--glass'}`}>
+      <motion.nav
+        className="nav"
+        animate={{ y: hidden ? '-120%' : '0%' }}
+        transition={{ duration: .35, ease: [0.16, 1, 0.3, 1] }}
+      >
         <div className="nav__inner container">
           <Link to="/" className="nav__logo">
             <div className="nav__logo-icon">🐾</div>
@@ -73,7 +87,7 @@ export default function Navbar() {
             <span className={`burger-bar ${open ? 'bb-bot-open' : ''}`} />
           </button>
         </div>
-      </nav>
+      </motion.nav>
 
       <AnimatePresence>
         {open && (
