@@ -1,13 +1,16 @@
 package com.home4paws.home4paws.config;
 
+import com.nimbusds.jwt.SignedJWT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 
+import java.text.ParseException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -18,6 +21,7 @@ public class JwtUtil {
 
     private final JwtDecoder jwtDecoder = NimbusJwtDecoder
             .withJwkSetUri("https://fdnngmfcveylwgkwjrov.supabase.co/auth/v1/.well-known/jwks.json")
+            .jwsAlgorithm(SignatureAlgorithm.ES256)
             .build();
 
     public String extractEmail(String token) {
@@ -37,8 +41,16 @@ public class JwtUtil {
 
     public boolean isTokenValid(String token) {
         try {
+            // Log the kid from the token header for debugging
+            SignedJWT signed = SignedJWT.parse(token);
+            String kid = signed.getHeader().getKeyID();
+            String alg = signed.getHeader().getAlgorithm().getName();
+            log.info("Token kid={} alg={}", kid, alg);
             jwtDecoder.decode(token);
             return true;
+        } catch (ParseException e) {
+            log.error("JWT parse failed: {}", e.getMessage());
+            return false;
         } catch (JwtException e) {
             log.error("JWT validation failed: {}", e.getMessage());
             return false;
