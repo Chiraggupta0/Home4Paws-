@@ -20,7 +20,7 @@ public class AdoptionRequest {
     private Pet pet;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "request_status_enum")
     private RequestStatus status;
 
     private String message;

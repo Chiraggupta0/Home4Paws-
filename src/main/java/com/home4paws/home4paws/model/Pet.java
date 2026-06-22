@@ -24,7 +24,7 @@ public class Pet {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "pet_status_enum")
     private PetStatus status;         // AVAILABLE, ADOPTED, PENDING
 
     @ManyToOne
