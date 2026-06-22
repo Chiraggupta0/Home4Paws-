@@ -1,96 +1,52 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 
-import Navbar from "./components/Navbar";
+import Navbar        from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
 
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Pets from "./pages/Pets";
-import PetDetails from "./pages/PetDetails";
-import MyRequests from "./pages/MyRequests";
-import ShelterRequests from "./pages/ShelterRequests";
-import ProtectedRoute from "./components/ProtectedRoute";
-import AddPet from "./pages/AddPet";
-import MyDogs from "./pages/MyDogs";
+import Home            from './pages/Home';
+import Login           from './pages/Login';
+import Register        from './pages/Register';
+import Pets            from './pages/Pets';
+import PetDetails      from './pages/PetDetails';
+import MyRequests      from './pages/MyRequests';
+import ShelterRequests from './pages/ShelterRequests';
+import AddPet          from './pages/AddPet';
+import MyDogs          from './pages/MyDogs';
 
-function App() {
+const pageVariants = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
+  exit:    { opacity: 0, y: -8,  transition: { duration: 0.2 } },
+};
 
+function AnimatedRoutes() {
+  const location = useLocation();
   return (
-      <BrowserRouter>
+    <AnimatePresence mode="wait">
+      <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit">
+        <Routes location={location}>
+          <Route path="/"  element={<Home />} />
+          <Route path="/login"    element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        <Navbar />
-
-        <Routes>
-
-          <Route
-              path="/"
-              element={<Home />}
-          />
-
-          <Route
-              path="/login"
-              element={<Login />}
-          />
-
-          <Route
-              path="/register"
-              element={<Register />}
-          />
-
-            <Route
-                path="/pets"
-                element={
-                    <ProtectedRoute>
-                        <Pets />
-                    </ProtectedRoute>
-                }
-            />
-
-            <Route
-                path="/pets/:id"
-                element={
-                    <ProtectedRoute>
-                        <PetDetails />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/my-requests"
-                element={
-                    <ProtectedRoute role="NORMAL_USER">
-                        <MyRequests />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/shelter-requests"
-                element={
-                    <ProtectedRoute role="SHELTER">
-                        <ShelterRequests />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/add-pet"
-                element={
-                    <ProtectedRoute role="NGO_SHELTER">
-                        <AddPet />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/my-dogs"
-                element={
-                    <ProtectedRoute role="SHELTER">
-                        <MyDogs />
-                    </ProtectedRoute>
-                }
-            />
-
+          <Route path="/pets" element={<ProtectedRoute><Pets /></ProtectedRoute>} />
+          <Route path="/pets/:id" element={<ProtectedRoute><PetDetails /></ProtectedRoute>} />
+          <Route path="/my-requests" element={<ProtectedRoute role="NORMAL_USER"><MyRequests /></ProtectedRoute>} />
+          <Route path="/shelter-requests" element={<ProtectedRoute role="SHELTER"><ShelterRequests /></ProtectedRoute>} />
+          <Route path="/add-pet" element={<ProtectedRoute role="NGO_SHELTER"><AddPet /></ProtectedRoute>} />
+          <Route path="/my-dogs" element={<ProtectedRoute role="SHELTER"><MyDogs /></ProtectedRoute>} />
         </Routes>
-
-      </BrowserRouter>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Navbar />
+      <AnimatedRoutes />
+    </BrowserRouter>
+  );
+}

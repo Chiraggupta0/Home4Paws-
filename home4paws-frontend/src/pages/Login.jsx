@@ -1,144 +1,119 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import api from "../api/axiosConfig";
-import "../styles/Auth.css";
-import { Link } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { supabase } from '../lib/supabaseClient';
+import api from '../api/axiosConfig';
+import '../styles/Auth.css';
 
-function Login() {
+export default function Login() {
+  const navigate = useNavigate();
+  const [form, setForm]       = useState({ email: '', password: '' });
+  const [error, setError]     = useState('');
+  const [loading, setLoading] = useState(false);
 
-    const navigate = useNavigate();
+  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
-    const [formData, setFormData] = useState({
-        email: "",
-        password: ""
-    });
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const { data, error: supaErr } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
+      });
+      if (supaErr) throw supaErr;
 
-    const handleChange = (e) => {
+      const token = data.session.access_token;
+      const res   = await api.post('/api/auth/sync', {}, { headers: { Authorization: `Bearer ${token}` } });
 
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+      localStorage.setItem('token', token);
+      localStorage.setItem('role',  res.data.role);
+      navigate(res.data.role === 'NGO_SHELTER' ? '/my-dogs' : '/pets');
+    } catch (err) {
+      setError(err.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    };
+  return (
+    <div className="auth-page">
+      {/* Left panel */}
+      <div className="auth-panel-left">
+        <div className="auth-left-top">
+          <Link to="/" className="auth-left-brand">
+            <div className="auth-left-brand__icon">🐾</div>
+            <span className="auth-left-brand__name">Home4Paws</span>
+          </Link>
+          <h2 className="auth-left-headline">
+            Every dog deserves<br /><em>a loving home</em>
+          </h2>
+          <p className="auth-left-sub">
+            Thousands of rescued animals are waiting to meet you. Sign in and make a difference today.
+          </p>
+        </div>
+        <div className="auth-left-paws">🐾 🐾 🐾 🐾 🐾</div>
+      </div>
 
-    const handleSubmit = async (e) => {
+      {/* Right panel */}
+      <div className="auth-panel-right">
+        <motion.div
+          className="auth-form-box"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <h1 className="auth-title">Welcome back</h1>
+          <p className="auth-sub">Sign in to your account</p>
 
-        e.preventDefault();
+          {error && (
+            <motion.div
+              className="alert alert-error"
+              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+            >
+              ⚠️ {error}
+            </motion.div>
+          )}
 
-        try {
-
-            const response = await api.post(
-                "/api/auth/login",
-                formData
-            );
-
-            //  the below are used to store them locally so that if the user refreshes page or open close browser then he in still signed in this is a part of jwt (this is view in inspect in network tab)
-
-            localStorage.setItem(
-                "token",
-                response.data.token
-            );
-
-            localStorage.setItem(
-                "role",
-                response.data.role
-            );
-
-            alert("Login successful!");
-
-            if (response.data.role === "SHELTER") {
-
-                navigate("/my-dogs");
-
-            } else {
-
-                navigate("/pets");
-            }
-
-        } catch (error) {
-
-            console.error(error);
-
-            alert(
-                error.response?.data?.message ||
-                "Login failed"
-            );
-
-        }
-
-    };
-
-    return (
-
-        <div className="auth-page">
-
-            <div className="auth-card">
-
-                <div className="brand">
-
-                    <div className="brand-icon">
-                        🐾
-                    </div>
-
-                    <h1>Home4Paws</h1>
-
-                </div>
-
-                <h2 className="auth-title">
-                    Sign In
-                </h2>
-
-                <form onSubmit={handleSubmit}>
-
-                    <div className="form-group">
-
-                        <label>Email</label>
-
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="Enter email"
-                        />
-
-                    </div>
-
-                    <div className="form-group">
-
-                        <label>Password</label>
-
-                        <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            placeholder="Enter password"
-                        />
-
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="submit-btn"
-                    >
-                        Sign In
-                    </button>
-                    <p className="register-link">
-                        Don't have an account?{" "}
-                        <Link to="/register">
-                            Register
-                        </Link>
-                    </p>
-
-                </form>
-
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-group">
+              <label className="form-label" htmlFor="email">Email address</label>
+              <input
+                id="email" name="email" type="email"
+                className="form-input"
+                placeholder="you@example.com"
+                value={form.email} onChange={handleChange}
+                required autoComplete="email"
+              />
             </div>
 
-        </div>
+            <div className="form-group">
+              <label className="form-label" htmlFor="password">Password</label>
+              <input
+                id="password" name="password" type="password"
+                className="form-input"
+                placeholder="Your password"
+                value={form.password} onChange={handleChange}
+                required autoComplete="current-password"
+              />
+            </div>
 
-    );
+            <motion.button
+              type="submit"
+              className="btn btn-primary auth-submit"
+              disabled={loading}
+              whileTap={{ scale: 0.97 }}
+            >
+              {loading ? 'Signing in…' : 'Sign In →'}
+            </motion.button>
+          </form>
+
+          <p className="auth-footer-link">
+            New here? <Link to="/register">Create a free account</Link>
+          </p>
+        </motion.div>
+      </div>
+    </div>
+  );
 }
-
-export default Login;

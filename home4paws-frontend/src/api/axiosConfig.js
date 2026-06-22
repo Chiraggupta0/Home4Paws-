@@ -1,16 +1,16 @@
 import axios from "axios";
+import { supabase } from "../lib/supabaseClient";
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL
 });
 
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
-
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+// Always use the fresh Supabase session token (auto-refreshed after 1 hour)
+api.interceptors.request.use(async (config) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+        config.headers.Authorization = `Bearer ${session.access_token}`;
     }
-
     return config;
 });
 

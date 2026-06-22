@@ -1,7 +1,6 @@
 package com.home4paws.home4paws.model;
 
 import jakarta.persistence.*;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,7 +23,7 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -105,7 +104,7 @@ public class User implements UserDetails {
 
     @Override
     public String getPassword() {
-        return password;
+        return password != null ? password : "";
     }
 
     public void setPassword(String password) {

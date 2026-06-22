@@ -1,44 +1,20 @@
 services:
 
-  postgres:
-    image: postgres:16-alpine
-    container_name: home4paws-postgres
-
-    environment:
-      POSTGRES_DB: home4paws
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Chir@3175
-
-    ports:
-      - "5432:5432"
-
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
   backend:
     image: home4paws-backend
     container_name: home4paws-backend
-
-    depends_on:
-      - postgres
-
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/home4paws
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: Chir@3175
-
+      SPRING_DATASOURCE_URL: jdbc:postgresql://aws-1-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require
+      SPRING_DATASOURCE_USERNAME: postgres.fdnngmfcveylwgkwjrov
+      SPRING_DATASOURCE_PASSWORD: Chir@989707
+      SERVER_PORT: 8080
     ports:
       - "8080:8080"
 
   frontend:
     image: home4paws-frontend
     container_name: home4paws-frontend
-
     depends_on:
       - backend
-
     ports:
       - "4173:4173"
-
-volumes:
-  postgres_data:

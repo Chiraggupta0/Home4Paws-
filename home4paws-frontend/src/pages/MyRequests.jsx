@@ -1,85 +1,82 @@
-import { useEffect, useState } from "react";
-import api from "../api/axiosConfig";
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import api from '../api/axiosConfig';
 
-function MyRequests() {
+const STATUS_MAP = {
+  PENDING:  { cls: 'badge-pending', label: '⏳ Pending',  icon: '⏳' },
+  APPROVED: { cls: 'badge-success', label: '✅ Approved', icon: '🎉' },
+  REJECTED: { cls: 'badge-error',   label: '❌ Rejected', icon: '💔' },
+};
 
-    const [requests, setRequests] = useState([]);
-    const [loading, setLoading] = useState(true);
+export default function MyRequests() {
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading]   = useState(true);
 
-    useEffect(() => {
-        fetchRequests();
-    }, []);
+  useEffect(() => {
+    api.get('/api/requests/my')
+      .then(r => setRequests(r.data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
-    const fetchRequests = async () => {
-
-        try {
-
-            const response =
-                await api.get("/api/requests/my");
-
-            setRequests(response.data);
-
-        } catch (error) {
-
-            console.error(error);
-
-            alert("Failed to load requests");
-
-        } finally {
-
-            setLoading(false);
-
-        }
-    };
-
-    if (loading) {
-        return <h2>Loading requests...</h2>;
-    }
-
-    return (
-
-        <div>
-
-            <h2>My Adoption Requests</h2>
-
-            {
-                requests.length === 0 ? (
-
-                    <p>No requests found.</p>
-
-                ) : (
-
-                    requests.map((request) => (
-
-                        <div
-                            key={request.id}
-                            style={{
-                                border: "1px solid black",
-                                padding: "10px",
-                                marginBottom: "10px"
-                            }}
-                        >
-
-                            <h3>
-                                {request.pet.name}
-                            </h3>
-
-                            <p>
-                                <strong>Status:</strong>
-                                {" "}
-                                {request.status}
-                            </p>
-
-                        </div>
-
-                    ))
-
-                )
-            }
-
+  return (
+    <div className="page-wrapper">
+      <div style={{ background: 'linear-gradient(135deg,#2C1810 0%,#6B3422 60%,#9B4E20 100%)', padding: 'clamp(60px,8vw,100px) 0 clamp(40px,5vw,60px)' }}>
+        <div className="container">
+          <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:.5}}>
+            <p className="section-eyebrow" style={{color:'var(--accent)'}}>📋 Your Activity</p>
+            <h1 style={{color:'#fff', fontSize:'clamp(2rem,4vw,2.8rem)', fontFamily:"'Playfair Display',serif", marginTop:8}}>
+              My Adoption Requests
+            </h1>
+          </motion.div>
         </div>
+      </div>
 
-    );
+      <div className="container" style={{paddingTop:40, paddingBottom:80}}>
+        {loading ? (
+          <div className="loading-screen">
+            <div className="paw-loader">🐾</div>
+            <p className="loading-text">Loading your requests…</p>
+          </div>
+        ) : requests.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">📋</div>
+            <h3>No requests yet</h3>
+            <p>You haven't applied for any adoptions yet. Find your new best friend!</p>
+            <Link to="/pets" className="btn btn-primary" style={{marginTop:20}}>Browse Pets 🐶</Link>
+          </div>
+        ) : (
+          <div style={{display:'flex', flexDirection:'column', gap:16, maxWidth:640}}>
+            {requests.map((req, i) => {
+              const s = STATUS_MAP[req.status] || { cls:'badge-pending', label: req.status, icon:'•' };
+              return (
+                <motion.div
+                  key={req.id}
+                  className="card"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08, duration: 0.45 }}
+                  style={{ padding: '24px 28px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}
+                >
+                  <div style={{display:'flex', alignItems:'center', gap:16}}>
+                    <div style={{fontSize:'2rem', width:52, height:52, background:'var(--cream-dark)', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0}}>
+                      🐶
+                    </div>
+                    <div>
+                      <h3 style={{fontSize:'1.1rem', marginBottom:2}}>{req.pet?.name || 'Pet'}</h3>
+                      <p style={{fontSize:'.85rem', color:'var(--text-muted)'}}>
+                        {req.pet?.breed || ''}{req.pet?.breed && req.pet?.species ? ' · ' : ''}{req.pet?.species || ''}
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`badge ${s.cls}`}>{s.label}</span>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
-
-export default MyRequests;
