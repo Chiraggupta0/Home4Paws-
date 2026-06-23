@@ -23,6 +23,9 @@ public class Pet {
 
     private String description;
 
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PetStatus status;         // AVAILABLE, ADOPTED, PENDING
@@ -61,6 +64,9 @@ public class Pet {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getProfilePictureUrl() { return profilePictureUrl; }
+    public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
 
     public void setStatus(PetStatus status) {
         this.status = status;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../api/axiosConfig';
 
@@ -12,6 +12,7 @@ const STATUS_MAP = {
 export default function MyRequests() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading]   = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.get('/api/requests/my')
@@ -57,17 +58,22 @@ export default function MyRequests() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08, duration: 0.45 }}
-                  style={{ padding: '24px 28px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}
+                  onClick={() => navigate(`/pets/${req.pet?.id}`)}
+                  style={{ padding: '24px 28px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap', cursor:'pointer' }}
+                  whileHover={{ y: -2, boxShadow: '0 8px 24px rgba(26,26,46,.10)' }}
                 >
                   <div style={{display:'flex', alignItems:'center', gap:16}}>
-                    <div style={{fontSize:'2rem', width:52, height:52, background:'var(--cream-dark)', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0}}>
-                      🐶
+                    <div style={{width:56, height:56, borderRadius:12, overflow:'hidden', background:'var(--bg)', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.8rem'}}>
+                      {req.pet?.profilePictureUrl
+                        ? <img src={req.pet.profilePictureUrl} alt={req.pet.name} style={{width:'100%', height:'100%', objectFit:'cover'}} />
+                        : '🐶'}
                     </div>
                     <div>
                       <h3 style={{fontSize:'1.1rem', marginBottom:2}}>{req.pet?.name || 'Pet'}</h3>
                       <p style={{fontSize:'.85rem', color:'var(--text-muted)'}}>
                         {req.pet?.breed || ''}{req.pet?.breed && req.pet?.species ? ' · ' : ''}{req.pet?.species || ''}
                       </p>
+                      <p style={{fontSize:'.78rem', color:'var(--text-light)', marginTop:2}}>Tap to view full details →</p>
                     </div>
                   </div>
                   <span className={`badge ${s.cls}`}>{s.label}</span>

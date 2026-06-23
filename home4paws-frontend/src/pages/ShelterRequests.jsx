@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api/axiosConfig';
 
@@ -12,6 +13,7 @@ export default function ShelterRequests() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [updating, setUpdating] = useState(null);
+  const navigate = useNavigate();
 
   const fetchRequests = () => {
     setLoading(true);
@@ -78,45 +80,59 @@ export default function ShelterRequests() {
                     transition={{ delay: i * 0.07 }}
                     style={{ padding: '24px 28px' }}
                   >
-                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:16 }}>
-                        <div style={{ fontSize:'1.8rem', width:52, height:52, background:'var(--cream-dark)', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                          🐶
+                    <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
+
+                      {/* Pet info — clickable */}
+                      <div style={{ display:'flex', alignItems:'center', gap:14, cursor:'pointer', flex:1 }}
+                        onClick={() => navigate(`/pets/${req.pet?.id}`)}>
+                        <div style={{ width:56, height:56, borderRadius:12, overflow:'hidden', background:'var(--bg)', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.8rem' }}>
+                          {req.pet?.profilePictureUrl
+                            ? <img src={req.pet.profilePictureUrl} alt={req.pet.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                            : '🐶'}
                         </div>
                         <div>
-                          <h3 style={{ fontSize:'1.05rem', marginBottom:3 }}>{req.pet?.name || 'Pet'}</h3>
-                          <p style={{ fontSize:'.85rem', color:'var(--text-muted)' }}>
-                            Adopter: <strong style={{color:'var(--text)'}}>{req.adopter?.name || '—'}</strong>
+                          <h3 style={{ fontSize:'1.05rem', marginBottom:2 }}>{req.pet?.name || 'Pet'}</h3>
+                          <p style={{ fontSize:'.8rem', color:'var(--text-muted)' }}>
+                            {req.pet?.breed}{req.pet?.breed && req.pet?.species ? ' · ' : ''}{req.pet?.species}
+                            {req.pet?.age ? ` · ${req.pet.age} yrs` : ''}
                           </p>
+                          <p style={{ fontSize:'.75rem', color:'var(--primary)', marginTop:2 }}>View pet details →</p>
                         </div>
                       </div>
 
-                      <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-                        <span className={`badge ${s.cls}`}>{s.label}</span>
-
-                        {req.status === 'PENDING' && (
-                          <>
-                            <motion.button
-                              className="btn btn-sm"
-                              style={{ background:'var(--success)', color:'#fff', border:'none' }}
-                              onClick={() => updateStatus(req.id, 'APPROVED')}
-                              disabled={updating === req.id}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              {updating === req.id ? '…' : '✅ Approve'}
-                            </motion.button>
-                            <motion.button
-                              className="btn btn-sm"
-                              style={{ background:'var(--error)', color:'#fff', border:'none' }}
-                              onClick={() => updateStatus(req.id, 'REJECTED')}
-                              disabled={updating === req.id}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              {updating === req.id ? '…' : '❌ Reject'}
-                            </motion.button>
-                          </>
-                        )}
+                      {/* Adopter info */}
+                      <div style={{ background:'var(--bg)', borderRadius:10, padding:'10px 14px', minWidth:180 }}>
+                        <p style={{ fontSize:'.72rem', color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'.05em', marginBottom:4 }}>Adopter</p>
+                        <p style={{ fontSize:'.9rem', fontWeight:700, color:'var(--dark)' }}>{req.adopter?.name || '—'}</p>
+                        {req.adopter?.phoneNumber && <p style={{ fontSize:'.8rem', color:'var(--text-muted)', marginTop:2 }}>📞 {req.adopter.phoneNumber}</p>}
                       </div>
+                    </div>
+
+                    {/* Status + actions */}
+                    <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:16, flexWrap:'wrap' }}>
+                      <span className={`badge ${s.cls}`}>{s.label}</span>
+                      {req.status === 'PENDING' && (
+                        <>
+                          <motion.button
+                            className="btn btn-sm"
+                            style={{ background:'var(--success)', color:'#fff', border:'none' }}
+                            onClick={() => updateStatus(req.id, 'APPROVED')}
+                            disabled={updating === req.id}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            {updating === req.id ? '…' : '✅ Approve'}
+                          </motion.button>
+                          <motion.button
+                            className="btn btn-sm"
+                            style={{ background:'var(--error)', color:'#fff', border:'none' }}
+                            onClick={() => updateStatus(req.id, 'REJECTED')}
+                            disabled={updating === req.id}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            {updating === req.id ? '…' : '❌ Reject'}
+                          </motion.button>
+                        </>
+                      )}
                     </div>
                   </motion.div>
                 );

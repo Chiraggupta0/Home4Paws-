@@ -40,10 +40,12 @@ export default function AddPet() {
           .upload(path, photo, { upsert: true });
         if (uploadErr) throw new Error('Photo upload failed: ' + uploadErr.message);
 
-        const { data } = supabase.storage.from('pet-images').getPublicUrl(path);
-        profilePictureUrl = data.publicUrl;
+        const { data: urlData } = supabase.storage.from('pet-images').getPublicUrl(path);
+        profilePictureUrl = urlData?.publicUrl ?? null;
+        console.log('Got public URL:', profilePictureUrl);
       }
 
+      console.log('Submitting pet with URL:', profilePictureUrl);
       await api.post('/api/pets', { ...pet, profilePictureUrl });
       setSuccess(true);
       setPet(EMPTY);

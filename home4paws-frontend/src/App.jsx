@@ -33,9 +33,9 @@ function AnimatedRoutes() {
           <Route path="/pets" element={<Pets />} />
           <Route path="/pets/:id" element={<ProtectedRoute><PetDetails /></ProtectedRoute>} />
           <Route path="/my-requests" element={<ProtectedRoute role="NORMAL_USER"><MyRequests /></ProtectedRoute>} />
-          <Route path="/shelter-requests" element={<ProtectedRoute role="SHELTER"><ShelterRequests /></ProtectedRoute>} />
+          <Route path="/shelter-requests" element={<ProtectedRoute role="NGO_SHELTER"><ShelterRequests /></ProtectedRoute>} />
           <Route path="/add-pet" element={<ProtectedRoute role="NGO_SHELTER"><AddPet /></ProtectedRoute>} />
-          <Route path="/my-dogs" element={<ProtectedRoute role="SHELTER"><MyDogs /></ProtectedRoute>} />
+          <Route path="/my-dogs" element={<ProtectedRoute role="NGO_SHELTER"><MyDogs /></ProtectedRoute>} />
         </Routes>
       </motion.div>
     </AnimatePresence>
