@@ -58,11 +58,11 @@ export default function MyRequests() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08, duration: 0.45 }}
-                  onClick={() => navigate(`/pets/${req.pet?.id}`)}
-                  style={{ padding: '24px 28px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap', cursor:'pointer' }}
+                  style={{ padding: '24px 28px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}
                   whileHover={{ y: -2, boxShadow: '0 8px 24px rgba(26,26,46,.10)' }}
                 >
-                  <div style={{display:'flex', alignItems:'center', gap:16}}>
+                  <div style={{display:'flex', alignItems:'center', gap:16, flex:1, cursor:'pointer'}}
+                    onClick={() => navigate(`/pets/${req.pet?.id}`)}>
                     <div style={{width:56, height:56, borderRadius:12, overflow:'hidden', background:'var(--bg)', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.8rem'}}>
                       {req.pet?.profilePictureUrl
                         ? <img src={req.pet.profilePictureUrl} alt={req.pet.name} style={{width:'100%', height:'100%', objectFit:'cover'}} />
@@ -76,7 +76,15 @@ export default function MyRequests() {
                       <p style={{fontSize:'.78rem', color:'var(--text-light)', marginTop:2}}>Tap to view full details →</p>
                     </div>
                   </div>
-                  <span className={`badge ${s.cls}`}>{s.label}</span>
+                  <div style={{display:'flex', alignItems:'center', gap:10, flexShrink:0}}>
+                    <span className={`badge ${s.cls}`}>{s.label}</span>
+                    <button
+                      onClick={e => { e.stopPropagation(); navigate(`/chat/${req.id}`); }}
+                      style={{ background:'var(--primary)', color:'#fff', border:'none', borderRadius:8, padding:'6px 14px', cursor:'pointer', fontWeight:600, fontSize:'.85rem' }}
+                    >
+                      💬 Chat
+                    </button>
+                  </div>
                 </motion.div>
               );
             })}

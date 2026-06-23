@@ -33,13 +33,19 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
+        String token;
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        } else {
+            // SSE connections (EventSource) cannot set headers — accept token as query param
+            String queryToken = request.getParameter("token");
+            if (queryToken == null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            token = queryToken;
         }
-
-        String token = authHeader.substring(7);
 
         if (!jwtUtil.isTokenValid(token)) {
             filterChain.doFilter(request, response);

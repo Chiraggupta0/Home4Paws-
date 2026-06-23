@@ -1,7 +1,5 @@
 package com.home4paws.home4paws.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -18,7 +16,6 @@ public class ChatSseManager {
 
     private static final Logger log = LoggerFactory.getLogger(ChatSseManager.class);
     private final Map<Long, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     public SseEmitter subscribe(Long requestId) {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
@@ -29,13 +26,12 @@ public class ChatSseManager {
         return emitter;
     }
 
-    public void broadcast(Long requestId, Object message) {
+    public void broadcast(Long requestId, Map<String, Object> message) {
         List<SseEmitter> list = emitters.getOrDefault(requestId, List.of());
+        String json = toJson(message);
         for (SseEmitter emitter : list) {
             try {
-                emitter.send(SseEmitter.event()
-                        .name("message")
-                        .data(mapper.writeValueAsString(message)));
+                emitter.send(SseEmitter.event().name("message").data(json));
             } catch (IOException e) {
                 remove(requestId, emitter);
             }
@@ -45,5 +41,19 @@ public class ChatSseManager {
     private void remove(Long requestId, SseEmitter emitter) {
         List<SseEmitter> list = emitters.get(requestId);
         if (list != null) list.remove(emitter);
+    }
+
+    private String toJson(Map<String, Object> map) {
+        StringBuilder sb = new StringBuilder("{");
+        boolean first = true;
+        for (Map.Entry<String, Object> e : map.entrySet()) {
+            if (!first) sb.append(',');
+            first = false;
+            sb.append('"').append(e.getKey()).append("\":\"")
+              .append(String.valueOf(e.getValue()).replace("\"", "\\\""))
+              .append('"');
+        }
+        sb.append('}');
+        return sb.toString();
     }
 }

@@ -133,6 +133,14 @@ export default function ShelterRequests() {
                           </motion.button>
                         </>
                       )}
+                      <motion.button
+                        className="btn btn-sm"
+                        style={{ background:'var(--primary)', color:'#fff', border:'none' }}
+                        onClick={() => navigate(`/chat/${req.id}`)}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        💬 Chat
+                      </motion.button>
                     </div>
                   </motion.div>
                 );
