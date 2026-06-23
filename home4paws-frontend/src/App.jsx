@@ -30,7 +30,7 @@ function AnimatedRoutes() {
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          <Route path="/pets" element={<ProtectedRoute><Pets /></ProtectedRoute>} />
+          <Route path="/pets" element={<Pets />} />
           <Route path="/pets/:id" element={<ProtectedRoute><PetDetails /></ProtectedRoute>} />
           <Route path="/my-requests" element={<ProtectedRoute role="NORMAL_USER"><MyRequests /></ProtectedRoute>} />
           <Route path="/shelter-requests" element={<ProtectedRoute role="SHELTER"><ShelterRequests /></ProtectedRoute>} />

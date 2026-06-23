@@ -56,9 +56,6 @@ export default function Login() {
           </div>
         </div>
         <div className="auth-left-paws">🐾 🐾 🐾 🐾 🐾</div>
-        <div className="auth-dog-wrap">
-          <img src="/dog.jpg" alt="Golden retriever" />
-        </div>
       </div>
 
       {/* Right panel */}

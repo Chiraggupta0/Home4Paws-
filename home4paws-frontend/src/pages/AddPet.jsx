@@ -1,28 +1,56 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import api from '../api/axiosConfig';
+import { supabase } from '../lib/supabaseClient';
 
 const EMPTY = { name: '', breed: '', age: '', species: '', description: '' };
 
 export default function AddPet() {
-  const [pet, setPet]       = useState(EMPTY);
+  const [pet, setPet]         = useState(EMPTY);
+  const [photo, setPhoto]     = useState(null);      // File object
+  const [preview, setPreview] = useState(null);      // blob URL
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError]     = useState('');
+  const fileRef               = useRef();
 
   const handleChange = e => setPet({ ...pet, [e.target.name]: e.target.value });
+
+  const handleFile = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setPhoto(file);
+    setPreview(URL.createObjectURL(file));
+  };
 
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setSuccess(false);
+
     try {
-      await api.post('/api/pets', pet);
+      let profilePictureUrl = null;
+
+      if (photo) {
+        const ext  = photo.name.split('.').pop();
+        const path = `pets/${Date.now()}.${ext}`;
+        const { error: uploadErr } = await supabase.storage
+          .from('pet-images')
+          .upload(path, photo, { upsert: true });
+        if (uploadErr) throw new Error('Photo upload failed: ' + uploadErr.message);
+
+        const { data } = supabase.storage.from('pet-images').getPublicUrl(path);
+        profilePictureUrl = data.publicUrl;
+      }
+
+      await api.post('/api/pets', { ...pet, profilePictureUrl });
       setSuccess(true);
       setPet(EMPTY);
+      setPhoto(null);
+      setPreview(null);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add pet. Try again.');
+      setError(err.message || 'Failed to add pet. Try again.');
     } finally {
       setLoading(false);
     }
@@ -52,17 +80,54 @@ export default function AddPet() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error   && <div className="alert alert-error" style={{marginBottom:20}}>⚠️ {error}</div>}
           {success && (
-            <motion.div
-              className="alert alert-success"
-              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-            >
+            <motion.div className="alert alert-success" style={{marginBottom:20}}
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
               🎉 Pet added successfully! Ready for adoption.
             </motion.div>
           )}
 
           <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:4 }}>
+
+            {/* Photo upload */}
+            <div className="form-group">
+              <label className="form-label">Pet Photo</label>
+              <div
+                onClick={() => fileRef.current.click()}
+                style={{
+                  border: '2px dashed var(--border)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: preview ? 0 : '32px 16px',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  overflow: 'hidden',
+                  background: 'var(--bg-alt)',
+                  transition: 'border-color .2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+              >
+                {preview ? (
+                  <img src={preview} alt="preview"
+                    style={{ width:'100%', maxHeight:240, objectFit:'cover', display:'block' }} />
+                ) : (
+                  <>
+                    <div style={{fontSize:'2.5rem', marginBottom:8}}>📷</div>
+                    <p style={{color:'var(--text-muted)', fontSize:'.9rem'}}>Click to upload a photo</p>
+                    <p style={{color:'var(--text-light)', fontSize:'.78rem', marginTop:4}}>JPG, PNG, WEBP · max 5MB</p>
+                  </>
+                )}
+              </div>
+              {preview && (
+                <button type="button" onClick={() => { setPhoto(null); setPreview(null); }}
+                  style={{marginTop:6, fontSize:'.8rem', color:'var(--text-muted)', background:'none', border:'none', cursor:'pointer'}}>
+                  ✕ Remove photo
+                </button>
+              )}
+              <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleFile} />
+            </div>
+
             <div className="form-group">
               <label className="form-label" htmlFor="name">Pet Name *</label>
               <input id="name" name="name" type="text" className="form-input" placeholder="e.g. Buddy" value={pet.name} onChange={handleChange} required />

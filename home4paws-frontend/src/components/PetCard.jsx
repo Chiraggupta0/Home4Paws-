@@ -26,6 +26,12 @@ const GRADIENTS = [
 export default function PetCard({ pet, index = 0, showStatus = false }) {
   const navigate = useNavigate();
   const grad     = GRADIENTS[pet.id % GRADIENTS.length] || GRADIENTS[0];
+  const token    = localStorage.getItem('token');
+
+  const handleClick = () => {
+    if (!token) navigate('/login');
+    else navigate(`/pets/${pet.id}`);
+  };
 
   return (
     <motion.div
@@ -34,7 +40,7 @@ export default function PetCard({ pet, index = 0, showStatus = false }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{ y: -6 }}
-      onClick={() => navigate(`/pets/${pet.id}`)}
+      onClick={handleClick}
       style={{ cursor: 'pointer' }}
     >
       {/* Image area */}
@@ -65,7 +71,7 @@ export default function PetCard({ pet, index = 0, showStatus = false }) {
         {pet.breed && <p className="pet-card__breed">{pet.breed}</p>}
         <button
           className="btn btn-primary btn-sm pet-card__btn"
-          onClick={e => { e.stopPropagation(); navigate(`/pets/${pet.id}`); }}
+          onClick={e => { e.stopPropagation(); handleClick(); }}
         >
           Meet {pet.name} →
         </button>
