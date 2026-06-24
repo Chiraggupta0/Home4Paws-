@@ -40,6 +40,12 @@ export default function PetDetails() {
     setSending(true);
     setError('');
     try {
+      // Check subscription before sending request
+      const { data: subStatus } = await api.get('/api/payment/status');
+      if (!subStatus.subscribed) {
+        navigate('/subscribe');
+        return;
+      }
       await api.post(`/api/requests/${pet.id}`);
       setDone(true);
     } catch (err) {

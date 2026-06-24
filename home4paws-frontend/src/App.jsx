@@ -14,6 +14,7 @@ import ShelterRequests from './pages/ShelterRequests';
 import AddPet          from './pages/AddPet';
 import MyDogs          from './pages/MyDogs';
 import Chat            from './pages/Chat';
+import Subscribe       from './pages/Subscribe';
 
 const pageVariants = {
   initial: { opacity: 0, y: 12 },
@@ -37,7 +38,10 @@ function AnimatedRoutes() {
           <Route path="/shelter-requests" element={<ProtectedRoute role="NGO_SHELTER"><ShelterRequests /></ProtectedRoute>} />
           <Route path="/add-pet" element={<ProtectedRoute role="NGO_SHELTER"><AddPet /></ProtectedRoute>} />
           <Route path="/my-dogs" element={<ProtectedRoute role="NGO_SHELTER"><MyDogs /></ProtectedRoute>} />
+          <Route path="/seller/add-pet" element={<ProtectedRoute role="SELLER"><AddPet /></ProtectedRoute>} />
+          <Route path="/seller/my-pets" element={<ProtectedRoute role="SELLER"><MyDogs /></ProtectedRoute>} />
           <Route path="/chat/:requestId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+          <Route path="/subscribe" element={<ProtectedRoute><Subscribe /></ProtectedRoute>} />
         </Routes>
       </motion.div>
     </AnimatePresence>

@@ -44,7 +44,9 @@ export default function Navbar() {
     ? [{ to: '/pets', label: 'Browse Pets' }, { to: '/my-requests', label: 'My Requests' }]
     : role === 'NGO_SHELTER'
     ? [{ to: '/add-pet', label: 'Add Pet' }, { to: '/my-dogs', label: 'My Pets' }, { to: '/shelter-requests', label: 'Requests' }]
-    : [{ to: '/pets', label: 'Browse Pets' }, { to: '#ngo', label: 'For NGOs' }];
+    : role === 'SELLER'
+    ? [{ to: '/seller/add-pet', label: 'List a Pet' }, { to: '/seller/my-pets', label: 'My Listings' }]
+    : [{ to: '/pets', label: 'Browse Pets' }, { to: '/register', label: 'Join' }];
 
   return (
     <>

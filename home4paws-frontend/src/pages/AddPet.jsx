@@ -1,11 +1,15 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../api/axiosConfig';
 import { supabase } from '../lib/supabaseClient';
 
-const EMPTY = { name: '', breed: '', age: '', species: '', description: '' };
+const EMPTY = { name: '', breed: '', age: '', species: '', description: '', price: '' };
 
 export default function AddPet() {
+  const navigate = useNavigate();
+  const role = localStorage.getItem('role');
+  const isSeller = role === 'SELLER';
   const [pet, setPet]         = useState(EMPTY);
   const [photo, setPhoto]     = useState(null);      // File object
   const [preview, setPreview] = useState(null);      // blob URL
@@ -30,6 +34,15 @@ export default function AddPet() {
     setSuccess(false);
 
     try {
+      // Sellers must be subscribed to list pets
+      if (isSeller) {
+        const { data: subStatus } = await api.get('/api/payment/status');
+        if (!subStatus.subscribed) {
+          navigate('/subscribe');
+          return;
+        }
+      }
+
       let profilePictureUrl = null;
 
       if (photo) {
@@ -63,12 +76,12 @@ export default function AddPet() {
       <div style={{ background: 'linear-gradient(135deg,#2C1810 0%,#6B3422 60%,#9B4E20 100%)', padding: 'clamp(60px,8vw,100px) 0 clamp(40px,5vw,60px)' }}>
         <div className="container">
           <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:.5}}>
-            <p className="section-eyebrow" style={{color:'var(--accent)'}}>➕ Shelter</p>
+            <p className="section-eyebrow" style={{color:'var(--accent)'}}>➕ {isSeller ? 'Seller' : 'Shelter'}</p>
             <h1 style={{color:'#fff', fontSize:'clamp(2rem,4vw,2.8rem)', fontFamily:"'Playfair Display',serif", marginTop:8}}>
-              Add a New Pet
+              {isSeller ? 'List a Pet for Sale' : 'Add a New Pet'}
             </h1>
             <p style={{color:'rgba(255,255,255,.6)', marginTop:8}}>
-              List a pet for adoption and help them find a forever home.
+              {isSeller ? 'List your pet and connect with interested buyers.' : 'List a pet for adoption and help them find a forever home.'}
             </p>
           </motion.div>
         </div>
@@ -155,6 +168,13 @@ export default function AddPet() {
                 <input id="age" name="age" type="number" min="0" max="30" className="form-input" placeholder="e.g. 2" value={pet.age} onChange={handleChange} />
               </div>
             </div>
+
+            {isSeller && (
+              <div className="form-group">
+                <label className="form-label" htmlFor="price">Price (₹) *</label>
+                <input id="price" name="price" type="number" min="0" className="form-input" placeholder="e.g. 5000" value={pet.price} onChange={handleChange} required={isSeller} />
+              </div>
+            )}
 
             <div className="form-group">
               <label className="form-label" htmlFor="description">Description</label>

@@ -7,6 +7,7 @@ import '../styles/Auth.css';
 
 const ROLES = [
   { value: 'NORMAL_USER', label: '🐶 Adopter',       desc: 'I want to adopt a pet' },
+  { value: 'SELLER',      label: '🏷️ Seller',        desc: 'I want to sell my pet' },
   { value: 'NGO_SHELTER', label: '🏠 Shelter / NGO', desc: 'I rescue and list animals' },
 ];
 

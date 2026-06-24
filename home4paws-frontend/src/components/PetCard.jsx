@@ -59,6 +59,11 @@ export default function PetCard({ pet, index = 0, showStatus = false }) {
             {STATUS_LABELS[pet.status] || pet.status}
           </span>
         )}
+        {pet.price != null && (
+          <span style={{ position:'absolute', top:10, left:10, background:'#111', color:'#fff', borderRadius:8, padding:'3px 10px', fontSize:'.78rem', fontWeight:700 }}>
+            ₹{pet.price.toLocaleString('en-IN')}
+          </span>
+        )}
       </div>
 
       {/* Body */}
