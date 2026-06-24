@@ -15,6 +15,7 @@ import AddPet          from './pages/AddPet';
 import MyDogs          from './pages/MyDogs';
 import Chat            from './pages/Chat';
 import Subscribe       from './pages/Subscribe';
+import AuthCallback    from './pages/AuthCallback';
 
 const pageVariants = {
   initial: { opacity: 0, y: 12 },
@@ -29,8 +30,9 @@ function AnimatedRoutes() {
       <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit">
         <Routes location={location}>
           <Route path="/"  element={<Home />} />
-          <Route path="/login"    element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/login"         element={<Login />} />
+          <Route path="/register"      element={<Register />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
 
           <Route path="/pets" element={<Pets />} />
           <Route path="/pets/:id" element={<ProtectedRoute><PetDetails /></ProtectedRoute>} />

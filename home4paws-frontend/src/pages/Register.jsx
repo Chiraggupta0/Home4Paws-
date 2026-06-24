@@ -20,6 +20,13 @@ export default function Register() {
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const handleGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + '/auth/callback' },
+    });
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
@@ -171,6 +178,18 @@ export default function Register() {
               {loading ? 'Creating account…' : 'Create Account →'}
             </motion.button>
           </form>
+
+          <div className="auth-divider"><span>or</span></div>
+
+          <motion.button
+            type="button"
+            className="btn-google"
+            onClick={handleGoogle}
+            whileTap={{ scale: 0.97 }}
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width={20} height={20} />
+            Continue with Google
+          </motion.button>
 
           <p className="auth-footer-link">
             Already have an account? <Link to="/login">Sign in</Link>
