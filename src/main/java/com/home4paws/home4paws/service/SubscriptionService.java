@@ -4,6 +4,11 @@ import com.home4paws.home4paws.model.Subscription;
 import com.home4paws.home4paws.model.User;
 import com.home4paws.home4paws.repository.SubscriptionRepository;
 import com.home4paws.home4paws.repository.UserRepository;
+import com.razorpay.Order;
+import com.razorpay.RazorpayClient;
+import com.razorpay.Utils;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,10 +21,13 @@ public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepo;
     private final UserRepository userRepo;
 
-    // TODO: Replace with real Razorpay Key ID and Secret from dashboard
-    private static final String RAZORPAY_KEY_ID     = "rzp_test_placeholder";
-    private static final String RAZORPAY_KEY_SECRET  = "placeholder_secret";
-    private static final int    AMOUNT_PAISE         = 10000; // ₹100 in paise
+    @Value("${razorpay.key.id}")
+    private String razorpayKeyId;
+
+    @Value("${razorpay.key.secret}")
+    private String razorpayKeySecret;
+
+    private static final int AMOUNT_PAISE = 10000; // ₹100 in paise
 
     public SubscriptionService(SubscriptionRepository subscriptionRepo,
                                UserRepository userRepo) {
@@ -31,52 +39,67 @@ public class SubscriptionService {
         Optional<Subscription> sub = subscriptionRepo.findTopByUserEmailOrderByCreatedAtDesc(email);
         if (sub.isEmpty()) return false;
         Subscription s = sub.get();
-        return "ACTIVE".equals(s.getStatus()) && s.getEndDate().isAfter(LocalDateTime.now());
+        return "ACTIVE".equals(s.getStatus())
+                && s.getEndDate() != null
+                && s.getEndDate().isAfter(LocalDateTime.now());
     }
 
-    // Creates a mock order (replace with real Razorpay API call when key is ready)
+    // Creates a real Razorpay order
     public Map<String, Object> createOrder(String email) {
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // TODO: When Razorpay key is ready, call Razorpay Orders API here:
-        // RazorpayClient client = new RazorpayClient(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET);
-        // JSONObject options = new JSONObject();
-        // options.put("amount", AMOUNT_PAISE);
-        // options.put("currency", "INR");
-        // options.put("receipt", "rcpt_" + email);
-        // Order order = client.orders.create(options);
-        // String orderId = order.get("id");
+        try {
+            RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
 
-        // For now return a mock order ID
-        String mockOrderId = "order_mock_" + System.currentTimeMillis();
+            JSONObject options = new JSONObject();
+            options.put("amount", AMOUNT_PAISE);
+            options.put("currency", "INR");
+            options.put("receipt", "rcpt_" + user.getId() + "_" + System.currentTimeMillis());
 
-        Subscription sub = new Subscription();
-        sub.setUser(user);
-        sub.setStatus("PENDING");
-        sub.setRazorpayOrderId(mockOrderId);
-        subscriptionRepo.save(sub);
+            Order order = client.orders.create(options);
+            String orderId = order.get("id");
 
-        return Map.of(
-            "orderId",  mockOrderId,
-            "amount",   AMOUNT_PAISE,
-            "currency", "INR",
-            "keyId",    RAZORPAY_KEY_ID
-        );
+            Subscription sub = new Subscription();
+            sub.setUser(user);
+            sub.setStatus("PENDING");
+            sub.setRazorpayOrderId(orderId);
+            subscriptionRepo.save(sub);
+
+            return Map.of(
+                "orderId",  orderId,
+                "amount",   AMOUNT_PAISE,
+                "currency", "INR",
+                "keyId",    razorpayKeyId
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create Razorpay order: " + e.getMessage());
+        }
     }
 
-    // Called after successful payment from frontend
-    public void activateSubscription(String email, String orderId, String paymentId) {
+    // Verifies Razorpay signature and activates subscription
+    public void activateSubscription(String email, String orderId, String paymentId, String signature) {
         Subscription sub = subscriptionRepo
                 .findTopByUserEmailOrderByCreatedAtDesc(email)
                 .orElseThrow(() -> new RuntimeException("No pending subscription found"));
 
-        // TODO: Verify Razorpay signature here when real key is ready
+        // Verify the payment signature came from Razorpay
+        try {
+            JSONObject attributes = new JSONObject();
+            attributes.put("razorpay_order_id", orderId);
+            attributes.put("razorpay_payment_id", paymentId);
+            attributes.put("razorpay_signature", signature);
+
+            boolean valid = Utils.verifyPaymentSignature(attributes, razorpayKeySecret);
+            if (!valid) throw new RuntimeException("Invalid payment signature");
+        } catch (Exception e) {
+            throw new RuntimeException("Payment verification failed: " + e.getMessage());
+        }
 
         sub.setStatus("ACTIVE");
         sub.setRazorpayPaymentId(paymentId);
         sub.setStartDate(LocalDateTime.now());
-        sub.setEndDate(LocalDateTime.now().plusMonths(1));
+        sub.setEndDate(LocalDateTime.now().plusMonths(1)); // 30-day validity
         subscriptionRepo.save(sub);
     }
 

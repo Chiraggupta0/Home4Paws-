@@ -30,7 +30,8 @@ export default function ShelterRequests() {
     try {
       const ep = status === 'APPROVED' ? `/api/requests/${id}/approve` : `/api/requests/${id}/reject`;
       await api.put(ep);
-      fetchRequests();
+      // Update local state instantly — no need to refetch
+      setRequests(prev => prev.map(r => r.id === id ? { ...r, status } : r));
     } catch (err) {
       console.error(err);
     } finally {

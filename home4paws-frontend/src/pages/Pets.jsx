@@ -4,10 +4,17 @@ import api from '../api/axiosConfig';
 import PetCard from '../components/PetCard';
 import '../styles/Pets.css';
 
+const TABS = [
+  { key: 'all',      label: 'All' },
+  { key: 'adoption', label: '🐾 For Adoption' },
+  { key: 'sale',     label: '🏷️ For Sale' },
+];
+
 export default function Pets() {
   const [pets, setPets]     = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch]  = useState('');
+  const [tab, setTab]        = useState('all');
 
   useEffect(() => {
     api.get('/api/pets')
@@ -16,12 +23,16 @@ export default function Pets() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = pets.filter(p =>
-    !search ||
-    p.name?.toLowerCase().includes(search.toLowerCase()) ||
-    p.breed?.toLowerCase().includes(search.toLowerCase()) ||
-    p.species?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = pets.filter(p => {
+    // Tab filter: sale = has price, adoption = no price
+    if (tab === 'sale'     && p.price == null) return false;
+    if (tab === 'adoption' && p.price != null) return false;
+    // Search filter
+    return !search ||
+      p.name?.toLowerCase().includes(search.toLowerCase()) ||
+      p.breed?.toLowerCase().includes(search.toLowerCase()) ||
+      p.species?.toLowerCase().includes(search.toLowerCase());
+  });
 
   return (
     <div className="page-wrapper">
@@ -54,6 +65,19 @@ export default function Pets() {
               />
             </div>
           </motion.div>
+
+          {/* Tabs */}
+          <div className="pets-tabs">
+            {TABS.map(t => (
+              <button
+                key={t.key}
+                className={`pets-tab ${tab === t.key ? 'pets-tab--active' : ''}`}
+                onClick={() => setTab(t.key)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

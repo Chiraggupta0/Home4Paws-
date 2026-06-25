@@ -37,7 +37,8 @@ public class PaymentController {
         subscriptionService.activateSubscription(
             principal.getName(),
             body.get("orderId"),
-            body.get("paymentId")
+            body.get("paymentId"),
+            body.get("signature")
         );
         return ResponseEntity.ok(Map.of("message", "Subscription activated"));
     }

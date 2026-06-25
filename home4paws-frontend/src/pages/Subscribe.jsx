@@ -22,35 +22,44 @@ export default function Subscribe() {
     try {
       const { data } = await api.post('/api/payment/create-order');
 
-      // TODO: When real Razorpay key is ready, this block will open the payment modal
-      // const options = {
-      //   key: data.keyId,
-      //   amount: data.amount,
-      //   currency: data.currency,
-      //   order_id: data.orderId,
-      //   name: 'Home4Paws',
-      //   description: '1 Month Subscription',
-      //   handler: async (response) => {
-      //     await api.post('/api/payment/verify', {
-      //       orderId:   response.razorpay_order_id,
-      //       paymentId: response.razorpay_payment_id,
-      //     });
-      //     setStatus({ subscribed: true });
-      //   },
-      // };
-      // const rzp = new window.Razorpay(options);
-      // rzp.open();
+      const options = {
+        key:         data.keyId,
+        amount:      data.amount,
+        currency:    data.currency,
+        order_id:    data.orderId,
+        name:        'Home4Paws',
+        description: '1 Month Subscription',
+        theme:       { color: '#E05A1C' },
+        handler: async (response) => {
+          try {
+            await api.post('/api/payment/verify', {
+              orderId:   response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+            });
+            const { data: fresh } = await api.get('/api/payment/status');
+            setStatus(fresh);
+          } catch (err) {
+            console.error(err);
+            alert('Payment verification failed. Contact support if money was deducted.');
+          } finally {
+            setPaying(false);
+          }
+        },
+        modal: {
+          ondismiss: () => setPaying(false),
+        },
+      };
 
-      // MOCK: simulate successful payment for now
-      await api.post('/api/payment/verify', {
-        orderId:   data.orderId,
-        paymentId: 'pay_mock_' + Date.now(),
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', () => {
+        alert('Payment failed. Please try again.');
+        setPaying(false);
       });
-      setStatus({ subscribed: true });
+      rzp.open();
     } catch (err) {
       console.error(err);
-      alert('Payment failed. Try again.');
-    } finally {
+      alert('Could not start payment. Try again.');
       setPaying(false);
     }
   };

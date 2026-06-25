@@ -16,6 +16,8 @@ import MyDogs          from './pages/MyDogs';
 import Chat            from './pages/Chat';
 import Subscribe       from './pages/Subscribe';
 import AuthCallback    from './pages/AuthCallback';
+import AdminDashboard  from './pages/AdminDashboard';
+import AdminDetail     from './pages/AdminDetail';
 
 const pageVariants = {
   initial: { opacity: 0, y: 12 },
@@ -44,6 +46,8 @@ function AnimatedRoutes() {
           <Route path="/seller/my-pets" element={<ProtectedRoute role="SELLER"><MyDogs /></ProtectedRoute>} />
           <Route path="/chat/:requestId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
           <Route path="/subscribe" element={<ProtectedRoute><Subscribe /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute role="ADMIN"><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/detail/:metric" element={<ProtectedRoute role="ADMIN"><AdminDetail /></ProtectedRoute>} />
         </Routes>
       </motion.div>
     </AnimatePresence>

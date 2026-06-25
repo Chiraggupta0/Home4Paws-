@@ -1,18 +1,35 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
+import api from '../api/axiosConfig';
 import '../styles/Navbar.css';
 
 export default function Navbar() {
-  const navigate   = useNavigate();
-  const location   = useLocation();
-  const [hidden,  setHidden]  = useState(false);
-  const [open,    setOpen]    = useState(false);
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const menuRef   = useRef(null);
+
+  const [hidden,      setHidden]      = useState(false);
+  const [drawerOpen,  setDrawerOpen]  = useState(false); // mobile drawer
+  const [profileOpen, setProfileOpen] = useState(false); // profile dropdown
+  const [sub,         setSub]         = useState(null);   // subscription status
 
   const token = localStorage.getItem('token');
   const role  = localStorage.getItem('role');
 
+  // Get user email from token
+  const userEmail = (() => {
+    try {
+      const t = localStorage.getItem('token');
+      if (!t) return null;
+      return JSON.parse(atob(t.split('.')[1])).email;
+    } catch { return null; }
+  })();
+
+  const initials = userEmail ? userEmail[0].toUpperCase() : '?';
+
+  // Hide on scroll down
   useEffect(() => {
     let last = window.scrollY;
     let ticking = false;
@@ -30,8 +47,22 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', fn);
   }, []);
 
-  useEffect(() => { setOpen(false); }, [location.pathname]);
-  useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  useEffect(() => { setDrawerOpen(false); setProfileOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    document.body.style.overflow = drawerOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [drawerOpen]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -46,7 +77,27 @@ export default function Navbar() {
     ? [{ to: '/add-pet', label: 'Add Pet' }, { to: '/my-dogs', label: 'My Pets' }, { to: '/shelter-requests', label: 'Requests' }]
     : role === 'SELLER'
     ? [{ to: '/seller/add-pet', label: 'List a Pet' }, { to: '/seller/my-pets', label: 'My Listings' }]
+    : role === 'ADMIN'
+    ? [{ to: '/admin', label: 'Dashboard' }, { to: '/pets', label: 'Browse Pets' }]
     : [{ to: '/pets', label: 'Browse Pets' }, { to: '/register', label: 'Join' }];
+
+  const roleLabel = {
+    NORMAL_USER: 'Adopter',
+    SELLER:      'Seller',
+    NGO_SHELTER: 'Shelter / NGO',
+    ADMIN:       'Admin',
+  }[role] || '';
+
+  const showSubscribe = role === 'NORMAL_USER' || role === 'SELLER';
+
+  // Fetch subscription status when dropdown opens (only for adopter/seller)
+  useEffect(() => {
+    if (profileOpen && showSubscribe && token && sub === null) {
+      api.get('/api/payment/status')
+        .then(r => setSub(r.data))
+        .catch(() => setSub({ subscribed: false }));
+    }
+  }, [profileOpen, showSubscribe, token, sub]);
 
   return (
     <>
@@ -72,46 +123,118 @@ export default function Navbar() {
 
           <div className="nav__auth hide-mobile">
             {token ? (
-              <motion.button className="btn btn-primary btn-sm" onClick={handleLogout} whileTap={{scale:.96}}>
-                Log out
-              </motion.button>
+              <div className="nav__profile" ref={menuRef}>
+                <button
+                  className="nav__avatar"
+                  onClick={() => setProfileOpen(v => !v)}
+                  aria-label="Profile menu"
+                >
+                  {initials}
+                </button>
+
+                <AnimatePresence>
+                  {profileOpen && (
+                    <motion.div
+                      className="profile-dropdown"
+                      initial={{ opacity: 0, y: 8, scale: .97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: .97 }}
+                      transition={{ duration: .18 }}
+                    >
+                      {/* User info */}
+                      <div className="profile-dropdown__header">
+                        <p className="profile-dropdown__email">{userEmail}</p>
+                        <p className="profile-dropdown__role">{roleLabel}</p>
+                        {showSubscribe && sub && (
+                          sub.subscribed
+                            ? <span className="profile-dropdown__badge profile-dropdown__badge--active">
+                                ✓ Active till {new Date(sub.endDate).toLocaleDateString('en-IN', { day:'numeric', month:'short' })}
+                              </span>
+                            : <span className="profile-dropdown__badge profile-dropdown__badge--inactive">
+                                Not subscribed
+                              </span>
+                        )}
+                      </div>
+
+                      {showSubscribe && (
+                        <Link to="/subscribe" className="profile-dropdown__item">
+                          💳 {sub?.subscribed ? 'Manage Subscription' : 'Subscribe'}
+                        </Link>
+                      )}
+
+                      <div className="profile-dropdown__divider" />
+
+                      <button className="profile-dropdown__item profile-dropdown__item--danger" onClick={handleLogout}>
+                        🚪 Sign out
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ) : (
               <>
-                <Link to="/login"    className="nav__signin">Sign In</Link>
-                <Link to="/register" className="btn btn-primary btn-sm">Sign up</Link>
+                <Link
+                  to="/login"
+                  className={location.pathname === '/login' ? 'btn btn-primary btn-sm' : 'nav__signin'}
+                >Sign In</Link>
+                <Link
+                  to="/register"
+                  className={location.pathname === '/register' ? 'btn btn-primary btn-sm' : 'nav__signin'}
+                >Sign up</Link>
               </>
             )}
           </div>
 
-          <button className="nav__burger hide-desktop" onClick={() => setOpen(v => !v)} aria-label="Menu">
-            <span className={`burger-bar ${open ? 'bb-top-open' : ''}`} />
-            <span className={`burger-bar ${open ? 'bb-mid-open' : ''}`} />
-            <span className={`burger-bar ${open ? 'bb-bot-open' : ''}`} />
+          {/* Mobile burger */}
+          <button className="nav__burger hide-desktop" onClick={() => setDrawerOpen(v => !v)} aria-label="Menu">
+            <span className={`burger-bar ${drawerOpen ? 'bb-top-open' : ''}`} />
+            <span className={`burger-bar ${drawerOpen ? 'bb-mid-open' : ''}`} />
+            <span className={`burger-bar ${drawerOpen ? 'bb-bot-open' : ''}`} />
           </button>
         </div>
       </motion.nav>
 
+      {/* Mobile drawer */}
       <AnimatePresence>
-        {open && (
+        {drawerOpen && (
           <>
             <motion.div key="ov" className="drawer-overlay"
               initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:.2}}
-              onClick={() => setOpen(false)} />
+              onClick={() => setDrawerOpen(false)} />
             <motion.aside key="dr" className="drawer"
               initial={{x:'100%'}} animate={{x:0}} exit={{x:'100%'}}
               transition={{type:'spring',stiffness:320,damping:30}}>
+
               <div className="drawer__head">
                 <div className="nav__logo-icon" style={{width:32,height:32,fontSize:'.9rem'}}>🐾</div>
                 <span className="nav__logo-text">Home4Paws</span>
-                <button className="drawer__close" onClick={() => setOpen(false)}>✕</button>
+                <button className="drawer__close" onClick={() => setDrawerOpen(false)}>✕</button>
               </div>
+
+              {/* Profile info in drawer */}
+              {token && (
+                <div className="drawer__profile">
+                  <div className="profile-dropdown__avatar" style={{width:40,height:40,fontSize:'1rem'}}>{initials}</div>
+                  <div>
+                    <p className="profile-dropdown__email">{userEmail}</p>
+                    <p className="profile-dropdown__role">{roleLabel}</p>
+                  </div>
+                </div>
+              )}
+
               <nav className="drawer__nav">
                 {links.map((l,i) => (
                   <motion.div key={l.to} initial={{opacity:0,x:20}} animate={{opacity:1,x:0}} transition={{delay:i*.05+.05}}>
                     <Link to={l.to} className={`drawer__link ${location.pathname===l.to?'drawer__link--active':''}`}>{l.label}</Link>
                   </motion.div>
                 ))}
+                {token && showSubscribe && (
+                  <motion.div initial={{opacity:0,x:20}} animate={{opacity:1,x:0}} transition={{delay:.2}}>
+                    <Link to="/subscribe" className="drawer__link">💳 Subscribe — ₹100/mo</Link>
+                  </motion.div>
+                )}
               </nav>
+
               <div className="drawer__foot">
                 {token ? (
                   <button className="btn btn-primary" style={{width:'100%'}} onClick={handleLogout}>Log out</button>
