@@ -3,11 +3,15 @@ services:
   backend:
     image: home4paws-backend
     container_name: home4paws-backend
+    depends_on:
+        - redis
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://aws-1-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require
       SPRING_DATASOURCE_USERNAME: postgres.fdnngmfcveylwgkwjrov
       SPRING_DATASOURCE_PASSWORD: Chir@989707
       SERVER_PORT: 8080
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
     ports:
       - "8080:8080"
 
@@ -18,3 +22,15 @@ services:
       - backend
     ports:
       - "4173:4173"
+
+  redis:
+    image: redis:7-alpine
+    container_name: home4paws-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:

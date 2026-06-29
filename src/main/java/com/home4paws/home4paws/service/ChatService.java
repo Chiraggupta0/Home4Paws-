@@ -7,6 +7,8 @@ import com.home4paws.home4paws.model.User;
 import com.home4paws.home4paws.repository.AdoptionRequestRepository;
 import com.home4paws.home4paws.repository.ChatMessageRepository;
 import com.home4paws.home4paws.repository.UserRepository;
+
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,15 +21,18 @@ public class ChatService {
     private final AdoptionRequestRepository requestRepo;
     private final UserRepository userRepo;
     private final ChatSseManager sseManager;
+    private final StringRedisTemplate redis;
 
     public ChatService(ChatMessageRepository chatRepo,
-                       AdoptionRequestRepository requestRepo,
-                       UserRepository userRepo,
-                       ChatSseManager sseManager) {
-        this.chatRepo    = chatRepo;
+            AdoptionRequestRepository requestRepo,
+            UserRepository userRepo,
+            ChatSseManager sseManager,
+            StringRedisTemplate redis) {
+        this.chatRepo = chatRepo;
         this.requestRepo = requestRepo;
-        this.userRepo    = userRepo;
-        this.sseManager  = sseManager;
+        this.userRepo = userRepo;
+        this.sseManager = sseManager;
+        this.redis = redis;
     }
 
     public List<ChatMessage> getHistory(Long requestId) {
@@ -44,7 +49,8 @@ public class ChatService {
         // Only adopter or shelter of this request can chat
         boolean isAdopter = request.getAdopter().getEmail().equals(senderEmail);
         boolean isShelter = request.getPet().getShelter().getEmail().equals(senderEmail);
-        if (!isAdopter && !isShelter) throw new RuntimeException("Not authorized");
+        if (!isAdopter && !isShelter)
+            throw new RuntimeException("Not authorized");
 
         ChatMessage msg = new ChatMessage();
         msg.setAdoptionRequest(request);
@@ -54,13 +60,13 @@ public class ChatService {
 
         // Build a simple DTO to broadcast (avoid lazy-load issues)
         Map<String, Object> dto = Map.of(
-            "id",         msg.getId(),
-            "content",    msg.getContent(),
-            "sentAt",     msg.getSentAt().toString(),
-            "senderName", sender.getName(),
-            "senderEmail",sender.getEmail()
-        );
-        sseManager.broadcast(requestId, dto);
+                "id", msg.getId(),
+                "content", msg.getContent(),
+                "sentAt", msg.getSentAt().toString(),
+                "senderName", sender.getName(),
+                "senderEmail", sender.getEmail());
+        String json = sseManager.toJson(dto);
+        redis.convertAndSend("chat", requestId + "::" + json);
         return msg;
     }
 }

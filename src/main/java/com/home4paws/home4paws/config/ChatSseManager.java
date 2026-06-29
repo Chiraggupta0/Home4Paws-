@@ -21,14 +21,25 @@ public class ChatSseManager {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
         emitters.computeIfAbsent(requestId, k -> new CopyOnWriteArrayList<>()).add(emitter);
         emitter.onCompletion(() -> remove(requestId, emitter));
-        emitter.onTimeout(()   -> remove(requestId, emitter));
-        emitter.onError(e     -> remove(requestId, emitter));
+        emitter.onTimeout(() -> remove(requestId, emitter));
+        emitter.onError(e -> remove(requestId, emitter));
         return emitter;
     }
 
-    public void broadcast(Long requestId, Map<String, Object> message) {
+    // public void broadcast(Long requestId, Map<String, Object> message) {
+    // List<SseEmitter> list = emitters.getOrDefault(requestId, List.of());
+    // String json = toJson(message);
+    // for (SseEmitter emitter : list) {
+    // try {
+    // emitter.send(SseEmitter.event().name("message").data(json));
+    // } catch (IOException e) {
+    // remove(requestId, emitter);
+    // }
+    // }
+    // }
+
+    public void broadcastLocal(Long requestId, String json) {
         List<SseEmitter> list = emitters.getOrDefault(requestId, List.of());
-        String json = toJson(message);
         for (SseEmitter emitter : list) {
             try {
                 emitter.send(SseEmitter.event().name("message").data(json));
@@ -40,18 +51,20 @@ public class ChatSseManager {
 
     private void remove(Long requestId, SseEmitter emitter) {
         List<SseEmitter> list = emitters.get(requestId);
-        if (list != null) list.remove(emitter);
+        if (list != null)
+            list.remove(emitter);
     }
 
-    private String toJson(Map<String, Object> map) {
+    public String toJson(Map<String, Object> map) {
         StringBuilder sb = new StringBuilder("{");
         boolean first = true;
         for (Map.Entry<String, Object> e : map.entrySet()) {
-            if (!first) sb.append(',');
+            if (!first)
+                sb.append(',');
             first = false;
             sb.append('"').append(e.getKey()).append("\":\"")
-              .append(String.valueOf(e.getValue()).replace("\"", "\\\""))
-              .append('"');
+                    .append(String.valueOf(e.getValue()).replace("\"", "\\\""))
+                    .append('"');
         }
         sb.append('}');
         return sb.toString();
