@@ -28,6 +28,12 @@ public class Pet {
 
     private Integer price; // null = free adoption (NGO), set = for sale (SELLER)
 
+    private String gender;  // "Male" / "Female"
+
+    private String state;   // e.g. Maharashtra
+
+    private String city;    // e.g. Mumbai
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PetStatus status;         // AVAILABLE, ADOPTED, PENDING
@@ -72,6 +78,15 @@ public class Pet {
 
     public Integer getPrice() { return price; }
     public void setPrice(Integer price) { this.price = price; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
+    public String getState() { return state; }
+    public void setState(String state) { this.state = state; }
+
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
 
     public void setStatus(PetStatus status) {
         this.status = status;

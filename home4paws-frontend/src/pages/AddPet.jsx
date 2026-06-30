@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import api from '../api/axiosConfig';
 import { supabase } from '../lib/supabaseClient';
 
-const EMPTY = { name: '', breed: '', age: '', species: '', description: '', price: '' };
+const EMPTY = { name: '', breed: '', age: '', species: '', gender: '', state: '', city: '', description: '', price: '' };
 
 export default function AddPet() {
   const navigate = useNavigate();
@@ -167,6 +167,26 @@ export default function AddPet() {
                 <label className="form-label" htmlFor="age">Age (years)</label>
                 <input id="age" name="age" type="number" min="0" max="30" className="form-input" placeholder="e.g. 2" value={pet.age} onChange={handleChange} />
               </div>
+            </div>
+
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
+              <div className="form-group">
+                <label className="form-label" htmlFor="gender">Gender</label>
+                <select id="gender" name="gender" className="form-input form-select" value={pet.gender} onChange={handleChange}>
+                  <option value="">Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="state">State</label>
+                <input id="state" name="state" type="text" className="form-input" placeholder="e.g. Maharashtra" value={pet.state} onChange={handleChange} />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="city">City</label>
+              <input id="city" name="city" type="text" className="form-input" placeholder="e.g. Mumbai" value={pet.city} onChange={handleChange} />
             </div>
 
             {isSeller && (
