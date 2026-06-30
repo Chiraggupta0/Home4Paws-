@@ -35,7 +35,7 @@ jobs:
       - name: Build frontend
         working-directory: home4paws-frontend
         run: |
-          npm ci
+          npm install
           npm run build
 
   # 2) Runs ONLY on push to main, and ONLY if "build" succeeded
