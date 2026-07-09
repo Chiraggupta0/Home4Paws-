@@ -54,7 +54,9 @@ public class SecurityConfig {
                 List.of(
                         "http://localhost:5173",
                         "http://localhost:4173",
-                        "http://32.196.156.215:4173"
+                        "http://32.196.156.215:4173",
+                        "https://home4paws.in",
+                        "https://www.home4paws.in"
                 ));
 
         configuration.setAllowedMethods(
