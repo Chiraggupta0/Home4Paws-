@@ -7,6 +7,7 @@ import com.home4paws.home4paws.repository.UserRepository;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.Utils;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepo;
@@ -66,6 +68,7 @@ public class SubscriptionService {
             sub.setRazorpayOrderId(orderId);
             subscriptionRepo.save(sub);
 
+            log.info("Razorpay order created orderId={} user={} amount={}", orderId, email, AMOUNT_PAISE);
             return Map.of(
                 "orderId",  orderId,
                 "amount",   AMOUNT_PAISE,
@@ -73,6 +76,7 @@ public class SubscriptionService {
                 "keyId",    razorpayKeyId
             );
         } catch (Exception e) {
+            log.error("Failed to create Razorpay order for user={}", email, e);
             throw new RuntimeException("Failed to create Razorpay order: " + e.getMessage());
         }
     }
@@ -93,6 +97,7 @@ public class SubscriptionService {
             boolean valid = Utils.verifyPaymentSignature(attributes, razorpayKeySecret);
             if (!valid) throw new RuntimeException("Invalid payment signature");
         } catch (Exception e) {
+            log.warn("Payment verification failed user={} orderId={}: {}", email, orderId, e.getMessage());
             throw new RuntimeException("Payment verification failed: " + e.getMessage());
         }
 
@@ -101,6 +106,7 @@ public class SubscriptionService {
         sub.setStartDate(LocalDateTime.now());
         sub.setEndDate(LocalDateTime.now().plusMonths(1)); // 30-day validity
         subscriptionRepo.save(sub);
+        log.info("Subscription activated user={} orderId={} paymentId={}", email, orderId, paymentId);
     }
 
     public Map<String, Object> getStatus(String email) {

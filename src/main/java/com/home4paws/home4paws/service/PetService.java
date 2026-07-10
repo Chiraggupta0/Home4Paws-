@@ -5,12 +5,14 @@ import com.home4paws.home4paws.model.PetStatus;
 import com.home4paws.home4paws.model.User;
 import com.home4paws.home4paws.repository.PetRepository;
 import com.home4paws.home4paws.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Slf4j
 public class PetService {
 
     private final PetRepository petRepository;
@@ -35,7 +37,9 @@ public class PetService {
         // Set default status
         pet.setStatus(PetStatus.AVAILABLE);
 
-        return petRepository.save(pet);
+        Pet saved = petRepository.save(pet);
+        log.info("Pet added id={} name={} by shelter={}", saved.getId(), saved.getName(), shelterEmail);
+        return saved;
     }
 
     // 2. GET ALL AVAILABLE PETS — anyone can see these
@@ -68,11 +72,13 @@ public class PetService {
 
         // Confirm the pet belongs to this shelter
         if (!pet.getShelter().getEmail().equals(shelterEmail)) {
+            log.warn("Unauthorized delete attempt on pet id={} by {}", id, shelterEmail);
             throw new RuntimeException(
                     "You are not authorized to delete this pet");
         }
 
         petRepository.delete(pet);
+        log.info("Pet deleted id={} by shelter={}", id, shelterEmail);
     }
 
 }

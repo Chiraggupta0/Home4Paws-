@@ -1,12 +1,14 @@
 package com.home4paws.home4paws.service;
 
 import com.home4paws.home4paws.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
@@ -19,7 +21,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email)
             throws UsernameNotFoundException {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        "User not found with email: " + email));
+                .orElseThrow(() -> {
+                    log.debug("Authentication lookup failed, no user for email: {}", email);
+                    return new UsernameNotFoundException(
+                            "User not found with email: " + email);
+                });
     }
 }

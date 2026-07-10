@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Logging configuration for Home4Paws.
+
+  - Console appender: picked up by `docker logs` / journald on the EC2 host.
+  - Rolling file appender: writes to ${LOG_DIR}/home4paws.log (default: ./logs),
+    rotates daily AND when a file passes 10MB, keeps 14 days, caps total at 200MB.
+  - [%X{requestId}] comes from the MDC set by RequestLoggingFilter, so every line
+    can be traced back to a single HTTP request.
+-->
+<configuration>
+
+    <!-- Log directory: override with the LOG_DIR env var / system property. -->
+    <property name="LOG_DIR" value="${LOG_DIR:-logs}"/>
+
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%X{requestId:-no-request}] %logger{36} - %msg%n"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/home4paws.log</file>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/home4paws-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>14</maxHistory>
+            <totalSizeCap>200MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Our own code: keep at DEBUG in dev, INFO elsewhere via application.properties. -->
+    <logger name="com.home4paws" level="INFO"/>
+
+    <!-- Quiet down framework noise. -->
+    <logger name="org.hibernate.SQL" level="WARN"/>
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework.security" level="INFO"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>

@@ -2,6 +2,7 @@ package com.home4paws.home4paws.service;
 
 import com.home4paws.home4paws.model.*;
 import com.home4paws.home4paws.repository.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class AdminService {
 
     private final UserRepository userRepo;
@@ -100,10 +102,12 @@ public class AdminService {
     // Admin can delete any user
     public void deleteUser(Long id) {
         userRepo.deleteById(id);
+        log.info("Admin deleted user id={}", id);
     }
 
     // Admin can delete any pet
     public void deletePet(Long id) {
         petRepo.deleteById(id);
+        log.info("Admin deleted pet id={}", id);
     }
 }

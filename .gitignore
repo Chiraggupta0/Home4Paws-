@@ -1,5 +1,6 @@
 HELP.md
 target/
+logs/
 node_modules/
 home4paws-frontend/node_modules/
 home4paws-frontend/dist/

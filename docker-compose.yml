@@ -12,8 +12,12 @@ services:
       SERVER_PORT: 8080
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+      LOG_DIR: /app/logs
     ports:
       - "8080:8080"
+    volumes:
+      # Persist rolling log files on the host so they survive container rebuilds
+      - ./logs:/app/logs
 
   frontend:
     image: home4paws-frontend

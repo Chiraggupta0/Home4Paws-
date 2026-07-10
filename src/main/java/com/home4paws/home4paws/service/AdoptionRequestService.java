@@ -4,6 +4,7 @@ import com.home4paws.home4paws.model.*;
 import com.home4paws.home4paws.repository.AdoptionRequestRepository;
 import com.home4paws.home4paws.repository.PetRepository;
 import com.home4paws.home4paws.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import com.home4paws.home4paws.model.PetStatus;
@@ -11,6 +12,7 @@ import com.home4paws.home4paws.model.PetStatus;
 import java.util.List;
 
 @Service
+@Slf4j
 public class AdoptionRequestService {
 
     private final AdoptionRequestRepository adoptionRequestRepository;
@@ -46,6 +48,7 @@ public class AdoptionRequestService {
                 adopter.getId(),
                 pet.getId())) {
 
+            log.warn("Duplicate adoption request by {} for pet id={}", adopterEmail, petId);
             throw new RuntimeException(
                     "You have already requested this pet");
         }
@@ -56,7 +59,9 @@ public class AdoptionRequestService {
         request.setPet(pet);
         request.setStatus(RequestStatus.PENDING);
 
-        return adoptionRequestRepository.save(request);
+        AdoptionRequest saved = adoptionRequestRepository.save(request);
+        log.info("Adoption request created id={} adopter={} pet id={}", saved.getId(), adopterEmail, petId);
+        return saved;
     }
 
     // Adopter sees their own requests
@@ -96,6 +101,7 @@ public class AdoptionRequestService {
                         .getEmail();
 
         if (!ownerEmail.equals(shelterEmail)) {
+            log.warn("Unauthorized status change on request id={} by {}", requestId, shelterEmail);
             throw new RuntimeException(
                     "You are not authorized to manage this request"
             );
@@ -113,7 +119,9 @@ public class AdoptionRequestService {
             petRepository.save(pet);
         }
 
-        return adoptionRequestRepository.save(request);
+        AdoptionRequest saved = adoptionRequestRepository.save(request);
+        log.info("Adoption request id={} set to {} by shelter={}", requestId, status, shelterEmail);
+        return saved;
     }
 
 }

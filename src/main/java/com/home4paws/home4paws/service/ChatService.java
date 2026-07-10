@@ -8,6 +8,7 @@ import com.home4paws.home4paws.repository.AdoptionRequestRepository;
 import com.home4paws.home4paws.repository.ChatMessageRepository;
 import com.home4paws.home4paws.repository.UserRepository;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class ChatService {
 
     private final ChatMessageRepository chatRepo;
@@ -49,8 +51,10 @@ public class ChatService {
         // Only adopter or shelter of this request can chat
         boolean isAdopter = request.getAdopter().getEmail().equals(senderEmail);
         boolean isShelter = request.getPet().getShelter().getEmail().equals(senderEmail);
-        if (!isAdopter && !isShelter)
+        if (!isAdopter && !isShelter) {
+            log.warn("Unauthorized chat attempt on request id={} by {}", requestId, senderEmail);
             throw new RuntimeException("Not authorized");
+        }
 
         ChatMessage msg = new ChatMessage();
         msg.setAdoptionRequest(request);
@@ -67,6 +71,7 @@ public class ChatService {
                 "senderEmail", sender.getEmail());
         String json = sseManager.toJson(dto);
         redis.convertAndSend("chat", requestId + "::" + json);
+        log.debug("Chat message id={} sent on request id={} by {}", msg.getId(), requestId, senderEmail);
         return msg;
     }
 }

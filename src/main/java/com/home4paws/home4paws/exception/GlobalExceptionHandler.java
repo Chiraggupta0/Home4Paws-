@@ -1,5 +1,6 @@
 package com.home4paws.home4paws.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -9,11 +10,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(
             RuntimeException ex) {
+
+        log.warn("Bad request: {}", ex.getMessage());
 
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
@@ -31,6 +35,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUsernameNotFound(
             UsernameNotFoundException ex) {
 
+        log.warn("User not found: {}", ex.getMessage());
+
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
@@ -46,6 +52,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex) {
+
+        log.error("Unhandled exception", ex);
 
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
