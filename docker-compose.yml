@@ -3,6 +3,7 @@ services:
   backend:
     image: home4paws-backend
     container_name: home4paws-backend
+    restart: unless-stopped
     depends_on:
         - redis
     environment:
