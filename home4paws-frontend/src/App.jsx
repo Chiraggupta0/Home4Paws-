@@ -18,6 +18,11 @@ import Subscribe       from './pages/Subscribe';
 import AuthCallback    from './pages/AuthCallback';
 import AdminDashboard  from './pages/AdminDashboard';
 import AdminDetail     from './pages/AdminDetail';
+import Shop            from './pages/Shop';
+import AddProduct      from './pages/AddProduct';
+import Cart            from './pages/Cart';
+import Orders          from './pages/Orders';
+import { CartProvider } from './context/CartContext';
 
 const pageVariants = {
   initial: { opacity: 0, y: 12 },
@@ -37,6 +42,10 @@ function AnimatedRoutes() {
           <Route path="/auth/callback" element={<AuthCallback />} />
 
           <Route path="/pets" element={<Pets />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+          <Route path="/admin/add-product" element={<ProtectedRoute role="ADMIN"><AddProduct /></ProtectedRoute>} />
           <Route path="/pets/:id" element={<ProtectedRoute><PetDetails /></ProtectedRoute>} />
           <Route path="/my-requests" element={<ProtectedRoute role="NORMAL_USER"><MyRequests /></ProtectedRoute>} />
           <Route path="/shelter-requests" element={<ProtectedRoute role="NGO_SHELTER"><ShelterRequests /></ProtectedRoute>} />
@@ -56,9 +65,11 @@ function AnimatedRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Navbar />
-      <AnimatedRoutes />
-    </BrowserRouter>
+    <CartProvider>
+      <BrowserRouter>
+        <Navbar />
+        <AnimatedRoutes />
+      </BrowserRouter>
+    </CartProvider>
   );
 }
