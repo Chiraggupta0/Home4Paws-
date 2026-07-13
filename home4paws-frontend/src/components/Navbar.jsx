@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 import api from '../api/axiosConfig';
+import { useCart } from '../context/CartContext';
 import '../styles/Navbar.css';
 
 export default function Navbar() {
@@ -14,6 +15,7 @@ export default function Navbar() {
   const [drawerOpen,  setDrawerOpen]  = useState(false); // mobile drawer
   const [profileOpen, setProfileOpen] = useState(false); // profile dropdown
   const [sub,         setSub]         = useState(null);   // subscription status
+  const { count } = useCart();
 
   const token = localStorage.getItem('token');
   const role  = localStorage.getItem('role');
@@ -71,7 +73,7 @@ export default function Navbar() {
     navigate('/login');
   };
 
-  const links = role === 'NORMAL_USER'
+  const roleLinks = role === 'NORMAL_USER'
     ? [{ to: '/pets', label: 'Browse Pets' }, { to: '/my-requests', label: 'My Requests' }]
     : role === 'NGO_SHELTER'
     ? [{ to: '/add-pet', label: 'Add Pet' }, { to: '/my-dogs', label: 'My Pets' }, { to: '/shelter-requests', label: 'Requests' }]
@@ -80,6 +82,8 @@ export default function Navbar() {
     : role === 'ADMIN'
     ? [{ to: '/admin', label: 'Dashboard' }, { to: '/pets', label: 'Browse Pets' }]
     : [{ to: '/pets', label: 'Browse Pets' }, { to: '/register', label: 'Join' }];
+
+  const links = [{ to: '/shop', label: '🛍️ Shop' }, ...roleLinks];
 
   const roleLabel = {
     NORMAL_USER: 'Adopter',
@@ -122,6 +126,10 @@ export default function Navbar() {
           </div>
 
           <div className="nav__auth hide-mobile">
+            <Link to="/cart" style={{ position:'relative', fontSize:'1.35rem', display:'inline-flex', alignItems:'center', marginRight:6 }} aria-label="Cart">
+              🛒
+              {count > 0 && <span style={{ position:'absolute', top:-4, right:-8, background:'var(--primary)', color:'#fff', borderRadius:999, fontSize:'.62rem', fontWeight:700, minWidth:16, height:16, display:'flex', alignItems:'center', justifyContent:'center', padding:'0 4px' }}>{count}</span>}
+            </Link>
             {token ? (
               <div className="nav__profile" ref={menuRef}>
                 <button
@@ -161,6 +169,8 @@ export default function Navbar() {
                           💳 {sub?.subscribed ? 'Manage Subscription' : 'Subscribe'}
                         </Link>
                       )}
+
+                      <Link to="/orders" className="profile-dropdown__item">📦 My Orders</Link>
 
                       <div className="profile-dropdown__divider" />
 
