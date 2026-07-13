@@ -1,0 +1,12 @@
+# The backend Dockerfile only needs target/*.jar — keep the build context tiny
+# and exclude root-owned / irrelevant paths (certbot certs break `docker build` stat).
+certbot/
+nginx/
+logs/
+.git/
+.github/
+home4paws-frontend/
+node_modules/
+**/node_modules/
+*.md
+.mvn/wrapper/maven-wrapper.jar
