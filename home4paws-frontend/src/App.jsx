@@ -41,7 +41,8 @@ function AnimatedRoutes() {
           <Route path="/register"      element={<Register />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
 
-          <Route path="/pets" element={<Pets />} />
+          <Route path="/pets" element={<Pets mode="ngo" />} />
+          <Route path="/marketplace" element={<Pets mode="marketplace" />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
@@ -53,6 +54,7 @@ function AnimatedRoutes() {
           <Route path="/my-dogs" element={<ProtectedRoute role="NGO_SHELTER"><MyDogs /></ProtectedRoute>} />
           <Route path="/seller/add-pet" element={<ProtectedRoute role="SELLER"><AddPet /></ProtectedRoute>} />
           <Route path="/seller/my-pets" element={<ProtectedRoute role="SELLER"><MyDogs /></ProtectedRoute>} />
+          <Route path="/seller/requests" element={<ProtectedRoute role="SELLER"><ShelterRequests /></ProtectedRoute>} />
           <Route path="/chat/:requestId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
           <Route path="/subscribe" element={<ProtectedRoute><Subscribe /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute role="ADMIN"><AdminDashboard /></ProtectedRoute>} />

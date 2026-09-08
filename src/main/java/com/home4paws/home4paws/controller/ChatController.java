@@ -26,8 +26,8 @@ public class ChatController {
 
     // Load message history
     @GetMapping("/{requestId}")
-    public ResponseEntity<List<ChatMessage>> getHistory(@PathVariable Long requestId) {
-        return ResponseEntity.ok(chatService.getHistory(requestId));
+    public ResponseEntity<List<ChatMessage>> getHistory(@PathVariable Long requestId, Principal principal) {
+        return ResponseEntity.ok(chatService.getHistory(requestId, principal.getName()));
     }
 
     // Send a message

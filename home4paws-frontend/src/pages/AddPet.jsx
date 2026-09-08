@@ -1,5 +1,4 @@
 import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../api/axiosConfig';
 import { supabase } from '../lib/supabaseClient';
@@ -7,7 +6,6 @@ import { supabase } from '../lib/supabaseClient';
 const EMPTY = { name: '', breed: '', age: '', species: '', gender: '', state: '', city: '', description: '', price: '' };
 
 export default function AddPet() {
-  const navigate = useNavigate();
   const role = localStorage.getItem('role');
   const isSeller = role === 'SELLER';
   const [pet, setPet]         = useState(EMPTY);
@@ -34,15 +32,6 @@ export default function AddPet() {
     setSuccess(false);
 
     try {
-      // Sellers must be subscribed to list pets
-      if (isSeller) {
-        const { data: subStatus } = await api.get('/api/payment/status');
-        if (!subStatus.subscribed) {
-          navigate('/subscribe');
-          return;
-        }
-      }
-
       let profilePictureUrl = null;
 
       if (photo) {

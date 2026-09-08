@@ -6,11 +6,6 @@ import '../styles/Pets.css';
 
 const MAX_BUDGET = 1000000; // ₹10L
 
-const LISTINGS = [
-  { key: 'all',      label: 'All' },
-  { key: 'sale',     label: '🏷️ For Sale' },
-  { key: 'adoption', label: '🐾 For Adoption' },
-];
 const CATEGORIES = [
   { key: 'all',   label: 'All' },
   { key: 'Dog',   label: '🐶 Dogs' },
@@ -40,13 +35,13 @@ function Pill({ active, onClick, children }) {
   );
 }
 
-export default function Pets() {
+// mode: 'ngo' shows only free NGO/shelter adoptions, 'marketplace' shows only priced seller listings.
+export default function Pets({ mode = 'ngo' }) {
   const [pets, setPets]       = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch]   = useState('');
 
   // Filters
-  const [listing,  setListing]  = useState('all');
   const [category, setCategory] = useState('all');
   const [gender,   setGender]   = useState('any');
   const [stateSel, setStateSel] = useState('');
@@ -80,8 +75,8 @@ export default function Pets() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     const list = pets.filter(p => {
-      if (listing === 'sale'     && p.price == null) return false;
-      if (listing === 'adoption' && p.price != null) return false;
+      if (mode === 'ngo'         && p.price != null) return false;
+      if (mode === 'marketplace' && p.price == null) return false;
 
       const sp = p.species?.toLowerCase();
       if (category === 'Dog'   && sp !== 'dog') return false;
@@ -116,10 +111,10 @@ export default function Pets() {
         default:          return (b.id ?? 0) - (a.id ?? 0); // newest first
       }
     });
-  }, [pets, listing, category, gender, stateSel, citySel, breed, budget, search, sort]);
+  }, [pets, mode, category, gender, stateSel, citySel, breed, budget, search, sort]);
 
   const resetFilters = () => {
-    setListing('all'); setCategory('all'); setGender('any');
+    setCategory('all'); setGender('any');
     setStateSel(''); setCitySel(''); setBudget(MAX_BUDGET); setBreed(''); setSort('new'); setSearch('');
   };
 
@@ -133,9 +128,15 @@ export default function Pets() {
             className="pets-header__inner"
           >
             <div>
-              <p className="section-eyebrow">Waiting for you</p>
-              <h1 className="pets-header__title">Find Your New<br /><em>Best Friend</em></h1>
-              <p className="pets-header__sub">Every pet here needs a caring home. Browse and say hello. 🐾</p>
+              <p className="section-eyebrow">{mode === 'marketplace' ? 'From verified sellers' : 'Waiting for you'}</p>
+              <h1 className="pets-header__title">
+                {mode === 'marketplace' ? <>Find Your New<br /><em>Companion</em></> : <>Find Your New<br /><em>Best Friend</em></>}
+              </h1>
+              <p className="pets-header__sub">
+                {mode === 'marketplace'
+                  ? 'Pets listed by sellers. Subscribe (₹100/mo) to send a request and chat. 🐾'
+                  : 'Free adoptions from NGOs & shelters. Every pet here needs a caring home. 🐾'}
+              </p>
             </div>
             <div className="pets-search">
               <span className="pets-search__icon">🔍</span>
@@ -156,15 +157,6 @@ export default function Pets() {
           <div className="pets-filter__head">
             <h3>Filter</h3>
             <button type="button" className="pf-clear" onClick={resetFilters}>Clear all</button>
-          </div>
-
-          <div className="pf-section">
-            <p className="pf-section__title">I'm Looking</p>
-            <div className="pf-pills">
-              {LISTINGS.map(l => (
-                <Pill key={l.key} active={listing === l.key} onClick={() => setListing(l.key)}>{l.label}</Pill>
-              ))}
-            </div>
           </div>
 
           <div className="pf-section">
@@ -199,21 +191,23 @@ export default function Pets() {
             </select>
           </div>
 
-          <div className="pf-section">
-            <p className="pf-section__title">Budget</p>
-            <input
-              type="range" className="pf-range"
-              min="0" max={MAX_BUDGET} step="5000"
-              value={budget} onChange={e => setBudget(Number(e.target.value))}
-            />
-            <div className="pf-range-labels"><span>₹0</span><span>₹10L</span></div>
-            <p className="pf-budget-val">Your Budget: <strong>{fmtINR(budget)}</strong></p>
-          </div>
+          {mode === 'marketplace' && (
+            <div className="pf-section">
+              <p className="pf-section__title">Budget</p>
+              <input
+                type="range" className="pf-range"
+                min="0" max={MAX_BUDGET} step="5000"
+                value={budget} onChange={e => setBudget(Number(e.target.value))}
+              />
+              <div className="pf-range-labels"><span>₹0</span><span>₹10L</span></div>
+              <p className="pf-budget-val">Your Budget: <strong>{fmtINR(budget)}</strong></p>
+            </div>
+          )}
 
           <div className="pf-section">
             <p className="pf-section__title">Sort By</p>
             <select className="pf-select" value={sort} onChange={e => setSort(e.target.value)}>
-              {SORTS.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+              {SORTS.filter(s => mode === 'marketplace' || !s.key.startsWith('price')).map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
           </div>
 

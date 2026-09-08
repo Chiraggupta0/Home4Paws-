@@ -52,7 +52,7 @@ public class AdoptionRequestController {
     }
 
     @GetMapping("/my-pets")
-    @PreAuthorize("hasRole('NGO_SHELTER')")
+    @PreAuthorize("hasRole('NGO_SHELTER') or hasRole('SELLER')")
     public ResponseEntity<List<AdoptionRequest>> getRequestsForMyPets(
             Principal principal) {
 
@@ -66,7 +66,7 @@ public class AdoptionRequestController {
     // Shelter approves request
 
     @PutMapping("/{requestId}/approve")
-    @PreAuthorize("hasRole('NGO_SHELTER')")
+    @PreAuthorize("hasRole('NGO_SHELTER') or hasRole('SELLER')")
     public ResponseEntity<AdoptionRequest> approveRequest(
             @PathVariable Long requestId,
             Principal principal) {
@@ -83,7 +83,7 @@ public class AdoptionRequestController {
     // Shelter rejects request
 
     @PutMapping("/{requestId}/reject")
-    @PreAuthorize("hasRole('NGO_SHELTER')")
+    @PreAuthorize("hasRole('NGO_SHELTER') or hasRole('SELLER')")
     public ResponseEntity<AdoptionRequest> rejectRequest(
             @PathVariable Long requestId,
             Principal principal) {

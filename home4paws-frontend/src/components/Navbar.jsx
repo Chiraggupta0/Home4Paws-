@@ -74,14 +74,14 @@ export default function Navbar() {
   };
 
   const roleLinks = role === 'NORMAL_USER'
-    ? [{ to: '/pets', label: 'Browse Pets' }, { to: '/my-requests', label: 'My Requests' }]
+    ? [{ to: '/pets', label: '🐾 Adopt (NGO)' }, { to: '/marketplace', label: '🏷️ Buy (Sellers)' }, { to: '/my-requests', label: 'My Requests' }]
     : role === 'NGO_SHELTER'
     ? [{ to: '/add-pet', label: 'Add Pet' }, { to: '/my-dogs', label: 'My Pets' }, { to: '/shelter-requests', label: 'Requests' }]
     : role === 'SELLER'
-    ? [{ to: '/seller/add-pet', label: 'List a Pet' }, { to: '/seller/my-pets', label: 'My Listings' }]
+    ? [{ to: '/seller/add-pet', label: 'List a Pet' }, { to: '/seller/my-pets', label: 'My Listings' }, { to: '/seller/requests', label: 'Requests' }]
     : role === 'ADMIN'
     ? [{ to: '/admin', label: 'Dashboard' }, { to: '/pets', label: 'Browse Pets' }]
-    : [{ to: '/pets', label: 'Browse Pets' }, { to: '/register', label: 'Join' }];
+    : [{ to: '/pets', label: '🐾 Adopt (NGO)' }, { to: '/marketplace', label: '🏷️ Buy (Sellers)' }, { to: '/register', label: 'Join' }];
 
   const links = [{ to: '/shop', label: '🛍️ Shop' }, ...roleLinks];
 

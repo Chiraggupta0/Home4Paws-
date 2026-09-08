@@ -24,20 +24,45 @@ public class ChatService {
     private final UserRepository userRepo;
     private final ChatSseManager sseManager;
     private final StringRedisTemplate redis;
+    private final SubscriptionService subscriptionService;
 
     public ChatService(ChatMessageRepository chatRepo,
             AdoptionRequestRepository requestRepo,
             UserRepository userRepo,
             ChatSseManager sseManager,
-            StringRedisTemplate redis) {
+            StringRedisTemplate redis,
+            SubscriptionService subscriptionService) {
         this.chatRepo = chatRepo;
         this.requestRepo = requestRepo;
         this.userRepo = userRepo;
         this.sseManager = sseManager;
         this.redis = redis;
+        this.subscriptionService = subscriptionService;
     }
 
-    public List<ChatMessage> getHistory(Long requestId) {
+    // Pets with a price are SELLER listings — both the buyer and the seller must be
+    // subscribed to chat about them. NGO pets (price == null) stay free for everyone.
+    private void requireChatAccess(AdoptionRequest request, String requesterEmail) {
+        boolean isPaidListing = request.getPet().getPrice() != null;
+        if (!isPaidListing) return;
+
+        if (!subscriptionService.isSubscribed(requesterEmail)) {
+            throw new RuntimeException("Subscribe to chat on this listing");
+        }
+    }
+
+    public List<ChatMessage> getHistory(Long requestId, String requesterEmail) {
+        AdoptionRequest request = requestRepo.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Request not found"));
+
+        boolean isAdopter = request.getAdopter().getEmail().equals(requesterEmail);
+        boolean isShelter = request.getPet().getShelter().getEmail().equals(requesterEmail);
+        if (!isAdopter && !isShelter) {
+            log.warn("Unauthorized chat history access on request id={} by {}", requestId, requesterEmail);
+            throw new RuntimeException("Not authorized");
+        }
+        requireChatAccess(request, requesterEmail);
+
         return chatRepo.findByAdoptionRequestIdOrderBySentAtAsc(requestId);
     }
 
@@ -55,6 +80,7 @@ public class ChatService {
             log.warn("Unauthorized chat attempt on request id={} by {}", requestId, senderEmail);
             throw new RuntimeException("Not authorized");
         }
+        requireChatAccess(request, senderEmail);
 
         ChatMessage msg = new ChatMessage();
         msg.setAdoptionRequest(request);

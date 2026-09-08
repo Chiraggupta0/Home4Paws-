@@ -10,6 +10,8 @@ const STATUS_MAP = {
 };
 
 export default function ShelterRequests() {
+  const role     = localStorage.getItem('role');
+  const isSeller = role === 'SELLER';
   const [requests, setRequests] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [updating, setUpdating] = useState(null);
@@ -25,7 +27,19 @@ export default function ShelterRequests() {
 
   useEffect(() => { fetchRequests(); }, []);
 
+  // Sellers must be subscribed to accept/reject or chat on their (priced) listings. NGOs are free.
+  const ensureSellerSubscribed = async () => {
+    if (!isSeller) return true;
+    const { data: subStatus } = await api.get('/api/payment/status');
+    if (!subStatus.subscribed) {
+      navigate('/subscribe');
+      return false;
+    }
+    return true;
+  };
+
   const updateStatus = async (id, status) => {
+    if (!(await ensureSellerSubscribed())) return;
     setUpdating(id);
     try {
       const ep = status === 'APPROVED' ? `/api/requests/${id}/approve` : `/api/requests/${id}/reject`;
@@ -39,6 +53,11 @@ export default function ShelterRequests() {
     }
   };
 
+  const openChat = async (requestId) => {
+    if (!(await ensureSellerSubscribed())) return;
+    navigate(`/chat/${requestId}`);
+  };
+
   return (
     <div className="page-wrapper">
       <div style={{ background: 'linear-gradient(135deg,#2C1810 0%,#6B3422 60%,#9B4E20 100%)', padding: 'clamp(60px,8vw,100px) 0 clamp(40px,5vw,60px)' }}>
@@ -46,10 +65,10 @@ export default function ShelterRequests() {
           <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:.5}}>
             <p className="section-eyebrow" style={{color:'var(--accent)'}}>📬 Manage</p>
             <h1 style={{color:'#fff', fontSize:'clamp(2rem,4vw,2.8rem)', fontFamily:"'Playfair Display',serif", marginTop:8}}>
-              Adoption Requests
+              {isSeller ? 'Buyer Requests' : 'Adoption Requests'}
             </h1>
             <p style={{color:'rgba(255,255,255,.6)', marginTop:8, fontSize:'1rem'}}>
-              Review and respond to adoption applications.
+              {isSeller ? 'Review buyers interested in your pets.' : 'Review and respond to adoption applications.'}
             </p>
           </motion.div>
         </div>
@@ -65,7 +84,7 @@ export default function ShelterRequests() {
           <div className="empty-state">
             <div className="empty-state-icon">📬</div>
             <h3>No requests yet</h3>
-            <p>When adopters apply for your pets, you'll see them here.</p>
+            <p>{isSeller ? "When buyers request your pets, you'll see them here." : "When adopters apply for your pets, you'll see them here."}</p>
           </div>
         ) : (
           <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
@@ -103,7 +122,7 @@ export default function ShelterRequests() {
 
                       {/* Adopter info */}
                       <div style={{ background:'var(--bg)', borderRadius:10, padding:'10px 14px', minWidth:180 }}>
-                        <p style={{ fontSize:'.72rem', color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'.05em', marginBottom:4 }}>Adopter</p>
+                        <p style={{ fontSize:'.72rem', color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'.05em', marginBottom:4 }}>{isSeller ? 'Buyer' : 'Adopter'}</p>
                         <p style={{ fontSize:'.9rem', fontWeight:700, color:'var(--dark)' }}>{req.adopter?.name || '—'}</p>
                         {req.adopter?.phoneNumber && <p style={{ fontSize:'.8rem', color:'var(--text-muted)', marginTop:2 }}>📞 {req.adopter.phoneNumber}</p>}
                       </div>
@@ -137,7 +156,7 @@ export default function ShelterRequests() {
                       <motion.button
                         className="btn btn-sm"
                         style={{ background:'var(--primary)', color:'#fff', border:'none' }}
-                        onClick={() => navigate(`/chat/${req.id}`)}
+                        onClick={() => openChat(req.id)}
                         whileTap={{ scale: 0.95 }}
                       >
                         💬 Chat

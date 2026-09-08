@@ -18,15 +18,18 @@ public class AdoptionRequestService {
     private final AdoptionRequestRepository adoptionRequestRepository;
     private final UserRepository userRepository;
     private final PetRepository petRepository;
+    private final SubscriptionService subscriptionService;
 
     public AdoptionRequestService(
             AdoptionRequestRepository adoptionRequestRepository,
             UserRepository userRepository,
-            PetRepository petRepository) {
+            PetRepository petRepository,
+            SubscriptionService subscriptionService) {
 
         this.adoptionRequestRepository = adoptionRequestRepository;
         this.userRepository = userRepository;
         this.petRepository = petRepository;
+        this.subscriptionService = subscriptionService;
     }
 
     // Adopter sends request for a pet
@@ -42,6 +45,12 @@ public class AdoptionRequestService {
         Pet pet = petRepository.findById(petId)
                 .orElseThrow(() -> new RuntimeException(
                         "Pet not found with id: " + petId));
+
+        // Seller (priced) listings require the buyer to be subscribed before requesting.
+        // NGO (free) listings stay open to everyone.
+        if (pet.getPrice() != null && !subscriptionService.isSubscribed(adopterEmail)) {
+            throw new RuntimeException("Subscribe to send a request to this seller");
+        }
 
         // Prevent duplicate requests
         if (adoptionRequestRepository.existsByAdopterIdAndPetId(
@@ -105,6 +114,12 @@ public class AdoptionRequestService {
             throw new RuntimeException(
                     "You are not authorized to manage this request"
             );
+        }
+
+        // Seller (priced) listings require the seller to be subscribed to accept/reject buyer requests.
+        // NGO (free) listings stay open.
+        if (request.getPet().getPrice() != null && !subscriptionService.isSubscribed(shelterEmail)) {
+            throw new RuntimeException("Subscribe to manage requests on your listings");
         }
 
         request.setStatus(status);

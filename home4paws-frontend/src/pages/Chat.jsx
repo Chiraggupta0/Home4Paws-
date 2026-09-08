@@ -9,6 +9,8 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput]       = useState('');
   const [sending, setSending]   = useState(false);
+  const [needsSub, setNeedsSub] = useState(false);
+  const [loading, setLoading]   = useState(true);
   const bottomRef = useRef(null);
 
   const myEmail = (() => {
@@ -23,11 +25,19 @@ export default function Chat() {
   useEffect(() => {
     api.get(`/api/chat/${requestId}`)
       .then(r => setMessages(r.data))
-      .catch(console.error);
+      .catch(err => {
+        if (err.response?.data?.message?.toLowerCase().includes('subscribe')) {
+          setNeedsSub(true);
+        } else {
+          console.error(err);
+        }
+      })
+      .finally(() => setLoading(false));
   }, [requestId]);
 
   // SSE stream
   useEffect(() => {
+    if (needsSub) return;
     const token = localStorage.getItem('token');
     const url   = `${import.meta.env.VITE_API_URL}/api/chat/stream/${requestId}`;
     const es    = new EventSource(`${url}?token=${token}`);
@@ -39,7 +49,7 @@ export default function Chat() {
 
     es.onerror = () => es.close();
     return () => es.close();
-  }, [requestId]);
+  }, [requestId, needsSub]);
 
   // Auto-scroll
   useEffect(() => {
@@ -54,7 +64,11 @@ export default function Chat() {
     try {
       await api.post(`/api/chat/${requestId}`, { content: text });
     } catch (err) {
-      console.error(err);
+      if (err.response?.data?.message?.toLowerCase().includes('subscribe')) {
+        setNeedsSub(true);
+      } else {
+        console.error(err);
+      }
     } finally {
       setSending(false);
     }
@@ -63,6 +77,36 @@ export default function Chat() {
   const onKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   };
+
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="paw-loader">🐾</div>
+        <p className="loading-text">Loading chat…</p>
+      </div>
+    );
+  }
+
+  if (needsSub) {
+    return (
+      <div className="page-wrapper" style={{ display:'flex', alignItems:'center', justifyContent:'center', minHeight:'80vh' }}>
+        <motion.div className="card" style={{ padding:48, textAlign:'center', maxWidth:440 }}
+          initial={{ opacity:0, scale:.95 }} animate={{ opacity:1, scale:1 }}>
+          <div style={{ fontSize:'3rem', marginBottom:16 }}>🔒</div>
+          <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:'1.6rem', marginBottom:8 }}>Subscribe to chat</h2>
+          <p style={{ color:'var(--text-muted)', marginBottom:20 }}>
+            This seller's listing requires a ₹100 subscription before you can message them.
+          </p>
+          <button className="btn btn-primary" style={{ width:'100%', padding:15 }} onClick={() => navigate('/subscribe')}>
+            Subscribe for ₹100 →
+          </button>
+          <button className="btn btn-outline" style={{ width:'100%', marginTop:10 }} onClick={() => navigate(-1)}>
+            ← Back
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-wrapper" style={{ display:'flex', flexDirection:'column', height:'100vh', paddingTop:'var(--nav-height)' }}>

@@ -40,11 +40,14 @@ export default function PetDetails() {
     setSending(true);
     setError('');
     try {
-      // Check subscription before sending request
-      const { data: subStatus } = await api.get('/api/payment/status');
-      if (!subStatus.subscribed) {
-        navigate('/subscribe');
-        return;
+      // Seller (priced) listings require the buyer to be subscribed before requesting.
+      // NGO (free) listings are open to everyone.
+      if (pet.price != null) {
+        const { data: subStatus } = await api.get('/api/payment/status');
+        if (!subStatus.subscribed) {
+          navigate('/subscribe');
+          return;
+        }
       }
       await api.post(`/api/requests/${pet.id}`);
       setDone(true);
@@ -149,7 +152,7 @@ export default function PetDetails() {
                 disabled={sending}
                 whileTap={{ scale: 0.97 }}
               >
-                {sending ? '🐾 Sending request…' : `Adopt ${pet.name} 🐾`}
+                {sending ? '🐾 Sending request…' : pet.price != null ? `Request to Buy ${pet.name} 🐾` : `Adopt ${pet.name} 🐾`}
               </motion.button>
             ) : role === 'NORMAL_USER' && pet.status !== 'AVAILABLE' ? (
               <p className="details-unavailable">This pet is currently not available for adoption.</p>

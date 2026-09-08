@@ -2,6 +2,7 @@ package com.home4paws.home4paws.service;
 
 import com.home4paws.home4paws.model.Pet;
 import com.home4paws.home4paws.model.PetStatus;
+import com.home4paws.home4paws.model.Role;
 import com.home4paws.home4paws.model.User;
 import com.home4paws.home4paws.repository.PetRepository;
 import com.home4paws.home4paws.repository.UserRepository;
@@ -33,6 +34,11 @@ public class PetService {
                         "Shelter not found: " + shelterEmail));
 
         pet.setShelter(shelter);
+
+        // NGO listings are always free — ignore any price the client sends
+        if (shelter.getRole() == Role.NGO_SHELTER) {
+            pet.setPrice(null);
+        }
 
         // Set default status
         pet.setStatus(PetStatus.AVAILABLE);
