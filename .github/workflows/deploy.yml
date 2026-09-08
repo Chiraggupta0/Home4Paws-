@@ -50,9 +50,11 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
           script: |
             cd ~/Home4Paws-
-            git pull
+            git fetch origin main
+            git reset --hard origin/main
             chmod +x ./mvnw
             ./mvnw clean package -DskipTests
             docker build -t home4paws-backend .
