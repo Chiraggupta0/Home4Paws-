@@ -14,6 +14,8 @@ export default function Login() {
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleGoogle = async () => {
+    // Signing in, not registering — never carry a stale role pick into sync.
+    sessionStorage.removeItem('pendingRole');
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin + '/auth/callback' },

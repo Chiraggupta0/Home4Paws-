@@ -21,6 +21,9 @@ export default function Register() {
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleGoogle = async () => {
+    // Google OAuth doesn't carry our custom user_metadata, so stash the chosen
+    // role and let AuthCallback pass it to /api/auth/sync on first login.
+    sessionStorage.setItem('pendingRole', form.role);
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin + '/auth/callback' },

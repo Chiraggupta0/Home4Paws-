@@ -30,7 +30,8 @@ public class AuthController {
      */
     @PostMapping("/sync")
     public ResponseEntity<AuthResponse> syncUser(
-            @RequestHeader("Authorization") String authHeader) {
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody(required = false) Map<String, String> body) {
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -45,7 +46,11 @@ public class AuthController {
         String email = jwtUtil.extractEmail(token);
         Map<String, Object> metadata = jwtUtil.extractUserMetadata(token);
 
-        AuthResponse response = authService.syncUser(email, metadata);
+        // Google OAuth doesn't carry our role through Supabase user_metadata,
+        // so the frontend passes the role the user picked on the register page instead.
+        String requestedRole = body != null ? body.get("role") : null;
+
+        AuthResponse response = authService.syncUser(email, metadata, requestedRole);
         return ResponseEntity.ok(response);
     }
 }

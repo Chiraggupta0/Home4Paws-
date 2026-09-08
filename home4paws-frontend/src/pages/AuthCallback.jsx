@@ -16,8 +16,12 @@ export default function AuthCallback() {
 
       const token = data.session.access_token;
       try {
-        // Sync user — Google users default to NORMAL_USER role
-        const res = await api.post('/api/auth/sync', {}, {
+        // Carry the role picked on the register page through Google's redirect —
+        // Supabase OAuth doesn't preserve our custom user_metadata like email signUp does.
+        const pendingRole = sessionStorage.getItem('pendingRole');
+        sessionStorage.removeItem('pendingRole');
+
+        const res = await api.post('/api/auth/sync', pendingRole ? { role: pendingRole } : {}, {
           headers: { Authorization: `Bearer ${token}` },
         });
         localStorage.setItem('token', token);

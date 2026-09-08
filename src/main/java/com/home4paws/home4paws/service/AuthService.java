@@ -23,15 +23,22 @@ public class AuthService {
      * Called after Supabase signUp or signIn.
      * Creates the user in our DB on first call; returns their role on subsequent calls.
      * email + metadata come from the validated Supabase JWT.
+     *
+     * requestedRole: role picked on the register page, passed explicitly by the
+     * frontend for Google OAuth signups (Supabase doesn't carry our custom
+     * user_metadata through the OAuth redirect the way it does for email signUp).
+     * Only used when creating a brand-new user; ignored for existing users.
      */
-    public AuthResponse syncUser(String email, Map<String, Object> metadata) {
+    public AuthResponse syncUser(String email, Map<String, Object> metadata, String requestedRole) {
         User user = userRepository.findByEmail(email).orElseGet(() -> {
             User newUser = new User();
             newUser.setEmail(email);
 
-            // name and role are stored in Supabase user_metadata during signUp
+            // name and role are stored in Supabase user_metadata during email/password signUp;
+            // for Google OAuth signups, requestedRole carries the role instead.
             String name = (String) metadata.getOrDefault("name", "");
-            String roleStr = (String) metadata.getOrDefault("role", "NORMAL_USER");
+            String roleStr = requestedRole != null ? requestedRole
+                    : (String) metadata.getOrDefault("role", "NORMAL_USER");
 
             newUser.setName(name);
             try {
