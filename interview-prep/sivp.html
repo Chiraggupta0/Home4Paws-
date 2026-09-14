@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Defending SIVP</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f7f5f0; --surface:#ffffff; --surface-2:#f1eee6;
+  --text:#1f2420; --muted:#5b665f; --border:#e0dbcd;
+  --accent:#4a3dff; --accent-ink:#ffffff; --accent-soft:#e9e7ff;
+  --warn:#b5651d; --warn-soft:#f7ebdd;
+  --code-bg:#1f2420; --code-text:#e8e6df;
+  --shadow: 0 1px 2px rgba(31,36,32,.06), 0 8px 24px -12px rgba(31,36,32,.12);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14181a; --surface:#1b2122; --surface-2:#222927;
+    --text:#e8e6df; --muted:#9aa39c; --border:#2b3330;
+    --accent:#8b80ff; --accent-ink:#0d1513; --accent-soft:#242145;
+    --warn:#e0a262; --warn-soft:#2c2318;
+    --code-bg:#0e1211; --code-text:#dfe6de;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14181a; --surface:#1b2122; --surface-2:#222927;
+  --text:#e8e6df; --muted:#9aa39c; --border:#2b3330;
+  --accent:#8b80ff; --accent-ink:#0d1513; --accent-soft:#242145;
+  --warn:#e0a262; --warn-soft:#2c2318;
+  --code-bg:#0e1211; --code-text:#dfe6de;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Source Sans 3',system-ui,sans-serif;line-height:1.6;font-size:16px}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;text-wrap:balance;color:var(--text)}
+code,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+img{max-width:100%}
+.layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:0;max-width:1280px;margin:0 auto}
+.toc{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:28px 18px;border-right:1px solid var(--border);background:var(--surface)}
+.toc-title{font-family:'Fraunces',serif;font-size:1.05rem;font-weight:600;margin:0 0 4px;padding:0 8px}
+.toc-sub{color:var(--muted);font-size:.78rem;margin:0 0 18px;padding:0 8px}
+.toc a{display:block;color:var(--muted);text-decoration:none;font-size:.83rem;padding:5px 8px;border-radius:6px;border-left:2px solid transparent}
+.toc a:hover{color:var(--text);background:var(--surface-2)}
+.toc a.applies::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:7px}
+.toc a.notused::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);opacity:.5;margin-right:7px}
+.toc-legend{padding:14px 8px 0;font-size:.72rem;color:var(--muted);border-top:1px solid var(--border);margin-top:14px;display:flex;flex-direction:column;gap:5px}
+.toc-legend span{display:flex;align-items:center;gap:7px}
+.toc-back{display:block;margin-bottom:16px;padding:6px 8px;font-size:.78rem;color:var(--accent);text-decoration:none;font-family:'IBM Plex Mono',monospace}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.dot.used{background:var(--accent)} .dot.unused{background:var(--muted);opacity:.5}
+
+main{padding:52px 56px 120px;max-width:860px}
+header.hero{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border)}
+.eyebrow{font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;color:var(--accent);font-weight:500}
+h1.title{font-size:2.4rem;margin:.4em 0 .3em;font-weight:600}
+.lede{color:var(--muted);font-size:1.05rem;max-width:60ch}
+
+section{margin-bottom:52px;scroll-margin-top:24px}
+section > h2{font-size:1.5rem;font-weight:600;margin:0 0 4px;display:flex;align-items:baseline;gap:10px}
+section > h2 .num{color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:.85rem;font-weight:500}
+.section-note{color:var(--muted);font-size:.88rem;margin:0 0 22px;max-width:62ch}
+.tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:20px;margin-left:2px;vertical-align:middle}
+.tag.used{background:var(--accent-soft);color:var(--accent)}
+.tag.unused{background:var(--surface-2);color:var(--muted)}
+
+.qa{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-bottom:14px;box-shadow:var(--shadow)}
+.qa h3{font-size:.98rem;font-weight:600;margin:0 0 8px;font-family:'Source Sans 3',sans-serif;color:var(--text)}
+.qa h3 .qnum{color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:.82rem;margin-right:6px}
+.qa p{margin:0 0 10px;max-width:64ch}
+.qa p:last-child{margin-bottom:0}
+.qa ul{margin:8px 0 10px;padding-left:20px}
+.qa li{margin-bottom:5px;max-width:60ch}
+.qa .followups{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);color:var(--muted);font-size:.9rem}
+.qa .followups b{color:var(--text)}
+
+.callout{background:var(--warn-soft);border:1px solid color-mix(in srgb, var(--warn) 30%, transparent);border-radius:10px;padding:16px 20px;margin:16px 0;font-size:.92rem}
+.callout .lbl{font-family:'IBM Plex Mono',monospace;text-transform:uppercase;font-size:.7rem;letter-spacing:.08em;color:var(--warn);font-weight:600;display:block;margin-bottom:6px}
+
+.path{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:.8rem}
+.path .step{background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:6px 10px}
+.path .arrow{color:var(--muted)}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mini{background:var(--surface-2);border-radius:8px;padding:12px 16px;font-size:.86rem}
+.mini b{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;font-family:'IBM Plex Mono',monospace}
+
+table{border-collapse:collapse;width:100%;font-size:.86rem;margin:10px 0}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--border)}
+th{color:var(--muted);font-weight:600;font-family:'IBM Plex Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em}
+
+@media (max-width: 900px){
+  .layout{grid-template-columns:1fr}
+  .toc{position:static;height:auto}
+  main{padding:32px 20px}
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <nav class="toc" id="toc">
+    <a href="index.html" class="toc-back">&larr; Home4Paws defense</a>
+    <p class="toc-title">SIVP Defense</p>
+    <p class="toc-sub">400 interview questions, mapped to the real system</p>
+    <a href="#s1" class="applies">1 &middot; Architecture</a>
+    <a href="#s2" class="applies">2 &middot; Tech choices</a>
+    <a href="#s3" class="applies">3 &middot; Database design</a>
+    <a href="#s4" class="applies">4 &middot; API design</a>
+    <a href="#s5" class="applies">5 &middot; Auth & security</a>
+    <a href="#s6" class="applies">6 &middot; Scalability & caching</a>
+    <a href="#s7" class="notused">7 &middot; Kafka / queues</a>
+    <a href="#s8" class="applies">8 &middot; Concurrency</a>
+    <a href="#s9" class="applies">9 &middot; Failure handling</a>
+    <a href="#s10" class="applies">10 &middot; Redesign for 10M users</a>
+    <a href="#s11" class="applies">11 &middot; AI / LLM pipeline</a>
+    <a href="#s12" class="notused">12 &middot; RAG</a>
+    <a href="#s13" class="notused">13 &middot; Voice AI</a>
+    <a href="#s14" class="applies">14 &middot; Observability & testing</a>
+    <a href="#s15" class="applies">15 &middot; Deployment / DevOps</a>
+    <a href="#s16" class="applies">16 &middot; The "why &rarr; why not" drill</a>
+    <a href="#s17" class="applies">17 &middot; The dangerous ones</a>
+    <div class="toc-legend">
+      <span><i class="dot used"></i> built into SIVP</span>
+      <span><i class="dot unused"></i> not in this project — honest "no," plus the reasoning</span>
+    </div>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="eyebrow">Interview defense document</span>
+      <h1 class="title">Defending SIVP</h1>
+      <p class="lede">A straight answer for every question in the list, grounded in what's actually in the repo — a React SPA talking directly to Supabase (Postgres + Auth + Storage + Realtime) for everything CRUD, and a thin stateless Spring Boot bridge that forwards idea-validation requests to a 10-agent n8n pipeline running on Gemini. Where the list asks about Kafka, Redis, microservices, RAG, or voice pipelines, the honest answer is "not in this project" — said plainly, with the reasoning an interviewer is actually testing for.</p>
+    </header>
+
+    <section id="s1">
+      <h2><span class="num">01</span> Project understanding & architecture</h2>
+      <p class="section-note">Qs 1&ndash;21</p>
+
+      <div class="qa">
+        <h3><span class="qnum">2&ndash;6</span> The pitch: problem, why, users, features</h3>
+        <p><b>What it is:</b> SIVP (Startup Idea Validation Platform) is a startup-idea validation engine bolted onto a full incubator-management app. A founder submits a 7-field idea form; ten specialized AI agents (VisionAI, MarketMind, RivalScope, BuildIQ, SWOTify, GrowthIQ, FundIQ, MentorAI, IncubaTrack, ReportForge), orchestrated by a parent workflow I call NEXUS, run against it and return a single structured report &mdash; PMF score, TAM/SAM/SOM, competitor gaps, SWOT, financial forecasts, and a weighted Investor Readiness Score &mdash; exportable as PDF/DOCX/PPTX. Around that engine sits an incubator platform: role-based dashboards for founders, mentors, and admins, cohorts, mentor assignment, document requests, a funding leaderboard, and live community chat.</p>
+        <p><b>Problem it solves:</b> first-time founders build for months on a hunch because market research and competitor analysis are either expensive (consultants) or scattered across a dozen tools; incubators separately run their cohort through email and spreadsheets with no structured evaluation record and no visibility into who's stuck.</p>
+        <p><b>Why built:</b> to make validation not a one-off PDF but a first-class part of the same system that runs a founder's actual incubator journey &mdash; from "just an idea" to mentor assignment, milestones, documents, and funding tracking.</p>
+        <p><b>Users:</b> three roles enforced at the database level, not just the UI &mdash; <code>student</code>/founder (submits ideas, tracks progress), <code>mentor</code> (reviews assigned mentees, evaluates, schedules), <code>admin</code> (manages cohorts, invitations, applications, engagement, funding figures) &mdash; plus a public surface (apply, showcase, events, resources, opportunities) that needs no login.</p>
+        <p><b>Major features:</b> the 10-agent validation pipeline with investor-readiness scoring; multi-tenant institutions with invite-only elevated roles; teams/co-founders + achievements; community chat via Supabase Realtime; document requests + private storage; a funding leaderboard; government-scheme matching (static + AI-personalized via MentorAI); PDF/DOCX/PPTX export.</p>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">7, 13&ndash;15</span> Walk the architecture / draw it / what happens on a request</h3>
+        <p>Three tiers, deliberately split along a different axis than usual &mdash; not "frontend / backend / database" in the classic sense, but <b>CRUD (fast, direct) vs. long-running AI orchestration (slow, relayed)</b>:</p>
+        <div class="path">
+          <span class="step">React SPA (Vite)</span><span class="arrow">&rarr;</span>
+          <span class="step">Supabase directly (Auth, Postgres+RLS, Storage, Realtime)</span>
+        </div>
+        <div class="path">
+          <span class="step">React SPA</span><span class="arrow">&rarr;</span>
+          <span class="step">Spring Boot (stateless bridge)</span><span class="arrow">&rarr;</span>
+          <span class="step">n8n webhook (10 Gemini agents, NEXUS orchestration)</span><span class="arrow">&rarr;</span>
+          <span class="step">JSON report back</span>
+        </div>
+        <p>For every dashboard, chat message, document upload, or leaderboard read, the browser talks straight to Supabase &mdash; there is no backend hop, and Postgres Row Level Security is the actual authorization boundary. Only idea validation goes through Spring Boot, because the browser can't call n8n directly (CORS, and n8n shouldn't be a public-CORS target) and because that call needs a much longer timeout than a normal API request.</p>
+        <p>On a validation request: <code>POST /api/validate</code> with the 7 idea fields &rarr; <code>ValidationController</code> &rarr; <code>N8nService</code> POSTs to the n8n webhook with a 10s connect / 180s read timeout (the pipeline takes 30&ndash;90s) &rarr; NEXUS runs VisionAI &rarr; {MarketMind, RivalScope, BuildIQ} in parallel &rarr; SWOTify (merges those three + VisionAI) &rarr; {GrowthIQ, MentorAI} &rarr; FundIQ (consumes upstream scores for the weighted Investor Readiness Score) &rarr; IncubaTrack &rarr; ReportForge &rarr; one JSON blob back &rarr; Spring Boot returns it verbatim &rarr; <code>normalizeReport.js</code> defensively reshapes it (tolerating unresolved <code>{{ }}</code> n8n expressions, trailing-space keys, USD-in-parens) into the flat shape the report UI renders, and best-effort persists it to <code>public.reports</code> if the user is logged in.</p>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">8&ndash;12, 16&ndash;21</span> Why this shape, components, bottlenecks, limitations, redesign</h3>
+        <p><b>Why not microservices (8&ndash;9):</b> a monolith-per-concern (one Spring service, one BaaS, one workflow engine) matches the real complexity &mdash; one team, no independent scaling need between "submit an idea" and "manage a cohort." Splitting further would add network hops and distributed-transaction risk for a system doing maybe a few hundred validations a day.</p>
+        <p><b>Components and responsibilities (10&ndash;12):</b> <code>ValidationController</code> = HTTP boundary; <code>N8nService</code> = the one integration point, owns the timeout config; <code>ApiExceptionHandler</code> = turns any n8n/RestTemplate failure into a clean 502; on the frontend, <code>lib/store.js</code> = every Supabase query in one place, <code>lib/auth.jsx</code> = session + profile loading, <code>lib/normalizeReport.js</code> = the one place raw pipeline JSON becomes UI-shaped data. They communicate over plain HTTP (frontend&harr;backend, backend&rarr;n8n) and over Supabase's client SDK (frontend&harr;Postgres) &mdash; there's no inter-service RPC because there's exactly one custom backend service.</p>
+        <p><b>Critical path / bottleneck / SPOF (16&ndash;18):</b> the critical path is the validate flow, because it's synchronous and user-facing for up to 90s. The real-world bottleneck isn't my code at all &mdash; it's <b>Gemini's free-tier rate limit</b> (20 req/day, and <code>gemini-2.0-flash</code> specifically has 0 free-tier quota, a documented gotcha). The single point of failure is <b>n8n itself</b>: down or the NEXUS workflow inactive &rarr; every validation 502s. Everything else (dashboards, auth, chat, documents) has zero dependency on n8n and keeps working &mdash; that isolation was a deliberate design choice, not an accident.</p>
+        <p><b>Assumptions (19):</b> validation traffic is low-volume/bursty (a cohort's worth of founders, not concurrent thousands), so a synchronous 90s request is acceptable UX rather than needing an async job queue &mdash; explicitly deferred to a later phase in the project's own spec doc.</p>
+        <p><b>Biggest limitations / what I'd change (20&ndash;21):</b> no job queue for validation &mdash; a page refresh mid-run loses the state with no way to resume; the report is normalized entirely client-side, so any n8n schema drift breaks the frontend silently; n8n runs self-hosted on a single EC2 box with no redundancy. First fix: make validation async &mdash; POST creates a <code>reports</code> row in <code>pending</code> state immediately, a callback/poll fills it in when n8n finishes, removing the 180s open connection.</p>
+      </div>
+    </section>
+
+    <section id="s2">
+      <h2><span class="num">02</span> Why this technology</h2>
+      <p class="section-note">Qs 22&ndash;46 &mdash; "what we used" vs. "what the list asks about that we didn't use"</p>
+
+      <div class="qa">
+        <h3><span class="qnum">23&ndash;30, 40</span> Java, Spring Boot, REST, sync <span class="tag used">used</span></h3>
+        <p><b>Why Java/Spring Boot, not Node/Python:</b> the backend does exactly one thing &mdash; relay JSON with a long timeout. Any of the three would work equally well; Spring's <code>RestTemplate</code> timeout configuration and <code>@RestControllerAdvice</code> exception handling are trivial to get right, and it matched the stack the project committed to for the Java-strength angle. I wouldn't claim Java is objectively better here &mdash; a Node/Express version would honestly be a few lines shorter for this one endpoint.</p>
+        <p><b>Why REST, not GraphQL/gRPC (27&ndash;28):</b> one custom endpoint, plus Supabase's own auto-generated REST (PostgREST) for everything else. GraphQL solves overfetching across many resource shapes &mdash; I have neither problem. gRPC's binary framing buys nothing when the payload is inherently JSON (it came from an LLM as JSON) and the client is a browser.</p>
+        <p><b>Synchronous, not async (30&ndash;31):</b> the validate flow is a single request/response with an immediate expected outcome (submit &rarr; wait &rarr; report). It's the one place I'd argue <i>for</i> async on a redesign &mdash; see Section 10 &mdash; but as shipped it's deliberately simple.</p>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">32&ndash;33, 36&ndash;44</span> Not microservices, Postgres, Docker <span class="tag used">used</span></h3>
+        <p><b>Not microservices:</b> covered in Section 1 &mdash; wrong tool for one team and this data/traffic shape.</p>
+        <p><b>Postgres via Supabase, not MongoDB (36&ndash;39):</b> the data is genuinely relational &mdash; founders belong to teams, teams belong to institutions, meetings reference both a student and a mentor, RLS policies join across <code>profiles</code>/<code>teams</code>/<code>team_members</code> constantly. That's exactly what a relational DB with row-level security is built for; MongoDB would mean re-implementing multi-tenant access control in application code instead of getting it enforced at the DB layer for free.</p>
+        <p><b>Why Supabase specifically:</b> three things visible directly in the code &mdash; Auth (JWT issuance, session refresh, Google OAuth, all via <code>supabase.auth.*</code>), Row Level Security as the <i>actual</i> authorization layer (every table has explicit policies keyed off <code>auth.uid()</code>/<code>my_role()</code>/<code>my_institution()</code>, so even a client with the public anon key can't cross a tenant boundary), and Storage + Realtime (the <code>documents</code>/<code>avatars</code> buckets and the live community chat subscription) out of the box.</p>
+        <p><b>Docker (42):</b> reproducible builds and running backend + frontend (nginx) + n8n as one Docker Compose unit on a single host.</p>
+        <p><b>Kubernetes (43):</b> not used &mdash; one host running Compose is the right size for this traffic; K8s would add an orchestration layer with nothing to orchestrate.</p>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">34&ndash;35</span> Redis, Kafka <span class="tag unused">not used</span></h3>
+        <p>No caching layer exists because nothing here is read-heavy enough to need one &mdash; Postgres directly serves dashboard queries at incubator scale (dozens&ndash;hundreds of rows per table). No message queue exists because there's no async event pipeline &mdash; the one "event" (idea submitted &rarr; report ready) is a single synchronous HTTP call. If I introduced Redis: cache-aside in front of the public showcase and leaderboard queries, short TTL, no invalidation needed since a few seconds of staleness there is fine. If I introduced a queue: replace the synchronous n8n call with a <code>validation-requested</code>/<code>validation-completed</code> pair so the frontend polls instead of holding a connection open for 90s &mdash; I'd reach for a simple queue (SQS, or Postgres-as-queue) before Kafka specifically, since Kafka's partitioning and consumer-group machinery solves throughput/ordering/replay problems this system doesn't have at its actual scale.</p>
+      </div>
+    </section>
+
+    <section id="s3">
+      <h2><span class="num">03</span> Database design</h2>
+      <p class="section-note">Qs 45&ndash;74</p>
+
+      <div class="qa">
+        <h3><span class="qnum">46&ndash;51</span> Schema shape, tenancy, normalization</h3>
+        <p>Core: <code>institutions</code> (tenants) &rarr; <code>profiles</code> (extends <code>auth.users</code>; carries <code>role</code>/<code>institution_id</code>/<code>mentor_id</code>/<code>cohort_id</code>) &rarr; <code>teams</code>/<code>team_members</code> (a startup can have multiple founders). Supporting tables: <code>progress</code>, <code>meetings</code>, <code>evaluations</code>, <code>tasks</code>, <code>messages</code> (mentor&harr;student), <code>resources</code>, <code>documents</code>+<code>document_requests</code>, <code>achievements</code>, <code>community_messages</code>, <code>events</code>+<code>event_rsvps</code>, <code>announcements</code>, <code>applications</code>, <code>invitations</code>, <code>reports</code> (JSONB blob per validation run), and a <code>team_engagement</code> view.</p>
+        <p><b>Where I intentionally denormalized:</b> <code>profiles.startup</code> (plain text) was kept even after introducing <code>teams</code> as its own entity &mdash; the migration's own comment says why: existing dashboards still read it, and it's backfilled into <code>teams</code> rather than dropped, so nothing broke mid-migration. That's a conscious backward-compatibility tradeoff, not an oversight. Everywhere else, the schema is normalized to 3NF &mdash; a startup's funding/sector/stage live once on <code>teams</code>, not duplicated per founder.</p>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">52&ndash;65</span> Keys, indexes, scale</h3>
+        <div class="grid2">
+          <div class="mini"><b>Primary keys / UUID vs auto-increment (52&ndash;53)</b>Every table uses <code>uuid primary key default gen_random_uuid()</code>. Two reasons: the client sometimes needs the id immediately after insert without a round trip (e.g. creating a team, then inserting the founder's <code>team_members</code> row against that id in the same flow), and UUIDs are used directly as Storage path prefixes (<code>${studentId}/...</code>) and in RLS comparisons, where sequential IDs would be a minor enumeration risk.</div>
+          <div class="mini"><b>Indexes (54&ndash;58)</b>Explicit ones: <code>invitations_email_idx on (lower(email))</code>, hit on every signup; and a <i>unique</i> index on <code>team_members(profile_id)</code> that doubles as a business-rule enforcement &mdash; one person, one startup &mdash; as a side effect of being an index. Beyond that I rely on automatic PK/FK indexes; at this data volume I haven't needed to hand-tune plans.</div>
+        </div>
+        <p><b>100M rows / partitioning (59&ndash;61):</b> honestly, this schema wasn't designed for that. The realistic path: the data is already naturally partitioned by <code>institution_id</code> on every table &mdash; that's the sharding key I'd reach for first, before jumping to physical sharding. The <code>team_engagement</code> view (live <code>max()</code>/<code>count()</code> aggregates across <code>meetings</code>/<code>evaluations</code>) would need to become a materialized view refreshed on a schedule.</p>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">66&ndash;74</span> Concurrency, transactions, consistency</h3>
+        <p>I don't manage explicit transactions in application code &mdash; the risky multi-step writes are handled by Postgres triggers instead, atomic by construction: <code>handle_new_user()</code> (signup &rarr; invitation lookup &rarr; profile insert, all in one trigger function), <code>set_institution()</code> (stamps tenant on insert), and two guard triggers &mdash; <code>guard_profile_columns()</code> and <code>guard_team_funding()</code> &mdash; both running <code>before update</code>, so the check-then-block happens in the same statement as the write, no race window.</p>
+        <p><b>Concurrent updates (66&ndash;69):</b> the clearest real case is a mentor and admin both editing a student's <code>progress</code> &mdash; handled with <code>upsert(row, { onConflict: 'student_id' })</code>, last-write-wins. I accepted that because progress updates are low-frequency and not financially sensitive. I would <i>not</i> accept last-write-wins on <code>teams.funding_raised</code> &mdash; that's exactly why it's separately trigger-guarded so only a mentor/admin can touch it at all, shrinking the concurrent-writer set to "staff," where a lost update is a Slack message away from being noticed, not a silent bug.</p>
+      </div>
+    </section>
+
+    <section id="s4">
+      <h2><span class="num">04</span> API design</h2>
+      <p class="section-note">Qs 75&ndash;97 &mdash; one custom endpoint, everything else is Supabase's auto-generated REST</p>
+      <div class="qa">
+        <p><b>Why POST for validate (78):</b> not idempotent by nature &mdash; each call re-runs 10 LLM calls and can return different text &mdash; has a body, has side effects. Textbook POST.</p>
+        <p><b>Validation (81&ndash;83):</b> minimal on the backend by design &mdash; <code>IdeaRequest</code> is a Java <code>record</code> with no <code>@NotNull</code>/<code>@Valid</code>. The frontend enforces <code>required</code> before submit. Real gap I'd flag proactively: a client bypassing the UI could send blank fields and burn an LLM call &mdash; I'd add <code>@Valid</code> + <code>@NotBlank</code> as the first fix.</p>
+        <p><b>Error handling (84&ndash;85):</b> one global handler, <code>ApiExceptionHandler</code>, catches <code>RestClientException</code> (n8n unreachable/timeout/error) and returns a 502 with an actionable message ("Make sure n8n is running and the NEXUS workflow is Active") rather than a stack trace. There's no catch-all <code>Exception</code> handler, so any other bug still leaks Spring's default error page &mdash; another named gap.</p>
+        <p><b>Idempotency / retries (88&ndash;93):</b> not handled for <code>/validate</code> &mdash; a double-click submits two full pipeline runs. Low real-world impact for a human founder submitting once; the honest fix is disable-on-submit (already a soft mitigation via the loading state) plus, if made async, an idempotency key.</p>
+        <p><b>Timeouts (94&ndash;95):</b> explicit and deliberate &mdash; 10s connect / 180s read. Connect fails fast if n8n is unreachable; read stays generous because the pipeline legitimately takes up to 90s and cutting it off early would waste a run that would have succeeded.</p>
+        <p><b>Versioning (86&ndash;87):</b> none &mdash; single unversioned <code>/api</code> prefix, frontend and backend deploy together. I'd move to <code>/api/v1</code> the moment an external consumer needed the old contract preserved.</p>
+      </div>
+    </section>
+
+    <section id="s5">
+      <h2><span class="num">05</span> Authentication & security</h2>
+      <p class="section-note">Qs 98&ndash;120 &mdash; the strongest, most distinctive part of this project's design</p>
+
+      <div class="qa">
+        <h3><span class="qnum">99&ndash;108</span> Supabase JWT + RLS as the real authorization layer</h3>
+        <p>Supabase Auth issues JWTs on signup/login (<code>signUp</code> / <code>signInWithPassword</code> / <code>signInWithOAuth</code> for Google). <code>AuthProvider</code> listens to <code>onAuthStateChange</code>, and on any session loads the matching row from <code>public.profiles</code> &mdash; so "the user" in the UI is always the <i>profile</i>, and role comes from the DB, never from client state.</p>
+        <p><b>Why JWT, not server sessions (100&ndash;101):</b> not really a from-scratch choice &mdash; Supabase's model <i>is</i> JWT-based, and it's the right fit for a BaaS architecture where the browser talks to Postgres directly: the JWT is exactly what <code>auth.uid()</code> reads inside every RLS policy.</p>
+        <p><b>RBAC (109):</b> enforced at two layers deliberately &mdash; <code>ProtectedRoute.jsx</code> gates routes client-side by <code>user.role</code> (UX-only, trivially bypassable), and <b>Postgres RLS policies are the real gate</b> &mdash; every table has explicit <code>using</code>/<code>with check</code> clauses keyed off <code>auth.uid()</code>, <code>my_role()</code>, <code>my_institution()</code>. Role is never trusted from the client.</p>
+        <div class="callout"><span class="lbl">The actual security story</span>The original <code>handle_new_user()</code> copied <code>role</code> straight from client-supplied signup metadata &mdash; anyone with the public anon key could sign up as <code>admin</code>. The multi-tenant migration fixes this explicitly: self-signup is <i>always</i> <code>student</code>; elevated roles require a DB-side invitation row, matched by email, checked server-side in the trigger. Two guard triggers close the same class of bug elsewhere &mdash; <code>guard_profile_columns()</code> blocks a non-admin from changing their own <code>role</code>/<code>institution_id</code>/<code>funding_raised</code>; <code>guard_team_funding()</code> does the same for <code>teams.funding_raised</code>, since that field drives the public leaderboard.</div>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">111&ndash;120</span> Injection, XSS, CSRF, secrets</h3>
+        <p><b>SQL injection:</b> no hand-built SQL anywhere &mdash; all Supabase calls go through the parameterized JS client; the one place raw text reaches SQL-adjacent code is <code>.ilike('name', name.trim())</code> in <code>joinTeamByName</code>, still parameterized.</p>
+        <p><b>XSS:</b> React escapes all interpolated text by default; no <code>dangerouslySetInnerHTML</code> anywhere, so stored strings (chat messages, announcements) render as text, not HTML.</p>
+        <p><b>CSRF:</b> mitigated structurally &mdash; the Supabase client uses bearer-token auth, not ambient cookies, so there's no cookie-based session for a forged cross-site request to ride on. The Spring endpoint has no session/cookie auth at all &mdash; it's origin-restricted via <code>CorsConfig</code>'s <code>allowedOrigins</code>, not per-request authenticated. Real gap: a server-to-server call (not subject to CORS) could still hit <code>/api/validate</code> directly and burn Gemini quota &mdash; I'd add a shared-secret header or rate limiting if this were public-internet-facing at scale.</p>
+        <p><b>Secrets (118&ndash;120):</b> <code>.env.local</code> holds the Supabase anon key &mdash; meant to be public by design (RLS protects the data, per the code's own comment), so committing it isn't the same class of leak as a service-role key. Still inconsistent with <code>.env.example</code> being left blank, worth cleaning up even though low-risk. Backend secrets (<code>N8N_WEBHOOK_URL</code>, <code>CORS_ORIGINS</code>) are injected per-deploy as environment variables, never hardcoded.</p>
+        <p><b>Passwords (115&ndash;116):</b> never touched by my code &mdash; Supabase Auth hashes and stores them.</p>
+      </div>
+    </section>
+
+    <section id="s6">
+      <h2><span class="num">06</span> Scalability & caching</h2>
+      <p class="section-note">Qs 121&ndash;162 &mdash; honest scope: built for an incubator cohort, not internet scale</p>
+      <div class="qa">
+        <p><b>Current bottleneck (122&ndash;126):</b> Gemini's free-tier rate limit, by a wide margin &mdash; the app's own infrastructure would comfortably outlast the AI provider's quota. Second: the single n8n instance on one host with no redundancy.</p>
+        <p><b>Statelessness (131&ndash;133):</b> the Spring Boot backend is fully stateless &mdash; no session, no in-memory cache &mdash; so it scales horizontally trivially if ever needed. The frontend is a static SPA, infinitely horizontal by CDN nature. The one stateful piece is n8n's own execution history &mdash; that's the actual constraint, not my code.</p>
+        <p><b>At 10&ndash;100&times; traffic (139&ndash;143):</b> (1) move validate to async so I'm not holding 180s connections open &mdash; the single highest-leverage change; (2) run n8n on a real Postgres backend with multiple workers instead of one SQLite-backed instance; (3) cache-aside the public showcase/leaderboard/scheme data (read on every dashboard load, tolerant of staleness); (4) Supabase's own Postgres tier scales independently until I outgrow their managed offering.</p>
+        <p><b>Redis &mdash; not used, but here's the specific plan if I added it (144&ndash;158):</b> cache the showcase and leaderboard views &mdash; expensive-ish joins across <code>teams</code>/<code>team_members</code>/<code>progress</code>, read constantly, fine to be a few seconds stale. Cache-aside, short TTL (~60s), no invalidation logic needed. I would explicitly <i>not</i> cache anything RLS-protected behind a shared cache without keying it per-user &mdash; that's exactly the kind of design that leaks tenant data across institutions, which matters a lot given how much of this project's actual design already centers on strict institution isolation.</p>
+      </div>
+    </section>
+
+    <section id="s7">
+      <h2><span class="num">07</span> Kafka / message queues</h2>
+      <p class="section-note">Qs 163&ndash;191 &mdash; not part of this project</p>
+      <div class="qa"><p>No event pipeline exists; the one place an async event conceptually belongs &mdash; idea submitted &rarr; report ready &mdash; is currently one long synchronous HTTP call. If I introduced a queue, that's exactly what it would replace: <code>POST /api/validate</code> publishes <code>validation-requested</code> and returns 202 with a report id immediately; a worker consumes it, calls n8n, writes the result back or publishes <code>validation-failed</code> with a retryable reason. I'd reach for a simple queue (SQS, or Postgres-as-queue) before Kafka &mdash; Kafka's partitioning and consumer-group machinery solves very-high-throughput, strict-ordering, replay problems this system doesn't have at its actual scale; it would be pure operational overhead here.</p></div>
+    </section>
+
+    <section id="s8">
+      <h2><span class="num">08</span> Concurrency & multithreading</h2>
+      <p class="section-note">Qs 192&ndash;210</p>
+      <div class="qa"><p>No explicit multithreading code &mdash; Spring Boot's embedded Tomcat handles one thread per request by default. The only "concurrency" in my own code is the frontend's <code>Promise.all()</code> fan-out used throughout <code>store.js</code> and dashboard loaders (e.g. <code>AdminDashboard</code>'s <code>loadAll()</code> firing 7 Supabase queries in parallel). No shared mutable state exists in the backend (stateless per request), so there's no realistic race condition to guard with locks in this codebase. The actual concurrency-correctness story lives in Postgres: <code>before update</code> guard triggers run inside the same transaction as the write they're checking, so there's no check-then-act race window.</p></div>
+    </section>
+
+    <section id="s9">
+      <h2><span class="num">09</span> Failure handling</h2>
+      <p class="section-note">Qs 211&ndash;230</p>
+      <table>
+        <tr><th>Dependency down</th><th>What actually happens today</th><th>What I'd add</th></tr>
+        <tr><td>n8n</td><td><code>RestClientException</code> &rarr; <code>ApiExceptionHandler</code> &rarr; clean 502 with an actionable message. No retry.</td><td>Bounded retry (2&ndash;3 attempts, exponential backoff) for transient 503s specifically &mdash; n8n's "Retry On Fail" node is the intended mitigation at the workflow layer today.</td></tr>
+        <tr><td>Gemini (rate limited/slow)</td><td>Surfaces as an undifferentiated 502, same as "n8n is down."</td><td>Distinguish "rate limited, retry later" from "system misconfigured" in the error message.</td></tr>
+        <tr><td>Supabase</td><td>Reads silently show empty state (<code>data ?? []</code> throughout <code>store.js</code>); writes throw and surface inline in the form.</td><td>Reasonable as-is for reads; writes already fail loud, which is the right default.</td></tr>
+        <tr><td>One agent inside the n8n pipeline fails</td><td>Not handled explicitly in this repo &mdash; a known gap.</td><td>Per-agent try/catch with a fallback default at the NEXUS level so one flaky agent doesn't fail the whole report.</td></tr>
+      </table>
+      <div class="qa"><p><b>Mid-operation crash (229&ndash;230):</b> nothing here holds multi-step state outside a single DB transaction &mdash; the riskiest multi-step flow (signup &rarr; profile creation) is fully inside one Postgres trigger, so a mid-flight crash rolls the whole transaction back with no partial state left behind.</p></div>
+    </section>
+
+    <section id="s10">
+      <h2><span class="num">10</span> "Design it for 10 million users"</h2>
+      <p class="section-note">Qs 232&ndash;251</p>
+      <div class="qa">
+        <p>I'd say this plainly: SIVP was designed for a specific, bounded audience &mdash; one or a handful of university incubators, each with dozens to low hundreds of founders &mdash; not internet scale. 10M users changes the <i>problem</i>, not just the numbers: at that scale I'm not running "an incubator platform," I'm running a multi-tenant SaaS, and the honest first move is re-examining whether one Supabase project is still the right foundation versus dedicated Postgres with read replicas, a real cache tier, and the async validation queue described in Section 6/7 as table stakes. I'd rather give that grounded answer than pretend to have already solved problems at a scale this project was never built for.</p>
+      </div>
+    </section>
+
+    <section id="s11">
+      <h2><span class="num">11</span> AI / LLM pipeline</h2>
+      <p class="section-note">Qs 252&ndash;280 &mdash; this <i>is</i> an LLM-heavy project, just orchestrated in n8n, not in my own backend</p>
+      <div class="qa">
+        <p><b>Why Gemini 2.5-flash (254&ndash;256):</b> the free-tier constraint drove this directly &mdash; <code>gemini-2.0-flash</code> has 0 free-tier quota (a documented gotcha I hit), 2.5-flash doesn't, and Flash is cheap enough (fractions of a cent/call) to run 10 agents per validation without needing a bigger model.</p>
+        <p><b>Prompt architecture (257&ndash;258):</b> each of the 10 agents is a fixed system prompt + a shared user-prompt template &mdash; the 7 idea fields, or upstream agents' JSON for agents that need context (FundIQ's prompt explicitly pastes in <code>MarketMind.opportunityScore</code>, <code>RivalScope.competitionLevelScore</code>, etc., so its weighted Investor Readiness Score is computed from real upstream numbers, not invented in isolation). Structured Output Parsers (JSON-schema-by-example) constrain each agent to a fixed shape.</p>
+        <p><b>Hallucination mitigation (259):</b> every system prompt explicitly instructs the model to label estimates as estimates and never present invented figures as fact. <code>normalizeReport.js</code> adds a second defensive layer &mdash; e.g. it never invents a 5-year revenue curve from FundIQ's prose forecast; if the model didn't return a numeric series, the chart is skipped and the text is shown as-is instead of fabricating data points.</p>
+        <p><b>Rate limits/timeouts (269&ndash;270):</b> handled at two levels &mdash; n8n's "Retry On Fail" for transient 503s, and Spring Boot's 180s read timeout as the outer bound.</p>
+        <p><b>Caching LLM responses (272&ndash;273):</b> not done, and I wouldn't &mdash; each response should reflect that specific founder's specific idea; the only thing that functions as a de facto cache/fallback is the static <code>SAMPLE_REPORT</code> shown before a live report exists.</p>
+      </div>
+    </section>
+
+    <section id="s12">
+      <h2><span class="num">12</span> RAG</h2>
+      <p class="section-note">Qs 281&ndash;306 &mdash; not part of this project</p>
+      <div class="qa"><p>No retrieval or embedding pipeline. Every agent reasons from the 7 submitted idea fields plus upstream agent JSON and the model's own training knowledge, which is exactly why every prompt is careful to say "label as estimate" rather than claim grounded facts. If I added RAG, the obvious candidate is MentorAI &mdash; grounding government-scheme recommendations in an actual up-to-date scheme database, since the static <code>SCHEMES</code> list I maintain by hand is exactly the kind of source that goes stale and is a natural embeddings-index candidate, instead of relying on model training data that can be outdated on eligibility rules.</p></div>
+    </section>
+
+    <section id="s13">
+      <h2><span class="num">13</span> Voice AI / calling</h2>
+      <p class="section-note">Qs 307&ndash;331 &mdash; not part of this project</p>
+      <div class="qa"><p>No telephony or voice pipeline anywhere in this codebase &mdash; there is no analog worth stretching for here.</p></div>
+    </section>
+
+    <section id="s14">
+      <h2><span class="num">14</span> Observability & testing</h2>
+      <p class="section-note">Qs 332&ndash;362</p>
+      <div class="qa">
+        <p><b>Observability:</b> minimal today &mdash; console logging only (missing-env-var errors, and the raw pipeline response is logged to the browser console on every validation so its exact shape is inspectable). No structured backend logging, metrics, or tracing. First thing I'd add: structured logging around the n8n call specifically &mdash; request id, latency, outcome &mdash; since that's currently the one place failures are invisible except as a 502 in the browser.</p>
+        <p><b>Testing:</b> the only test dependency present is <code>spring-boot-starter-test</code> in <code>pom.xml</code> &mdash; no test files exist in the repo. I'd say that plainly rather than claim coverage I don't have. Highest-value tests if scoped: <code>N8nService</code> with a mocked <code>RestTemplate</code> (timeout/error paths), and the Postgres trigger functions (<code>guard_profile_columns</code>, <code>guard_team_funding</code>, <code>handle_new_user</code>) since those encode the actual security invariants.</p>
+      </div>
+    </section>
+
+    <section id="s15">
+      <h2><span class="num">15</span> Deployment / DevOps</h2>
+      <p class="section-note">Qs 363&ndash;377</p>
+      <div class="qa">
+        <p>Two deploy paths exist in the repo, reflecting a real migration in progress. The original: Vercel (frontend) + Render (backend, via <code>render.yaml</code>) + n8n hosted/tunnelled separately, documented in <code>DEPLOYMENT.md</code>. The current production target: a single EC2 host running nginx (TLS termination + static frontend + a same-origin <code>/api/</code> reverse proxy, which removes CORS from the picture entirely) alongside the Spring Boot backend and n8n, all as Docker Compose services.</p>
+        <div class="path">
+          <span class="step">push to main</span><span class="arrow">&rarr;</span>
+          <span class="step">CI builds &amp; tags image by commit SHA</span><span class="arrow">&rarr;</span>
+          <span class="step">docker compose pull/up on the host</span>
+        </div>
+        <p>Images are tagged by commit SHA, never <code>:latest</code>, so <code>docker compose up</code> reliably recreates containers on every deploy. Every service caps its own logs (<code>max-size: 10m</code>) so the disk doesn't silently fill. n8n's execution history is explicitly pruned (7-day / 2000-execution caps) for the same reason &mdash; one validation writes 11 executions, each holding the full JSON payload passed downstream, and that grows without bound otherwise.</p>
+        <p><b>Migrations:</b> the Supabase SQL files (<code>schema.sql</code>, then additive migrations) are applied manually through the SQL editor &mdash; no Flyway/Liquibase-equivalent tooling. Honest gap; I'd track these as versioned migrations the moment more than one person needed to apply them consistently.</p>
+        <p><b>Zero-downtime / rollback:</b> not implemented &mdash; a single-host Compose deploy briefly cycles containers. The real fix is the same as any monolith: multiple backend instances behind a load balancer, deploy to one, health-check, cut over.</p>
+      </div>
+    </section>
+
+    <section id="s16">
+      <h2><span class="num">16</span> The "why &rarr; why not" drill, worked example</h2>
+      <p class="section-note">The recurring depth pattern, worked through with SIVP's real timeout design</p>
+      <div class="qa">
+        <p><b>Why a 180s read timeout on the n8n call?</b> The 10-agent pipeline legitimately takes 30&ndash;90s (10 sequential/parallel LLM calls), and cutting the connection off early would waste a run that would have succeeded.</p>
+        <p><b>Why not just poll instead of one long synchronous call?</b> Simplicity for the current traffic profile &mdash; a founder submitting once and waiting is acceptable UX at this scale, and async polling was explicitly deferred as a later-phase item rather than skipped by accident.</p>
+        <p><b>What's the actual risk of the synchronous approach?</b> A held-open HTTP connection for up to 180s per validation ties up a request thread the whole time, and a page refresh mid-run loses all state with no resume path.</p>
+        <p><b>What happens if n8n hangs past 180s?</b> <code>RestTemplate</code> throws, <code>ApiExceptionHandler</code> catches it, the founder sees a clean 502 with an actionable message instead of an infinite spinner.</p>
+        <p><b>What happens at 10&times; concurrent validations?</b> Nothing in my own stateless backend breaks &mdash; it just means more concurrent threads held open for up to 180s each. The real ceiling is Gemini's own rate limit, hit long before Spring Boot's thread pool would be.</p>
+        <p><b>What would you change first?</b> Make it async: return a report id immediately, let the frontend poll or subscribe, freeing the backend from holding long connections and giving me a natural retry point if n8n times out.</p>
+        <div class="followups"><b>The pattern to reuse on any other component:</b> what &rarr; why &rarr; alternative rejected and why &rarr; tradeoff accepted &rarr; failure mode &rarr; behavior at 10&times; &rarr; the one thing you'd change first. Run this same chain for the RLS-as-authorization design and for the CRUD-direct-to-Supabase vs. AI-through-backend split &mdash; those are the two most likely to get drilled here.</div>
+      </div>
+    </section>
+
+    <section id="s17">
+      <h2><span class="num">17</span> The dangerous ones</h2>
+      <p class="section-note">One-line answers, ready to expand from any section above</p>
+      <div class="qa">
+        <ul>
+          <li><b>Architecture:</b> stateless Spring Boot bridge + browser-direct Supabase for CRUD, split by latency profile (ms vs. 30&ndash;90s), not by team boundary.</li>
+          <li><b>Database:</b> Postgres via Supabase &mdash; the data is relational and RLS gives me real multi-tenant authorization for free.</li>
+          <li><b>Why not X:</b> microservices, Kafka, Redis, GraphQL, gRPC all solve problems this system doesn't have at its actual scale &mdash; a cohort of founders, not internet traffic.</li>
+          <li><b>n8n down:</b> every validation 502s with a clean message; everything else (dashboards, chat, docs) keeps working since nothing else depends on it.</li>
+          <li><b>Biggest bottleneck:</b> Gemini's own free-tier rate limit, not my infrastructure.</li>
+          <li><b>How to scale:</b> make validation async first (highest leverage), then cache the public read-heavy views, then a real Postgres-backed n8n with multiple workers.</li>
+          <li><b>Concurrent same-data edit:</b> last-write-wins on <code>progress</code> (low-stakes); guard triggers instead of locking on <code>funding_raised</code> (high-stakes, narrowed to a trusted writer set).</li>
+          <li><b>Security's real story:</b> role is never trusted from the client &mdash; RLS + guard triggers enforce role/institution/funding changes server-side, closing a documented self-escalation bug from an earlier version.</li>
+          <li><b>Failure handling:</b> one global exception handler turning n8n failures into a clean 502; no retry/circuit breaker yet &mdash; named gap.</li>
+          <li><b>Caching:</b> none today; if added, cache-aside on the public showcase/leaderboard only &mdash; never on anything RLS-protected without per-user keying.</li>
+          <li><b>Kafka:</b> not used &mdash; no event-driven feature exists yet to justify it.</li>
+          <li><b>Sync vs async:</b> everything synchronous today; validation is the one place I'd deliberately make async first.</li>
+          <li><b>Redesign for production:</b> async validation queue, per-agent fallback in NEXUS, structured backend logging, migration tooling for the SQL schema, request validation on <code>IdeaRequest</code>.</li>
+          <li><b>Weakest part:</b> the single self-hosted n8n instance with no redundancy &mdash; said plainly, not hidden.</li>
+          <li><b>Hardest problem solved:</b> writing <code>normalizeReport.js</code> to defensively tolerate a non-deterministic LLM pipeline's raw JSON &mdash; unresolved template expressions, trailing-space keys, inconsistent currency formatting &mdash; without ever inventing data the model didn't actually return.</li>
+          <li><b>A decision you'd revisit:</b> making the validate flow synchronous from day one instead of async from the start &mdash; reasonable for the MVP, but the first thing I'd unwind.</li>
+          <li><b>One week to improve it:</b> async validation queue, request validation, structured logging around the n8n call, indexes on the actual hot <code>WHERE</code> clauses, migration tooling.</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
