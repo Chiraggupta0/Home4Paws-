@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Defending Home4Paws</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f7f5f0; --surface:#ffffff; --surface-2:#f1eee6;
+  --text:#1f2420; --muted:#5b665f; --border:#e0dbcd;
+  --accent:#2f6f5e; --accent-ink:#ffffff; --accent-soft:#e4efe9;
+  --warn:#b5651d; --warn-soft:#f7ebdd;
+  --code-bg:#1f2420; --code-text:#e8e6df;
+  --shadow: 0 1px 2px rgba(31,36,32,.06), 0 8px 24px -12px rgba(31,36,32,.12);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14181a; --surface:#1b2122; --surface-2:#222927;
+    --text:#e8e6df; --muted:#9aa39c; --border:#2b3330;
+    --accent:#63b89e; --accent-ink:#0d1513; --accent-soft:#1e2f2a;
+    --warn:#e0a262; --warn-soft:#2c2318;
+    --code-bg:#0e1211; --code-text:#dfe6de;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14181a; --surface:#1b2122; --surface-2:#222927;
+  --text:#e8e6df; --muted:#9aa39c; --border:#2b3330;
+  --accent:#63b89e; --accent-ink:#0d1513; --accent-soft:#1e2f2a;
+  --warn:#e0a262; --warn-soft:#2c2318;
+  --code-bg:#0e1211; --code-text:#dfe6de;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Source Sans 3',system-ui,sans-serif;line-height:1.6;font-size:16px}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;text-wrap:balance;color:var(--text)}
+code,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+img{max-width:100%}
+.layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:0;max-width:1280px;margin:0 auto}
+.toc{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:28px 18px;border-right:1px solid var(--border);background:var(--surface)}
+.toc-title{font-family:'Fraunces',serif;font-size:1.05rem;font-weight:600;margin:0 0 4px;padding:0 8px}
+.toc-sub{color:var(--muted);font-size:.78rem;margin:0 0 18px;padding:0 8px}
+.toc a{display:block;color:var(--muted);text-decoration:none;font-size:.83rem;padding:5px 8px;border-radius:6px;border-left:2px solid transparent}
+.toc a:hover{color:var(--text);background:var(--surface-2)}
+.toc a.applies::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:7px}
+.toc a.notused::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);opacity:.5;margin-right:7px}
+.toc-legend{padding:14px 8px 0;font-size:.72rem;color:var(--muted);border-top:1px solid var(--border);margin-top:14px;display:flex;flex-direction:column;gap:5px}
+.toc-legend span{display:flex;align-items:center;gap:7px}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.dot.used{background:var(--accent)} .dot.unused{background:var(--muted);opacity:.5}
+
+main{padding:52px 56px 120px;max-width:860px}
+header.hero{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border)}
+.eyebrow{font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;color:var(--accent);font-weight:500}
+h1.title{font-size:2.4rem;margin:.4em 0 .3em;font-weight:600}
+.lede{color:var(--muted);font-size:1.05rem;max-width:60ch}
+
+section{margin-bottom:52px;scroll-margin-top:24px}
+section > h2{font-size:1.5rem;font-weight:600;margin:0 0 4px;display:flex;align-items:baseline;gap:10px}
+section > h2 .num{color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:.85rem;font-weight:500}
+.section-note{color:var(--muted);font-size:.88rem;margin:0 0 22px;max-width:62ch}
+.tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:20px;margin-left:2px;vertical-align:middle}
+.tag.used{background:var(--accent-soft);color:var(--accent)}
+.tag.unused{background:var(--surface-2);color:var(--muted)}
+
+.qa{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-bottom:14px;box-shadow:var(--shadow)}
+.qa h3{font-size:.98rem;font-weight:600;margin:0 0 8px;font-family:'Source Sans 3',sans-serif;color:var(--text)}
+.qa h3 .qnum{color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:.82rem;margin-right:6px}
+.qa p{margin:0 0 10px;max-width:64ch}
+.qa p:last-child{margin-bottom:0}
+.qa ul{margin:8px 0 10px;padding-left:20px}
+.qa li{margin-bottom:5px;max-width:60ch}
+.qa .followups{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);color:var(--muted);font-size:.9rem}
+.qa .followups b{color:var(--text)}
+
+.callout{background:var(--warn-soft);border:1px solid color-mix(in srgb, var(--warn) 30%, transparent);border-radius:10px;padding:16px 20px;margin:16px 0;font-size:.92rem}
+.callout .lbl{font-family:'IBM Plex Mono',monospace;text-transform:uppercase;font-size:.7rem;letter-spacing:.08em;color:var(--warn);font-weight:600;display:block;margin-bottom:6px}
+
+.path{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:.8rem}
+.path .step{background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:6px 10px}
+.path .arrow{color:var(--muted)}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mini{background:var(--surface-2);border-radius:8px;padding:12px 16px;font-size:.86rem}
+.mini b{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;font-family:'IBM Plex Mono',monospace}
+
+table{border-collapse:collapse;width:100%;font-size:.86rem;margin:10px 0}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--border)}
+th{color:var(--muted);font-weight:600;font-family:'IBM Plex Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em}
+
+@media (max-width: 900px){
+  .layout{grid-template-columns:1fr}
+  .toc{position:static;height:auto}
+  main{padding:32px 20px}
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <nav class="toc" id="toc">
+    <p class="toc-title">Home4Paws Defense</p>
+    <p class="toc-sub">380 interview questions, mapped to the real system</p>
+    <a href="#s1" class="applies">1 · Architecture</a>
+    <a href="#s2" class="applies">2 · Tech choices</a>
+    <a href="#s3" class="applies">3 · Database design</a>
+    <a href="#s4" class="applies">4 · API design</a>
+    <a href="#s5" class="applies">5 · Auth & security</a>
+    <a href="#s6" class="applies">6 · Scalability</a>
+    <a href="#s7" class="applies">7 · Caching / Redis</a>
+    <a href="#s8" class="notused">8 · Kafka / queues</a>
+    <a href="#s9" class="applies">9 · Concurrency</a>
+    <a href="#s10" class="applies">10 · Failure handling</a>
+    <a href="#s11" class="applies">11 · Redesign for 10M users</a>
+    <a href="#s12" class="notused">12 · AI / LLM</a>
+    <a href="#s13" class="notused">13 · RAG</a>
+    <a href="#s14" class="notused">14 · Voice AI</a>
+    <a href="#s15" class="applies">15 · Observability</a>
+    <a href="#s16" class="applies">16 · Testing</a>
+    <a href="#s17" class="applies">17 · Deployment / DevOps</a>
+    <a href="#s18" class="applies">18 · The "why → why not" drill</a>
+    <a href="#s19" class="applies">19 · Your contribution</a>
+    <a href="#s20" class="applies">20 · The 20 dangerous ones</a>
+    <div class="toc-legend">
+      <span><i class="dot used"></i> built into Home4Paws</span>
+      <span><i class="dot unused"></i> not in this project — honest "no," plus the reasoning</span>
+    </div>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="eyebrow">Interview defense document</span>
+      <h1 class="title">Defending Home4Paws</h1>
+      <p class="lede">A straight answer for every question in your list, grounded in what's actually in the repo — Spring Boot monolith, Supabase-issued JWTs, Postgres, Redis-backed SSE chat, Razorpay. Where your list asks about Kafka, RAG, or voice pipelines, the honest answer is "not in this project" — said plainly, with the reasoning an interviewer is actually testing for.</p>
+    </header>
+
+    <section id="s1">
+      <h2><span class="num">01</span> Project understanding & architecture</h2>
+      <p class="section-note">Qs 1–20</p>
+
+      <div class="qa">
+        <h3><span class="qnum">1–5</span> The pitch: problem, why, users, features</h3>
+        <p><b>What it is:</b> Home4Paws is a single Spring Boot + React application that merges two things people otherwise solve with three different apps: free pet adoption from NGOs/shelters, paid pet sales from individual sellers, and a pet-supplies store — with a chat channel wired directly into each adoption request so the adopter and the shelter can actually talk before a pet changes hands.</p>
+        <p><b>Problem it solves:</b> adoption listings, marketplace sales, and supply shopping are normally fragmented across Instagram DMs, classifieds, and separate storefronts, with no structured way to track a request from "interested" to "approved" to "picked up," and no record of the conversation. Home4Paws puts the listing, the request workflow, the chat, and the payment (for sales/supplies) behind one auth model and one data model.</p>
+        <p><b>Why built:</b> it's a portfolio/learning project that deliberately covers a full production slice — real third-party auth (Supabase), real payments (Razorpay), real-time messaging (SSE + Redis pub/sub), and a real deploy pipeline (Docker Compose behind Nginx/Certbot on EC2) — rather than a CRUD toy.</p>
+        <p><b>Users:</b> four roles drive the whole app — <code>NORMAL_USER</code> (browses, adopts, buys supplies), <code>SELLER</code> (lists pets for sale), <code>NGO_SHELTER</code> (lists pets for free adoption), <code>ADMIN</code> (verification, moderation, platform stats).</p>
+        <p><b>Major features:</b> dual pet listings (adoption vs. marketplace) on one <code>Pet</code> entity, an adoption-request approve/reject workflow, live per-request chat, a product catalog with cart and Razorpay checkout, order history, and an admin dashboard.</p>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">6, 12–13</span> Walk the architecture / draw it / what happens on a request</h3>
+        <p>It's a classic three-tier monolith, not microservices:</p>
+        <div class="path">
+          <span class="step">React SPA (Vite)</span><span class="arrow">→</span>
+          <span class="step">Axios + Supabase JWT</span><span class="arrow">→</span>
+          <span class="step">Nginx (TLS, reverse proxy)</span><span class="arrow">→</span>
+          <span class="step">Spring Boot (JwtFilter → Controller → Service → Repository)</span><span class="arrow">→</span>
+          <span class="step">Postgres (Supabase)</span>
+        </div>
+        <p>Two components sit beside that main line: <b>Redis</b>, used both as a Spring cache and as the pub/sub backbone for chat fan-out across app instances; and <b>Razorpay</b>, called out-of-band by the backend during checkout/subscription to create an order, then hit again by the frontend's Razorpay checkout widget, then verified server-side via HMAC signature.</p>
+        <p>On a normal request: browser sends the request with <code>Authorization: Bearer &lt;supabase-jwt&gt;</code> → Nginx terminates TLS and proxies to the Spring container → <code>JwtFilter</code> (a <code>OncePerRequestFilter</code>) validates the token via <code>JwtUtil</code>, loads the local <code>User</code> through <code>CustomUserDetailsService</code>, and populates the <code>SecurityContext</code> → Spring Security's method-level <code>@PreAuthorize</code> checks the role → the controller delegates to a service → the service uses a Spring Data JPA repository → Hibernate issues SQL to Postgres → the entity is mapped back to a DTO/JSON and returned through the same chain.</p>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">7–11, 14–20</span> Why this shape, components, bottlenecks, limitations, redesign</h3>
+        <p><b>Why a monolith, not microservices (7–8):</b> one team, one deploy target, and a data model where almost every feature (pets, requests, chat, orders) reads and writes the same handful of tightly related tables. Microservices would mean distributed transactions across "Pet service" and "Request service" for something that's one <code>@Transactional</code> method today — pure overhead at this scale, and it's the answer I'd give and defend, not a limitation I'd apologize for.</p>
+        <p><b>Components and responsibilities (9–11):</b> <code>controller</code> = HTTP boundary + input shape; <code>service</code> = business rules and transactions; <code>repository</code> = persistence; <code>config</code> = cross-cutting (security, CORS, Redis, chat pub/sub); frontend <code>pages</code> = route-level screens, <code>context/CartContext</code> = client cart state, <code>api/axiosConfig</code> = attaches the Supabase token to every call. They communicate in-process (Java method calls) on the backend, and over REST/SSE between frontend and backend — there's no inter-service RPC because there's only one backend service.</p>
+        <p><b>Critical path / bottleneck / SPOF (15–17):</b> the critical path for the whole app is <code>JwtFilter → Postgres</code> — every authenticated request pays for a JWT validation and at least one DB round trip, and Postgres (a single Supabase instance, no replicas configured) is both the bottleneck under write load and the single point of failure: if it's down, every feature except static pet/product browsing (if cached) stops. Redis is a soft SPOF — chat breaks without it, but the CRUD paths still work since it's not on the auth path.</p>
+        <p><b>Assumptions (18):</b> trusted, low-tampering client (JWT trust model assumes Supabase's signature is enough — no separate password check); moderate concurrent load (single Postgres instance, no read replicas, no sharding); images/files aren't stored by the app itself (imageUrl fields imply an external host or Supabase storage, not local disk).</p>
+        <p><b>Biggest limitations / what I'd change today (19–20):</b> <span class="tag used">real</span> the plaintext DB credentials and Razorpay keys committed in <code>application.properties</code>/<code>docker-compose.yml</code> — first thing I'd fix, move to environment variables + a secrets manager. Second: no read replica or connection pooling tuning documented, and <code>ddl-auto=none</code> means schema changes are manual, not tracked by a migration tool (no Flyway/Liquibase) — I'd add one. Third: the stale README undersells the current feature set, which is a documentation debt, not an architecture one.</p>
+      </div>
+    </section>
+
+    <section id="s2">
+      <h2><span class="num">02</span> Why this technology</h2>
+      <p class="section-note">Qs 21–44 — answered as "what we used" vs. "what the list asks about that we didn't use"</p>
+
+      <div class="qa">
+        <h3><span class="qnum">21–23, 25–31, 38–40</span> Java, Spring Boot, REST, sync, monolith, JPA <span class="tag used">used</span></h3>
+        <p><b>Java + Spring Boot:</b> strong typing catches request/entity mismatches at compile time, Spring Data JPA removes CRUD boilerplate, Spring Security's method-level <code>@PreAuthorize</code> maps cleanly onto a 4-role system, and the ecosystem (Spring Cache, Spring Data Redis) covers everything the project needed without extra glue code.</p>
+        <p><b>Why not Node.js/Python (23–24):</b> both would work fine for this feature set; the real reason is I wanted statically-typed domain modeling for the role/permission matrix (four roles × five resource types) where a typo'd string role is a runtime bug in a dynamically typed stack and a compile error in Java.</p>
+        <p><b>REST, not GraphQL (25–26):</b> the frontend's data needs per page are simple and don't suffer from REST over/under-fetching (a pets list, a pet detail, a cart) — GraphQL's flexible querying would be solving a problem this app doesn't have, at the cost of a query-planning/N+1 layer to build and secure.</p>
+        <p><b>HTTP, synchronous (27–29):</b> requests are simple create/read/update operations with an immediate expected response (add to cart, approve a request); nothing in the flow genuinely benefits from fire-and-forget except chat, which is why chat specifically uses SSE (a long-lived async push channel) instead of polling — the rest of the app didn't need gRPC's binary framing or an async message bus.</p>
+        <p><b>Monolith over microservices (30–31):</b> see 7–8 above — one deploy unit, one Postgres schema, no team-boundary reason to split.</p>
+        <p><b>JPA/Hibernate over raw JDBC (38–40):</b> the entity graph (User↔Pet↔AdoptionRequest↔ChatMessage↔Order↔OrderItem) has enough relationships that hand-writing JDBC mapping code for each would be pure repetition; JPA's repository interfaces also make the role-scoped queries (e.g. "pets owned by this shelter") declarative.</p>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">32, 34–37, 41–44</span> Redis, Postgres, ORM, cloud, Docker <span class="tag used">used</span></h3>
+        <p><b>Redis:</b> two jobs — Spring Cache for read-heavy, rarely-changing data, and pub/sub as the fan-out mechanism so chat messages reach every app instance's SSE connections, not just the instance that received the POST.</p>
+        <p><b>Postgres, SQL not NoSQL (34–36):</b> the data is inherently relational — a pet belongs to a shelter/seller, has many adoption requests, a request has many chat messages, an order has many order items — and the app needs transactional guarantees around checkout (order + order items + stock decrement must succeed or fail together). A document store would mean denormalizing this graph or doing manual joins in app code for no benefit.</p>
+        <p><b>Supabase as the Postgres host (37):</b> managed Postgres plus a built-in auth product in one, which is also why auth ended up as a JWT-trust model instead of home-grown sessions — see Section 5.</p>
+        <p><b>Docker (42):</b> reproducible builds and the ability to run backend, frontend, Redis, and Nginx as one <code>docker-compose</code> unit on the EC2 box, so "it works on my machine" doesn't become a deploy-day problem.</p>
+        <p><b>Kubernetes (43):</b> not used — a single EC2 instance running docker-compose is the right size for this traffic; K8s would add an orchestration layer with nothing to orchestrate (one replica per service). I'd reach for it the moment I needed multiple backend instances behind a load balancer with rolling deploys, not before.</p>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">33</span> Kafka <span class="tag unused">not used</span></h3>
+        <p>No message broker in this project — every write is synchronous and immediately consistent (place an adoption request, approve it, send a chat message), and the one place that could look async — chat fan-out — is solved at a scale where Redis pub/sub is enough: single-digit backend instances, not a multi-region fleet needing durable, replayable event streams. I'd reach for Kafka if the app grew an event-driven side — e.g. "notify all interested users when a new pet matching their saved search is listed" — where you want durable, replayable, multi-consumer fan-out rather than a direct call.</p>
+      </div>
+    </section>
+
+    <section id="s3">
+      <h2><span class="num">03</span> Database design</h2>
+      <p class="section-note">Qs 45–74</p>
+
+      <div class="qa">
+        <h3><span class="qnum">46–51</span> Schema shape and normalization</h3>
+        <p>Core tables: <code>users</code> (role, email, Supabase-linked identity), <code>pets</code> (species, breed, age, price nullable, status, gender, city/state, FK to owner), <code>products</code> (category, type, price, stock, imageUrl), <code>orders</code> + <code>order_items</code> (Razorpay order/payment IDs, status), <code>adoption_requests</code> (adopter FK, pet FK, status), <code>chat_messages</code> (request FK, sender, body, timestamp), <code>subscriptions</code>.</p>
+        <p>It's normalized to 3NF for the transactional core — <code>order_items</code> is split out from <code>orders</code> specifically so an order can hold N products without repeating order-level fields per line item, and <code>pets</code> doesn't duplicate owner info (name, contact) that lives on <code>users</code> — it's joined via FK. The one deliberate "denormalization" is that <code>Pet.price</code> is nullable and reused for both adoption (null) and marketplace (set) listings rather than splitting into two tables — a single filterable listings table matters more than schema purity here, since both listing types share every other column and the UI, and a query like "all pets in Mumbai" would otherwise need a UNION across two tables.</p>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">52–65</span> Keys, indexes, query cost, scale</h3>
+        <div class="grid2">
+          <div class="mini"><b>Primary keys</b>JPA-managed auto-increment/identity IDs per entity — simple, sequential, and sufficient since IDs aren't exposed as guessable security boundaries (auth is role-based, not ID-obscurity-based).</div>
+          <div class="mini"><b>UUID vs auto-increment (53)</b>Auto-increment was the pragmatic default for a single-database app with no multi-region write conflicts to avoid; I'd switch to UUIDs if this ever became multi-instance-writable or the IDs needed to be unguessable in a public URL.</div>
+        </div>
+        <p><b>Indexes (54–58):</b> not explicit in the current schema beyond primary/foreign keys — this is the honest gap I'd name if asked directly. The ones I'd add first: <code>pets(status, city)</code> for the adoption/marketplace browse filters, <code>adoption_requests(pet_id, status)</code> for the shelter's request queue, and <code>orders(user_id)</code> for order history — all three are the actual <code>WHERE</code> clauses the controllers issue. Downside of indexes: slower writes (every insert/update also touches the index), more storage, and a "why is this insert slow" surprise if you over-index a write-heavy table.</p>
+        <p><b>100M rows / partitioning (59–61):</b> at that scale I'd first check whether it's actually one hot table (likely <code>chat_messages</code>, which grows unboundedly per request) — partition that by date range or by <code>adoption_request_id</code> hash, add read replicas for the browse-heavy <code>pets</code>/<code>products</code> queries, and archive completed/old orders out of the hot table.</p>
+        <p><b>Investigating a slow query (62–65):</b> run <code>EXPLAIN ANALYZE</code>, check whether it's doing a sequential scan where an index should be hit, check join order and whether the ORM is issuing N+1 queries (a classic JPA trap — e.g. fetching an order and lazily loading each order item in a loop instead of one JOIN FETCH).</p>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">66–74</span> Concurrency, transactions, consistency</h3>
+        <p><b>Concurrent updates (66–69):</b> the highest-risk case is two adopters requesting the same pet, or an admin deleting a pet while a request is being approved. Spring's default transaction isolation (Postgres <code>READ COMMITTED</code>) is what's in effect — good enough for this workload since conflicting writes are rare and not financial; I did not add explicit optimistic locking (<code>@Version</code>), which is the honest next step for the <code>Pet.status</code> field specifically, so "approve" can't race against "pet already adopted."</p>
+        <p><b>Transactions (70–74):</b> the checkout flow is the clearest case — <code>OrderService.checkout</code> must create the <code>Order</code> and all its <code>OrderItem</code> rows atomically; if the app crashed mid-way you'd want either both rows or neither, which is what <code>@Transactional</code> (Spring's declarative transaction boundary, rolling back on unhandled exceptions) gives you. The Razorpay call itself happens before commit and returns an order ID that's stored — if the DB write then failed, you'd have an orphaned Razorpay order with no local record, which is the actual failure mode I'd harden next (compensating cleanup or moving the Razorpay call to a step verified after commit).</p>
+      </div>
+    </section>
+
+    <section id="s4">
+      <h2><span class="num">04</span> API design</h2>
+      <p class="section-note">Qs 75–96</p>
+      <div class="qa">
+        <h3>Verbs, validation, errors, versioning</h3>
+        <p><b>Verb choices (77–78):</b> <code>POST</code> for creating a pet listing, an adoption request, or a chat message (resource creation, non-idempotent); <code>DELETE</code> for admin pet/user removal; no <code>PUT</code>/<code>PATCH</code> distinction is heavily exercised in this app since most "updates" are really status transitions (approve/reject a request, mark an order paid) modeled as dedicated endpoints rather than generic resource replacement — that's a REST-purity tradeoff I made for clarity over strict verb semantics.</p>
+        <p><b>Validation (80–84):</b> request DTOs (<code>RegisterRequest</code>, <code>CheckoutRequest</code>, <code>LoginRequest</code>) shape what the controller accepts at the boundary; a <code>GlobalExceptionHandler</code> (<code>@ControllerAdvice</code>) catches exceptions centrally and returns a consistent <code>ErrorResponse</code> body with an appropriate HTTP status, instead of leaking stack traces or letting each controller hand-roll error JSON.</p>
+        <p><b>Idempotency (88–91):</b> the one place this actually matters is Razorpay's payment verification callback — <code>/api/orders/verify</code> checks the order isn't already <code>PAID</code> before flipping status, so a retried webhook/client call can't double-process a payment. Most other endpoints (list pets, view chat) are naturally idempotent as GETs.</p>
+        <p><b>Versioning / backward compatibility (85–87):</b> not versioned today — frontend and backend deploy together from the same repo via one CI/CD pipeline, so there's no independent-client compatibility problem to solve yet. I'd introduce <code>/api/v2/...</code> the moment a mobile client or third-party integration needed the old contract to keep working.</p>
+        <p><b>Downstream failure (95–96):</b> the one real downstream dependency is Razorpay. If it's unavailable, checkout fails fast with an error surfaced to the user rather than silently retrying — there's no circuit breaker today, which is a gap I'd close with a library like Resilience4j if this saw production payment volume.</p>
+      </div>
+    </section>
+
+    <section id="s5">
+      <h2><span class="num">05</span> Authentication & security</h2>
+      <p class="section-note">Qs 97–118 — this is the section most worth over-preparing; it's the project's most distinctive design decision</p>
+
+      <div class="qa">
+        <h3><span class="qnum">97–104</span> The JWT-trust model, explained precisely</h3>
+        <p>Home4Paws does <b>not</b> do local password authentication. Supabase Auth owns sign-up/sign-in (email+password and Google OAuth) and issues a signed JWT. The frontend sends that JWT as <code>Authorization: Bearer &lt;token&gt;</code> on every API call (via <code>axiosConfig.js</code>). On first contact, the frontend calls <code>POST /api/auth/sync</code>, and <code>AuthService.syncUser</code> validates the token, then finds-or-creates a matching local <code>User</code> row keyed by email, defaulting role to <code>NORMAL_USER</code> unless a valid role string was supplied (needed specifically for OAuth signups, since Supabase doesn't propagate custom <code>user_metadata</code> through the OAuth redirect). Every subsequent request runs through <code>JwtFilter</code>, a <code>OncePerRequestFilter</code> that validates the token via <code>JwtUtil</code>, loads the local user through <code>CustomUserDetailsService</code>, and populates Spring Security's <code>SecurityContext</code> — so <code>@PreAuthorize("hasRole(...)")</code> works exactly like it would with local sessions, just backed by a token Supabase issued.</p>
+        <p>Because Spring's <code>UserDetails</code> still requires a <code>getPassword()</code>, the local <code>User</code> entity returns an empty string — password verification never happens in this backend; trust is entirely delegated to Supabase's signature. <code>JwtFilter</code> also accepts the token as a <code>?token=</code> query param specifically for the SSE chat endpoint, since <code>EventSource</code> can't set custom headers.</p>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">98–99, 101–106</span> Why JWT, token storage, refresh, revocation, RBAC</h3>
+        <p><b>Why JWT over server sessions (98–99):</b> it wasn't really a from-scratch choice — Supabase Auth's product is JWT-based, so once I chose Supabase for OAuth + email/password, JWT was the natural fit for a stateless Spring backend (no server-side session store needed, works cleanly with CORS across the SPA's own origin).</p>
+        <p><b>Refresh/revocation (102–104):</b> handled by the Supabase client SDK on the frontend, not by this backend — Supabase manages refresh-token rotation and expiry. If a refresh token were stolen, that's a Supabase-side session-revocation action; the backend's own exposure is limited to however long an already-issued access token stays valid, since <code>JwtFilter</code> doesn't check a local blocklist.</p>
+        <p><b>RBAC (105, 107):</b> <code>Role</code> enum (<code>NORMAL_USER</code>, <code>SELLER</code>, <code>NGO_SHELTER</code>, <code>ADMIN</code>) maps to a Spring Security authority (<code>ROLE_&lt;role&gt;</code>); endpoints are gated with method-level <code>@PreAuthorize("hasRole('...')")</code> — e.g. pet creation/deletion restricted to <code>NGO_SHELTER</code>/<code>SELLER</code>, product catalog writes to <code>ADMIN</code>, adoption-request creation to <code>NORMAL_USER</code>, and the entire <code>AdminController</code> is class-level gated to <code>ADMIN</code>.</p>
+      </div>
+
+      <div class="qa">
+        <h3><span class="qnum">109–118</span> Injection, XSS, CSRF, secrets</h3>
+        <p><b>SQL injection (109):</b> JPA/Hibernate parameterizes all queries by default (no raw string-concatenated SQL in the services), which closes this off structurally rather than by discipline.</p>
+        <p><b>XSS (110):</b> React escapes rendered content by default; the app doesn't use <code>dangerouslySetInnerHTML</code> for user-generated content like chat messages or pet descriptions, so injected markup renders as text, not HTML.</p>
+        <p><b>CSRF (111):</b> CSRF protection is explicitly disabled in <code>SecurityConfig</code> — safe here specifically because the API is stateless and bearer-token-authenticated rather than cookie-session-authenticated; CSRF exploits rely on the browser auto-attaching cookies, which doesn't apply when auth is a header the attacker's page can't set cross-origin.</p>
+        <div class="callout"><span class="lbl">Real gap, said straight</span>Passwords/DB credentials aren't the concern here since there's no local password store — but <code>application.properties</code> and <code>docker-compose.yml</code> do have a hardcoded Supabase Postgres password and default Razorpay test keys committed to git history (114–117). That's the answer I give directly if asked "are secrets in git" — yes, and here's exactly how I'd fix it: move to environment variables injected at deploy time (already partially staged via the GitHub Actions SSH deploy), rotate the exposed credentials, and add a pre-commit secret scanner.</div>
+      </div>
+    </section>
+
+    <section id="s6">
+      <h2><span class="num">06</span> Scalability</h2>
+      <p class="section-note">Qs 119–140</p>
+      <div class="qa">
+        <h3>Honest current scale, and the actual first bottleneck</h3>
+        <p><b>Current scale (119–120):</b> this is a single-EC2-instance, single-Postgres-instance deployment — it's sized for a portfolio/early-stage load, not measured production throughput. The honest answer under pressure: "I haven't load-tested it; here's what I'd expect to break first and why," which is a stronger answer than inventing a number.</p>
+        <p><b>First bottleneck at 10× (121–123):</b> Postgres write contention on <code>pets</code>/<code>orders</code> during peak browse+checkout, followed by the single backend container's thread pool under concurrent SSE chat connections (each open chat is a held connection).</p>
+        <p><b>Statelessness (128–130):</b> the backend is stateless by design — no server-side session, auth is a bearer token validated per-request — so horizontal scaling (129, 125–127) is straightforward: put 2+ backend containers behind Nginx/a load balancer, and any instance can serve any request. If one crashes, in-flight requests fail over on retry with no session to lose (130) — the one exception is a live SSE chat connection, which would drop and need the client to reconnect.</p>
+        <p><b>Scaling the database (131–140):</b> read replicas first (pets/products browsing is read-heavy and doesn't need read-your-writes consistency), sharding only if a single table's write volume genuinely outgrows one primary — not a near-term need here. Caching (138–140): I'd cache the product catalog and public pet listings (read-heavy, low write frequency) in Redis with a short TTL, invalidated on write; I would not cache order history or chat (per-user, must be fresh). If Redis goes down, the app should degrade to hitting Postgres directly for those reads rather than hard-failing — that's a resilience gap worth naming (currently Spring Cache would just throw if Redis is unreachable, unless configured with a fallback).</p>
+      </div>
+    </section>
+
+    <section id="s7">
+      <h2><span class="num">07</span> Caching / Redis</h2>
+      <p class="section-note">Qs 141–158</p>
+      <div class="qa">
+        <h3>What's cached, strategy, failure mode</h3>
+        <p><b>Why Redis over in-process cache (141, 144):</b> the app is meant to run multiple backend instances behind a load balancer eventually — an in-memory (e.g. Caffeine) cache would be per-instance and inconsistent across replicas; Redis gives one shared cache all instances agree on, and doubles as the pub/sub layer chat already needs, so it's not a second piece of infrastructure.</p>
+        <p><b>What's cached and why (142–143):</b> Spring Cache is wired for read-heavy, low-churn lookups — pet/product listings are the natural candidates (many reads per write); user-specific data (cart, orders, chat) is intentionally not cached, since staleness there is a correctness bug, not a minor inconvenience.</p>
+        <p><b>Strategy (145–151):</b> cache-aside (read from cache, fall through to DB and populate on miss) fits this app better than write-through, since writes (adding a pet) are far less frequent than reads (browsing), so paying the invalidation cost only on the rare write is cheaper than updating the cache on every write regardless of whether it's ever read again.</p>
+        <p><b>Chat's actual use of Redis (156–158):</b> distinct from the cache — <code>ChatPubSubConfig</code>/<code>ChatSseManager</code> use Redis pub/sub so a chat message sent to one backend instance is broadcast to the SSE connections held by every instance. If Redis goes down, chat delivery breaks (messages can still be persisted to Postgres and fetched via <code>GET /api/chat/{requestId}</code> on reconnect, but live push stops) — the rest of the app (pets, products, orders) keeps working since Redis isn't on their path.</p>
+        <p><b>Stampede/penetration/avalanche (152–155):</b> not explicitly guarded against today (no lock-on-miss, no negative caching for misses) — at this traffic level it hasn't mattered, but the fix for stampede is a short-lived mutex or "probabilistic early recompute" around the cache-population step, and for penetration, caching negative results with a short TTL.</p>
+      </div>
+    </section>
+
+    <section id="s8">
+      <h2><span class="num">08</span> Kafka / message queues</h2>
+      <p class="section-note">Qs 159–185 — not part of this project</p>
+      <div class="qa">
+        <h3>The honest no, and the conceptual answer behind it</h3>
+        <p>Home4Paws has no message broker. Every write path is synchronous request/response, and the one feature that looks "event-like" — chat — is solved with Redis pub/sub, which is the right-sized tool for fanning a message out to a handful of app instances, not for durable, replayable, multi-consumer event streams.</p>
+        <p>If pressed on Kafka concepts generally: a <b>topic</b> is a named stream of events; a <b>partition</b> splits a topic for parallel consumption, ordered only within a partition; the <b>partition key</b> determines which partition a message lands in (same key → same partition → preserved order for that key); a <b>consumer group</b> lets multiple consumers split a topic's partitions for parallel processing, each partition owned by one consumer in the group at a time; delivery guarantees range from at-most-once (fire and forget) through at-least-once (default, requires idempotent consumers to handle duplicates) to exactly-once (transactional producers/consumers, higher overhead). I'd reach for Kafka in this project the moment I needed durable, replayable events — e.g. "email every user with a saved search when a matching pet is listed," which benefits from decoupling the pet-listing write from a potentially slow/failing notification fan-out.</p>
+      </div>
+    </section>
+
+    <section id="s9">
+      <h2><span class="num">09</span> Concurrency & multithreading</h2>
+      <p class="section-note">Qs 186–204</p>
+      <div class="qa">
+        <h3>Where the JVM's thread model actually shows up</h3>
+        <p>Spring's embedded Tomcat handles concurrency for free — every HTTP request runs on its own thread from the servlet container's thread pool, so the app doesn't hand-manage threads for normal request handling. The places concurrency is genuinely relevant: SSE chat connections (each open chat stream holds a thread/connection for its duration — this is the actual scaling limit on concurrent chats per instance, not raw CPU), and the potential race on <code>Pet.status</code> if two adopters' requests are approved near-simultaneously (see Q66–69) — that's the one spot I'd add either a DB-level unique constraint/optimistic lock (<code>@Version</code>) or a <code>synchronized</code>/transactional guard rather than trusting request ordering.</p>
+        <p>I did not hand-roll thread pools, <code>ExecutorService</code>s, or explicit locks in this codebase — it leans on Spring/Tomcat's managed concurrency and the database's own transaction isolation rather than reinventing thread safety at the application layer, which is the right call for this feature set (no CPU-bound background jobs, no manual batching).</p>
+      </div>
+    </section>
+
+    <section id="s10">
+      <h2><span class="num">10</span> Failure handling</h2>
+      <p class="section-note">Qs 205–224</p>
+      <table>
+        <tr><th>Dependency down</th><th>What actually happens today</th><th>What I'd add</th></tr>
+        <tr><td>Postgres</td><td>Every DB-backed endpoint fails with a 500 via <code>GlobalExceptionHandler</code></td><td>Health check + auto-restart; eventually a replica for read failover</td></tr>
+        <tr><td>Redis</td><td>Cached reads fall through to an exception unless a fallback is configured; chat push stops</td><td>Graceful cache-miss fallback to DB; chat auto-reconnect with backoff on the client</td></tr>
+        <tr><td>Razorpay</td><td>Checkout call fails, order stays <code>PENDING</code>, user sees an error</td><td>Retry with exponential backoff + jitter for transient errors only (not for 4xx); a circuit breaker so repeated Razorpay outages fail fast instead of piling up slow requests</td></tr>
+      </table>
+      <div class="qa">
+        <p><b>Retries, when not to (211–216):</b> retry idempotent, transient failures (network blip calling Razorpay to create an order) — never retry a payment verification that already returned a definitive "invalid signature," since that's not transient, it's wrong. Exponential backoff spaces retries out so a struggling dependency isn't hammered harder by retries; jitter (randomizing the delay slightly) prevents many clients from retrying in lockstep and re-creating the exact spike that caused the failure.</p>
+        <p><b>Circuit breaker (217–221):</b> not implemented today — the honest gap. If it were: the circuit opens after N consecutive Razorpay failures, short-circuits further calls (fail fast instead of timing out slowly), and half-opens after a cooldown to test if the dependency recovered.</p>
+        <p><b>Mid-operation crash (222–224):</b> the checkout transaction (<code>Order</code> + <code>OrderItem</code>s) is wrapped so a crash before commit loses nothing (nothing was ever durably written) — the actual risk is the reverse ordering: if the Razorpay order is created successfully but the local commit fails afterward, you get an orphaned Razorpay order with no local record. I'd fix this by confirming the DB write succeeded before treating the Razorpay order as "real," or reconciling via Razorpay's webhook as the source of truth.</p>
+      </div>
+    </section>
+
+    <section id="s11">
+      <h2><span class="num">11</span> "Design it for 10 million users"</h2>
+      <p class="section-note">Qs 225–243</p>
+      <div class="qa">
+        <p>I would <b>not</b> start by splitting into microservices — that's the tempting wrong answer. I'd scale the monolith horizontally first: multiple stateless backend containers behind a load balancer (cheap, since auth is already stateless), Postgres read replicas for the browse-heavy pet/product queries, Redis caching pushed harder on those same read paths with sensible TTLs, and CDN/static hosting for the frontend build instead of serving it through the same Nginx as the API.</p>
+        <p>I'd only consider splitting a service out — chat is the clear first candidate, since it has a genuinely different scaling shape (long-lived connections vs. short request/response) — once the monolith's chat traffic specifically became the bottleneck, not preemptively. Distributed transactions (233) only become a problem if I split services that share a transaction boundary today (order + order items) — which is exactly why I wouldn't split payments out on day one.</p>
+        <p><b>Deployment at that scale (236–241):</b> replace the current single-EC2 SSH-deploy pipeline with rolling/blue-green deploys behind the load balancer (deploy the new version to half the fleet, health-check, shift traffic, repeat) so a bad deploy is a fast rollback, not downtime. SLA/latency/throughput targets (241–243) would be defined from real measured baselines first — I wouldn't quote a number I haven't tested.</p>
+      </div>
+    </section>
+
+    <section id="s12">
+      <h2><span class="num">12</span> AI / LLM</h2>
+      <p class="section-note">Qs 244–270 — not part of this project</p>
+      <div class="qa"><p>Home4Paws has no LLM integration — no generation, no prompt pipeline, no model calls anywhere in the codebase. If this is being asked because the role is an AI-engineering role, the honest framing is: "this project demonstrates the backend fundamentals an LLM feature would sit on top of — auth, transactional data, caching, real-time delivery via SSE (the same pattern you'd use to stream LLM tokens to a client) — but it doesn't include a model integration." I'd rather say that plainly than stretch the project to claim something it doesn't do.</p></div>
+    </section>
+
+    <section id="s13">
+      <h2><span class="num">13</span> RAG</h2>
+      <p class="section-note">Qs 271–296 — not part of this project</p>
+      <div class="qa"><p>No retrieval or embedding pipeline in Home4Paws. Same honest answer as Section 12 — worth naming the one structural parallel if useful: the pet/product "search and filter" browse endpoints are a plain SQL filter today (species, city, price range), not semantic search, and RAG-style vector retrieval would be the natural upgrade if the product wanted "find pets like this one" rather than exact-filter matching.</p></div>
+    </section>
+
+    <section id="s14">
+      <h2><span class="num">14</span> Voice AI / calling</h2>
+      <p class="section-note">Qs 297–320 — not part of this project</p>
+      <div class="qa"><p>No telephony or voice pipeline here. The closest analog in this codebase is the chat feature's real-time delivery mechanism — SSE over a persistent connection, fanned out via Redis pub/sub across instances — which is conceptually the same "keep a channel open and push low-latency updates" problem a voice pipeline solves for audio frames instead of text messages, just at a much smaller latency budget.</p></div>
+    </section>
+
+    <section id="s15">
+      <h2><span class="num">15</span> Observability</h2>
+      <p class="section-note">Qs 321–334</p>
+      <div class="qa">
+        <p>Current state: <code>RequestLoggingFilter</code> and <code>logback-spring.xml</code> give structured request logging to <code>logs/home4paws.log</code> — that's the extent of it; there's no metrics/tracing stack (no Prometheus/Grafana, no distributed tracing) wired up yet, which is the honest gap I'd name rather than overstate.</p>
+        <p><b>What I'd add first (322, 329–334):</b> request-level metrics (latency, status code, per-endpoint throughput) via Micrometer → Prometheus, since "which API is slow" and "is the error rate spiking" are the two questions logs alone answer slowly. Database: Postgres's own <code>pg_stat_statements</code> for query-level timing. Redis: hit/miss ratio on the cache, connection count on pub/sub. Alerting I'd configure: error-rate spike on checkout/payment-verify specifically (money-path), and Postgres connection pool exhaustion.</p>
+        <p><b>Logs vs metrics vs traces (324):</b> logs are discrete events with full context (good for "what exactly happened in this one request"); metrics are aggregated numbers over time (good for "is the system healthy right now"); traces follow one request across components (this app doesn't need distributed tracing yet since it's one backend process — it becomes essential the moment there's more than one service to cross).</p>
+      </div>
+    </section>
+
+    <section id="s16">
+      <h2><span class="num">16</span> Testing</h2>
+      <p class="section-note">Qs 335–349</p>
+      <div class="qa">
+        <p>A <code>src/test/java</code> tree exists in the standard Spring Boot layout. The honest, defensible answer if pressed on coverage depth: I'd describe what <i>should</i> be tested at each layer rather than overclaim — unit tests around service-layer business rules (role checks, order total calculation, adoption-status transitions) with repositories mocked; integration tests (<code>@SpringBootTest</code> + an embedded/test Postgres or Testcontainers) around the full checkout flow, since that's the path with real money and real transactional risk; and a mocked Razorpay client for testing signature verification logic without hitting the real API.</p>
+        <p><b>Load testing (345–348):</b> not performed — I'd use k6 or JMeter against the checkout and pet-browse endpoints specifically, since those are the two paths most likely to matter first (read-heavy browse, write-heavy + external-dependency checkout).</p>
+      </div>
+    </section>
+
+    <section id="s17">
+      <h2><span class="num">17</span> Deployment / DevOps</h2>
+      <p class="section-note">Qs 350–363</p>
+      <div class="qa">
+        <div class="path">
+          <span class="step">push to main</span><span class="arrow">→</span>
+          <span class="step">GitHub Actions: build backend (Maven) + frontend (npm)</span><span class="arrow">→</span>
+          <span class="step">SSH into EC2</span><span class="arrow">→</span>
+          <span class="step">git reset --hard</span><span class="arrow">→</span>
+          <span class="step">docker compose build</span><span class="arrow">→</span>
+          <span class="step">docker compose up -d</span>
+        </div>
+        <p><b>Why Docker (352–353):</b> the image packages the JAR (backend) / static build (frontend) with their exact runtime — no "works on my machine" drift between dev and the EC2 host. <code>docker-compose.yml</code> orchestrates backend, frontend, Redis, Nginx, and Certbot as one unit.</p>
+        <p><b>Config/secrets (354–355):</b> currently a mix — some values are in <code>application.properties</code> directly (see the Section 5 callout on hardcoded credentials), which is the concrete thing I'd move to environment variables injected by the deploy step, following the pattern the recent commit "CI: fail deploy loudly instead of silently deploying stale code" already started — that commit itself is a good example answer to "what bug did you fix in CI": the pipeline was previously deploying even when the build had gone stale, and now fails loudly instead.</p>
+        <p><b>Migrations (356):</b> <code>ddl-auto=none</code> — schema is managed manually today, not via Flyway/Liquibase. That's a real gap for "how do you roll back a bad migration" — the honest answer is "there's no migration tool yet, so a schema change is a manual, unversioned step," and I'd fix it before this went anywhere near real users.</p>
+        <p><b>Zero-downtime / rollback (357–363):</b> the current pipeline is not zero-downtime — <code>docker compose up -d</code> briefly cycles the container. A real fix: run two backend instances behind Nginx, deploy to one, health-check, cut over, repeat (blue-green) — see Section 11.</p>
+      </div>
+    </section>
+
+    <section id="s18">
+      <h2><span class="num">18</span> The "why → why not" drill, worked example</h2>
+      <p class="section-note">Qs on the recurring depth pattern — worked through with the project's real Redis usage, exactly as the list's own Redis example does</p>
+      <div class="qa">
+        <p><b>Why Redis?</b> Shared cache across future multiple backend instances, plus it's the pub/sub layer chat needs anyway — one dependency, two jobs.</p>
+        <p><b>Why not a local in-memory cache?</b> Per-instance caches go inconsistent the moment there's more than one backend container, which is the direction this app's scaling plan already points.</p>
+        <p><b>What did you cache?</b> Read-heavy, low-churn data — pet and product listings. Not cart, orders, or chat — those must always be fresh per user.</p>
+        <p><b>Why was that data cacheable?</b> High read-to-write ratio (many browsers, few new listings per hour) and tolerance for a few seconds of staleness on a browse page.</p>
+        <p><b>What TTL, why?</b> Short (minutes, not hours) — long enough to absorb repeated browse traffic, short enough that a newly listed pet shows up without a manual cache-bust.</p>
+        <p><b>How do you invalidate it?</b> Cache-aside with invalidation on write — when a pet/product is added or removed, evict the relevant cache key rather than waiting out the TTL.</p>
+        <p><b>What happens if Redis goes down?</b> Today: cached reads throw unless a fallback is configured, and chat push stops. Should be: fall through to Postgres for reads, degrade chat to poll-on-reconnect.</p>
+        <p><b>Stampede?</b> Not guarded today — the fix is a short lock/mutex around cache population so one miss doesn't become N simultaneous DB hits.</p>
+        <p><b>How would you scale Redis?</b> Redis Cluster or a managed Redis with replicas, once either cache volume or pub/sub fan-out (concurrent chats) outgrew one instance.</p>
+        <div class="followups"><b>The pattern to reuse on any other component:</b> what → why → alternative rejected and why → tradeoff accepted → failure mode → behavior at 10× → the one thing you'd change first. Run this same six-step chain for JWT auth, the checkout transaction, and the monolith-vs-microservices call — those are the three most likely to get drilled.</div>
+      </div>
+    </section>
+
+    <section id="s19">
+      <h2><span class="num">19</span> Your contribution</h2>
+      <p class="section-note">Qs 362–378</p>
+      <div class="qa">
+        <p>Frame this around the actual commit history rather than a vague "I built the backend": <code>Add pet store: product catalog, cart, Razorpay checkout, and order history</code> and <code>made cart and products table</code> show the e-commerce side was built as its own feature slice; <code>Fix: Added different features for both NGO and Seller</code> shows the dual-listing model (one <code>Pet</code> entity, two use cases) was a deliberate iteration, not the original design; <code>Fix: Google OAuth signups always defaulted to NORMAL_USER role</code> is a genuinely good "what bug did you find and how did you debug it" answer — Supabase doesn't carry custom <code>user_metadata</code> through an OAuth redirect the way it does for email/password signup, so every Google signup silently landed as <code>NORMAL_USER</code> regardless of the role the user picked; the fix was passing the intended role explicitly to <code>/api/auth/sync</code> after the OAuth callback instead of trusting it to survive the redirect. <code>CI: fail deploy loudly instead of silently deploying stale code</code> is the strongest "what would you improve" answer available, because it's a real, already-fixed instance of exactly that failure mode.</p>
+        <p><b>Hardest part (364, 366–369):</b> the Google-OAuth-role bug above is a good pick — it's subtle (fails silently, not loudly), it's specific to the chosen auth architecture (delegating to Supabase means inheriting Supabase's redirect-payload limitations), and the fix required understanding the OAuth redirect flow, not just the code.</p>
+      </div>
+    </section>
+
+    <section id="s20">
+      <h2><span class="num">20</span> The twenty dangerous ones</h2>
+      <p class="section-note">One-line answers, ready to expand from any section above</p>
+      <div class="qa">
+        <ul>
+          <li><b>Architecture:</b> stateless Spring Boot monolith — one team, one schema, no split boundary yet.</li>
+          <li><b>Database:</b> Postgres — the data is relational and checkout needs real transactions.</li>
+          <li><b>Why not X:</b> every alternative considered (Mongo, GraphQL, Kafka, microservices, Kubernetes) solves a scaling or flexibility problem this app doesn't have yet.</li>
+          <li><b>DB down:</b> every DB-backed endpoint fails with a handled 500 — no replica failover configured yet.</li>
+          <li><b>100× traffic:</b> horizontal backend scaling first (already stateless), then Postgres read replicas, then harder caching.</li>
+          <li><b>Biggest bottleneck:</b> single Postgres instance under write load.</li>
+          <li><b>How to scale:</b> load balancer + N stateless backend containers + read replicas + Redis caching on browse paths.</li>
+          <li><b>Concurrent same-data edit:</b> real gap — no optimistic locking on <code>Pet.status</code> yet; <code>READ COMMITTED</code> isolation only.</li>
+          <li><b>Failure handling:</b> centralized <code>GlobalExceptionHandler</code>; no circuit breaker yet on Razorpay calls.</li>
+          <li><b>Retries:</b> only for transient, idempotent calls (Razorpay order creation) — never retry a definitive verification failure.</li>
+          <li><b>Duplicate requests:</b> payment verification checks status before transitioning — the one place it's actually needed.</li>
+          <li><b>Consistency:</b> <code>@Transactional</code> around checkout; the Razorpay-order-vs-DB-commit ordering is the one known weak spot.</li>
+          <li><b>Caching:</b> pet/product listings, cache-aside, short TTL, invalidated on write.</li>
+          <li><b>Kafka:</b> not used — no event-driven feature exists yet to justify it.</li>
+          <li><b>Sync vs async:</b> synchronous REST everywhere except chat, which is push-based SSE for a genuinely real-time need.</li>
+          <li><b>Redesign for production:</b> migrations tool (Flyway), secrets out of the repo, optimistic locking on <code>Pet.status</code>, a circuit breaker on Razorpay, blue-green deploys.</li>
+          <li><b>Weakest part:</b> the committed plaintext credentials — said plainly, not hidden.</li>
+          <li><b>Hardest problem solved:</b> the Google OAuth role bug (Section 19) — silent, architecture-specific, non-obvious.</li>
+          <li><b>A decision you'd revisit:</b> not adding a migration tool from day one — <code>ddl-auto=none</code> with manual schema changes doesn't scale past a solo project.</li>
+          <li><b>One week to improve it:</b> secrets to env vars + rotate keys, add Flyway, add optimistic locking on <code>Pet.status</code>, add indexes on the actual hot <code>WHERE</code> clauses.</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
